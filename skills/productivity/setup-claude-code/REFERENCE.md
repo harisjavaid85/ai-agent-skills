@@ -2,6 +2,14 @@
 
 ## Profile: `host`
 
+### `permissions.additionalDirectories`
+
+```
+~/.claude/skills
+```
+
+Allows Claude to read skill companion files (REFERENCE.md, ADR-FORMAT.md, etc.) without permission prompts. `~/.claude` root is intentionally excluded to keep `settings.json` and hooks tamper-proof.
+
 ### `permissions.deny`
 
 ```
@@ -41,6 +49,14 @@ Bash(kubectl delete:*)
 
 ## Profile: `sandbox`
 
+### `permissions.additionalDirectories`
+
+```
+~/.claude/skills
+```
+
+Same rationale as `host`.
+
 ### `permissions.deny`
 
 ```
@@ -66,7 +82,7 @@ Bash(kubectl delete:*)
 
 ## Profile: `guardrails`
 
-Hook only. No deny/ask entries written, no settings changed.
+Adds the PreToolUse hook entry to `settings.json` only. No deny/ask or other entries written.
 
 ## Hook patterns (all modes)
 
@@ -107,7 +123,7 @@ To regenerate: re-run `/setup-claude-code {{profile}}`.
 | Field                                  | Strategy                                                                                                                 |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `permissions.defaultMode`              | Write only if user chose a value (opt-in); skip if user chose `skip`                                                     |
-| `permissions.additionalDirectories`    | Union by value                                                                                                           |
+| `permissions.additionalDirectories`    | Union by value.                                                                                                          |
 | `permissions.deny` / `permissions.ask` | Replace previously-managed entries (tracked in `_setupClaudeCode.managedDeny`/`managedAsk`); preserve user-added entries |
 | `hooks.PreToolUse[]`                   | Append if no entry matches the command string                                                                            |
 | `statusLine`                           | Write only if user chose `yes` (opt-in); skip if user chose `skip`                                                       |

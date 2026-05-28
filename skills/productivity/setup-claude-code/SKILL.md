@@ -8,7 +8,7 @@ argument-hint: host | sandbox | guardrails
 
 Installs a global Claude Code configuration under `~/.claude/`:
 
-- Merges a permissions baseline into `~/.claude/settings.json` (deny/ask lists, `additionalDirectories`, etc.).
+- Merges a permissions baseline into `~/.claude/settings.json` (deny/ask lists, etc.).
 - Installs `~/.claude/hooks/block-dangerous-bash.sh` and wires it into PreToolUse.
 - Regenerates `~/.claude/GUARDRAILS.md` (single audit surface for both layers).
 - Optionally sets some settings and installs bundled scripts.
@@ -36,7 +36,6 @@ If the user passed `host`, `sandbox`, or `guardrails` as the argument, use it di
 ### 2. Read existing state
 
 - `~/.claude/settings.json` (may not exist)
-- `~/.claude/hooks/block-dangerous-bash.sh` (may not exist)
 - `~/.claude/settings.json` → `_setupClaudeCode` (tells you what previous runs managed)
 
 ### 3. Compute the target settings
@@ -47,13 +46,13 @@ Start from existing `settings.json`. Apply changes per mode:
 
 - Ensure `hooks.PreToolUse` contains an entry with `matcher: "Bash"` and `command: "~/.claude/hooks/block-dangerous-bash.sh"`. Match by `command` string; don't duplicate.
 
-**`host` and `sandbox` modes:**
+**`host` and `sandbox` modes only:**
 
-- set `permissions.additionalDirectories` and the profile's deny/ask lists. Profile lists and all merge rules are in [REFERENCE.md](REFERENCE.md).
+- Set `additionalDirectories`, deny/ask lists, and other permissions per [REFERENCE.md](REFERENCE.md).
 
 ### 4. Ask about opt-ins (host/sandbox only, interactive only)
 
-- **Default mode**: `plan` (requires approval before acting — safest) / `auto` (acts without approval) / `bypassPermissions` (skips all permission checks) / `skip` (don't set it)?
+- **Default mode**: `plan` (requires approval before acting — safest) / `auto` (handles permissions automatically — middle ground) / `bypassPermissions` (skips all permission checks) / `skip` (don't set it)?
 - **Model**: `opus` / `sonnet` / `haiku` / `skip` (don't set it)?
 - **Statusline**: install `scripts/statusline.sh` → `~/.claude/statusline.sh` and set `statusLine.type = "command"`, `statusLine.command = "~/.claude/statusline.sh"`? (`yes` / `skip`)
 
@@ -61,28 +60,38 @@ If the user chooses `skip` for any opt-in, do not write that key to `settings.js
 
 Skip all opt-ins in non-interactive (scripted) invocations — e.g. `RUN claude -p "/setup-claude-code sandbox"` in a Dockerfile.
 
-### 5. Diff and confirm
+### 5. Show diff and confirm
 
-Show the user the diff between current and proposed `~/.claude/settings.json` and ask for confirmation before writing. Skip only when running non-interactively (no TTY / scripted context).
+If the `settings.json` diff is non-empty (and running interactively), show it and ask for confirmation before proceeding. Abort if the user declines.
 
-### 6. Write
+Skip in non-interactive invocations.
 
-In order:
+### 6. Stage and apply
 
-1. `cp ~/.claude/settings.json ~/.claude/settings.json.bak-$(date +%s)` (if it exists).
-2. `mkdir -p ~/.claude/hooks`.
-3. Copy `scripts/block-dangerous-bash.sh` → `~/.claude/hooks/block-dangerous-bash.sh`; `chmod +x`.
-4. If statusline opt-in accepted: copy `scripts/statusline.sh` → `~/.claude/statusline.sh`; `chmod +x`.
-5. Write merged `~/.claude/settings.json`. Include the `_setupClaudeCode` sentinel (shape in [REFERENCE.md](REFERENCE.md#sentinel-shape)).
+Write all generated files to a temp staging directory `/tmp/claude-setup-<timestamp>/` with all placeholders resolved to actual paths:
 
-6. Regenerate `~/.claude/GUARDRAILS.md` summarising both static permissions and hook patterns. Template in [REFERENCE.md](REFERENCE.md).
+- `settings.json` — merged config with `_setupClaudeCode` sentinel (shape in [REFERENCE.md](REFERENCE.md#sentinel-shape))
+- `GUARDRAILS.md` — summarising both static permissions and hook patterns (template in [REFERENCE.md](REFERENCE.md))
+- `apply.sh` — script that performs all writes:
+  1. `cp ~/.claude/settings.json ~/.claude/settings.json.bak-$(date +%s)` (if it exists)
+  2. `mkdir -p ~/.claude/hooks`
+  3. `cp <staging>/settings.json ~/.claude/settings.json`
+  4. `cp <skill-base-dir>/scripts/block-dangerous-bash.sh ~/.claude/hooks/block-dangerous-bash.sh && chmod +x ~/.claude/hooks/block-dangerous-bash.sh`
+  5. If statusline opt-in accepted: `cp <skill-base-dir>/scripts/statusline.sh ~/.claude/statusline.sh && chmod +x ~/.claude/statusline.sh`
+  6. `cp <staging>/GUARDRAILS.md ~/.claude/GUARDRAILS.md`
+
+Then run `apply.sh` via Bash tool. If blocked, ask the user to run it manually:
+
+```bash
+! bash /tmp/claude-setup-<timestamp>/apply.sh
+```
 
 ### 7. Verify
 
-Test the hook is wired correctly:
+Once the user confirms apply.sh ran, test the hook:
 
 ```bash
-echo '{"tool_input":{"command":"rm -rf /"}}' | ~/.claude/hooks/block-dangerous-bash.sh
+! echo '{"tool_input":{"command":"rm -rf /"}}' | ~/.claude/hooks/block-dangerous-bash.sh
 ```
 
 Should exit 2 and print a BLOCKED message.

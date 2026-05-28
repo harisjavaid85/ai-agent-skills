@@ -6,6 +6,11 @@
 
 input=$(cat)
 
+if ! command -v jq >/dev/null 2>&1; then
+  printf "\033[1;31m⚠ statusline needs jq — run in terminal: sudo apt-get install -y jq\033[0m\n"
+  exit 0
+fi
+
 # Colors matching agnoster theme palette
 RESET="\033[0m"
 BOLD="\033[1m"
@@ -14,7 +19,7 @@ DIM="\033[2m"
 # Foreground colors
 FG_DARK="\033[38;2;16;14;35m"        # #100e23
 FG_WHITE="\033[38;2;255;255;255m"    # #ffffff
-FG_NAVY="\033[38;2;25;53;73m"       # #193549
+FG_NAVY="\033[38;2;25;53;73m"        # #193549
 
 # Background colors (used as fg in dim terminal context)
 C_SESSION="\033[38;2;255;255;255m" # #ffffff - session segment
@@ -48,7 +53,7 @@ else
             cwd_display="~${_rel}"
             break
         fi
-    fi < <(find "$HOME" -maxdepth 1 -type l 2>/dev/null)
+    done < <(find "$HOME" -maxdepth 1 -type l 2>/dev/null)
 fi
 
 # Shorten to: first2/../second_to_last/last (only when 5+ segments)
