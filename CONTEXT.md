@@ -15,6 +15,9 @@ _Avoid_: ticket (use only when quoting external systems that call them tickets)
 **Triage role**:
 A canonical state-machine label applied to an **Issue** during triage (e.g. `needs-triage`, `ready-for-afk`). Each role maps to a real label string in the **Issue tracker** via `docs/agents/triage-labels.md`.
 
+**Commit tag**:
+A canonical category prefixing a commit subject, applied by `commit` (e.g. `Feature`, `Bugfix`). Each tag maps to the repo's actual tag string and subject format via `docs/agents/commit-tags.md`.
+
 ## Relationships
 
 - An **Issue tracker** holds many **Issues**

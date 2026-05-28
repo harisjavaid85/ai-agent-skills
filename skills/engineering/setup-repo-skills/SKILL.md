@@ -1,6 +1,6 @@
 ---
 name: setup-repo-skills
-description: Configure the current repo so the engineering skills work in it — scaffolds working directories, repo settings, the `## Agent skills` block in CLAUDE.md/AGENTS.md, and `docs/agents/` (issue tracker, triage labels, domain docs consumer rules). Run once when setting up a repo for these skills, or to reconfigure the issue tracker or triage labels.
+description: Configure the current repo so the engineering skills work in it — scaffolds working directories, repo settings, the `## Agent skills` block in CLAUDE.md/AGENTS.md, and `docs/agents/` (issue tracker, skill vocabularies, and domain-doc rules). Run once when setting up a repo for these skills, or to reconfigure any of them.
 disable-model-invocation: true
 ---
 
@@ -11,7 +11,7 @@ Wire a repo for the engineering skills. This skill owns the **structural** setup
 It sets up two things:
 
 - **The repo's local `.claude` config** — working directories and settings (details in step 2).
-- **`docs/agents/` config** — issue tracker, triage labels, and domain docs consumer rules, summarised in an `## Agent skills` block in `CLAUDE.md`/`AGENTS.md`.
+- **`docs/agents/` config** — issue tracker, skill vocabularies, and domain-doc rules, summarised in an `## Agent skills` block in `CLAUDE.md`/`AGENTS.md`.
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
@@ -81,7 +81,13 @@ Propose based on `git remote`: GitHub remote → GitHub; GitLab remote → GitLa
 
 The five canonical roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Default each role's string to its own name; ask if the user wants to override any.
 
-There is **no** domain-layout question. The domain-doc consumer contract is static and written as-is (see step 4).
+**Section C — Commit tag vocabulary.**
+
+> When `commit` writes a message, it prefixes the subject with a tag — e.g. `[Feature] Add parser`. If this repo uses different tag names, or a different subject format such as Conventional Commits (`feat: add parser`), map them here so the skill matches your house style.
+
+The eight canonical tags: `Feature`, `Bugfix`, `Doc`, `Refactor`, `Test`, `Chore`, `Merge`, `Revert`. Default each tag's string to its own name and the subject template to `[<tag>] <summary>`; ask if the user wants to rename any tag or change the template (e.g. `<tag>: <summary>` with lowercased tags for Conventional Commits). The mood is always imperative — not configurable.
+
+There is **no** domain-layout question. The domain-doc rules are static and written as-is (see step 4).
 
 ## 4. Confirm and write
 
@@ -108,6 +114,10 @@ The block:
 
 [one-line summary of the label vocabulary]. See `docs/agents/triage-labels.md`.
 
+### Commit tags
+
+[one-line summary of the tag vocabulary and subject format]. See `docs/agents/commit-tags.md`.
+
 ### Domain docs
 
 How to read this repo's glossary and ADRs. See `docs/agents/domain.md`.
@@ -117,6 +127,7 @@ Then write the `docs/agents/` files from the seed templates in this skill folder
 
 - [issue-tracker-github.md](./issue-tracker-github.md) / [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) / [issue-tracker-local.md](./issue-tracker-local.md) — pick the chosen one
 - [triage-labels.md](./triage-labels.md) — fill in the user's label strings
+- [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template
 - [domain.md](./domain.md) — the consumer contract, written as-is (no per-repo decision)
 
 For an "other" issue tracker, write `docs/agents/issue-tracker.md` from scratch using the user's description.

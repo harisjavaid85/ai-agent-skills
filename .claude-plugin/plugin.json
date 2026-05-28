@@ -1,6 +1,7 @@
 {
   "name": "mattpocock-skills",
   "skills": [
+    "./skills/engineering/commit",
     "./skills/engineering/diagnose",
     "./skills/engineering/grill-with-context",
     "./skills/engineering/triage",
