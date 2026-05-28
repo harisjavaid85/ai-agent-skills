@@ -1,2 +1,5 @@
 *settings.local.json
+.claude/plans/
+.claude/handoffs/
+.claude/overviews/
 
