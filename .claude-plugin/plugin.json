@@ -1,5 +1,5 @@
 {
-  "name": "mattpocock-skills",
+  "name": "ai-agent-skills",
   "skills": [
     "./skills/engineering/commit",
     "./skills/engineering/diagnose",
