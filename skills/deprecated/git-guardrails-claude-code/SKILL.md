@@ -1,6 +1,14 @@
 ---
 name: git-guardrails-claude-code
-description: Set up Claude Code hooks to block dangerous git commands (push, reset --hard, clean, branch -D, etc.) before they execute. Use when user wants to prevent destructive git operations, add git safety hooks, or block git push/reset in Claude Code.
+description: DEPRECATED — folded into setup-claude-code. Use `/setup-claude-code guardrails` instead.
+---
+
+# Setup Git Guardrails (deprecated)
+
+> **Superseded by `setup-claude-code`.** For a hook-only install (the equivalent of this skill), run `/setup-claude-code guardrails`. The new hook also covers `rm -rf` variants and `find . -delete`.
+>
+> Kept here for reference. See [`../../../docs/adr/0002-setup-claude-code-guardrails-design.md`](../../../docs/adr/0002-setup-claude-code-guardrails-design.md) for the rationale.
+
 ---
 
 # Setup Git Guardrails
