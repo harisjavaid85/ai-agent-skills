@@ -61,4 +61,4 @@ The canonical vocabulary and message style.
 
 - **Subject:** `[Tag] imperative summary` — always imperative mood ("Add", "Fix", "Consolidate"), ≤ ~50 chars including the tag, no trailing period.
 - **Body:** only when it adds _why_ the subject alone doesn't capture; 1–3 short lines on intent. Never enumerate file changes. Wrap ~72; blank line after subject.
-- **Trailer:** append `Co-Authored-By: Claude <noreply@anthropic.com>`.
+- **Trailer:** append a `Co-Authored-By:` trailer identifying the agent that authored the commit (Claude Code → `Co-Authored-By: Claude <noreply@anthropic.com>`; other harnesses use their own identities).
