@@ -1,3 +1,33 @@
+# File structure
+
+Most repos have a single context — one `CONTEXT.md` at the root:
+
+```
+/
+├── CONTEXT.md
+├── docs/
+│   └── adr/
+│       ├── 0001-event-sourced-orders.md
+│       └── 0002-postgres-for-write-model.md
+└── src/
+```
+
+Multi-context repos add a `CONTEXT-MAP.md` at the root; each context owns its `CONTEXT.md` and optionally its own `docs/adr/`:
+
+```
+/
+├── CONTEXT-MAP.md
+├── docs/
+│   └── adr/                          ← system-wide decisions
+├── src/
+│   ├── ordering/
+│   │   ├── CONTEXT.md
+│   │   └── docs/adr/                 ← context-specific decisions
+│   └── billing/
+│       ├── CONTEXT.md
+│       └── docs/adr/
+```
+
 # CONTEXT.md Format
 
 ## Structure
