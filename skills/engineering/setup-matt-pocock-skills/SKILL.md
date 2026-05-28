@@ -46,7 +46,7 @@ Default posture: these skills were designed for GitHub. If a `git remote` points
 
 **Section B — Triage label vocabulary.**
 
-> Explainer: When the `triage` skill processes an incoming issue, it moves it through a state machine — needs evaluation, waiting on reporter, ready for an AFK agent to pick up, ready for a human, or won't fix. To do that, it needs to apply labels (or the equivalent in your issue tracker) that match strings *you've actually configured*. If your repo already uses different label names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones instead of creating duplicates.
+> Explainer: When the `triage` skill processes an incoming issue, it moves it through a state machine — needs evaluation, waiting on reporter, ready for an AFK agent to pick up, ready for a human, or won't fix. To do that, it needs to apply labels (or the equivalent in your issue tracker) that match strings _you've actually configured_. If your repo already uses different label names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones instead of creating duplicates.
 
 The five canonical roles:
 
@@ -64,8 +64,8 @@ Default: each role's string equals its name. Ask the user if they want to overri
 
 Confirm the layout:
 
-- **Single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root. Most repos are this.
-- **Multi-context** — `CONTEXT-MAP.md` at the root pointing to per-context `CONTEXT.md` files (typically a monorepo).
+- **single-context**: one `CONTEXT.md` at the repo root — most repos are this.
+- **multi-context**: `CONTEXT-MAP.md` at the root + per-folder `CONTEXT.md` files — typically a monorepo.
 
 ### 3. Confirm and edit
 
