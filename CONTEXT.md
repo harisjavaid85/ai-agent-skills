@@ -25,6 +25,10 @@ _Avoid_: glossary (too narrow — vocabulary includes templates and mappings, no
 **Behaviour** (of a skill):
 The *verbs* a skill performs — its process, decision rules, when-to-do-what, and the steps the agent executes (e.g. "gather requirements → draft → review", "offer ADRs only when all three are true").
 
+**Progressive disclosure** (of a skill):
+The structuring principle that `SKILL.md` is the always-loaded entry point holding **Behaviour**, while verbatim formats and long reference material (**Vocabulary**) live in linked files loaded on demand. References stay one level deep.
+_Avoid_: lazy loading, file splitting
+
 ## Relationships
 
 - An **Issue tracker** holds many **Issues**
