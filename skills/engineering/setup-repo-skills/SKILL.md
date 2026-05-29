@@ -49,16 +49,25 @@ Add these to `.gitignore` (append if the file exists, create it if not; don't du
 
 These three are ephemeral agent working memory. `.claude/settings.json` is **not** ignored — it's checked in.
 
-Write `.claude/settings.json` if it doesn't exist (don't clobber an existing one — merge the keys in instead):
+Write `.claude/settings.json` if it doesn't exist (don't clobber an existing one — merge the keys in instead and dedupe):
 
 ```json
 {
   "permissions": {
-    "allow": []
+    "allow": [
+      "Write(./.claude/plans/**)",
+      "Edit(./.claude/plans/**)",
+      "Write(./.claude/handoffs/**)",
+      "Edit(./.claude/handoffs/**)",
+      "Write(./.claude/overviews/**)",
+      "Edit(./.claude/overviews/**)"
+    ]
   },
   "plansDirectory": ".claude/plans"
 }
 ```
+
+Scope the rules to the three specific dirs — a blanket `Write(./.claude/**)` would also let the agent change its own `settings.json`, which should never be done (settings must stay reviewable).
 
 ## 3. Agent-skills wiring
 
