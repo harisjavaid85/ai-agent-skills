@@ -18,6 +18,13 @@ A canonical state-machine label applied to an **Issue** during triage (e.g. `nee
 **Commit tag**:
 A canonical category prefixing a commit subject, applied by `commit` (e.g. `Feature`, `Bugfix`). Each tag maps to the repo's actual tag string and subject format via `docs/agents/commit-tags.md`.
 
+**Vocabulary** (of a skill):
+The *nouns* a skill operates on — canonical term definitions, the fixed templates/formats it emits, label/tag mappings, file-format specs. Stable reference data (e.g. `commit-tags.md`, `CONTEXT-FORMAT.md`, a `SKILL.md` frontmatter template).
+_Avoid_: glossary (too narrow — vocabulary includes templates and mappings, not just term definitions)
+
+**Behaviour** (of a skill):
+The *verbs* a skill performs — its process, decision rules, when-to-do-what, and the steps the agent executes (e.g. "gather requirements → draft → review", "offer ADRs only when all three are true").
+
 ## Relationships
 
 - An **Issue tracker** holds many **Issues**
