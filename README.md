@@ -1,6 +1,6 @@
 # AI Agent Skills
 
-_Forked from [Matt Pocock's "Skills For Real Engineers"](https://skills.sh/mattpocock/skills)._
+_Forked from [Matt Pocock's "Skills For Real Engineers"](https://github.com/mattpocock/skills)._
 
 [![skills.sh](https://skills.sh/b/harisjavaid85/ai-agent-skills)](https://skills.sh/harisjavaid85/ai-agent-skills)
 
