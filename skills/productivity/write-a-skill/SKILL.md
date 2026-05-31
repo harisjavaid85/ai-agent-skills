@@ -1,6 +1,6 @@
 ---
 name: write-a-skill
-description: Convert settled requirements into a well-structured agent skill (vocabulary, behaviour, progressive disclosure). Use when the user wants to create, write, or build a new skill and scope is already decided. Grill first if scope is fuzzy.
+description: Convert settled requirements into a well-structured agent skill (vocabulary, behaviour, progressive disclosure). Use when the user wants to create, update, refactor, or iterate on a skill. Grill first if scope is fuzzy.
 ---
 
 # Writing Skills
@@ -11,7 +11,14 @@ See `CONTEXT.md` for the canonical definitions of **Vocabulary**, **Behaviour**,
 
 ## Workflow
 
-### 1. Confirm settled requirements
+### 1. Branch: create vs update
+
+First, check whether a `SKILL.md` already exists at the target path.
+
+- **No existing file → Create branch.** Continue with "Create: confirm settled requirements" below, then steps 2–4.
+- **Existing file → Update branch.** Jump to "Update: checkpoint" below, then step 4. Skip step 2 (duplication/collision was already settled when the skill was first written; only re-check if the conversation says scope is shifting). Step 3's drafting rules apply as constraints — verified by the step 4 checklist, not re-walked.
+
+#### Create: confirm settled requirements
 
 Before writing, confirm requirements are settled. There are three cases:
 
@@ -26,6 +33,17 @@ If the user declines grilling and wants a draft anyway, collect only the **irred
 - **one sentence** on what it does (core behaviour)
 
 Draft a best-effort pass from those and label it as rough, since scope wasn't grilled. Never invent scope, edge cases, or alternatives to fill the gap.
+
+#### Update: checkpoint
+
+Read the existing skill files in full before editing. Then post a **checkpoint** and stop for confirmation. The checkpoint has two parts:
+
+1. **Intended edits** — one bullet per change, in the form *decision from conversation → section of `SKILL.md` (or other file) it touches*.
+2. **Conflicts** — any edit that would violate an existing rule in the skill, or override a structural decision (see preservation rule below). If none, write "none".
+
+Only edit after the user confirms.
+
+**Preservation rule.** Preserve the existing skill's structural decisions — file split, vocabulary location, scope guards, section ordering — unless the checkpoint explicitly overrides them. Moving inline what was in a separate file (or vice versa) is an override, not a stylistic edit, and must appear in the conflicts list.
 
 ### 2. Check duplication & collision
 
@@ -66,10 +84,11 @@ The description is **the only thing the agent sees** when deciding which skill t
 
 After drafting, verify:
 
-- [ ] Requirements were settled (grilled, handoff, or irreducible-inputs override)
-- [ ] Description includes triggers ("Use when…")
+- [ ] **Create:** requirements were settled (grilled, handoff, or irreducible-inputs override). **Update:** checkpoint approved by user before editing.
+- [ ] Description matches the Description format in `FORMAT.md`
 - [ ] Vocabulary and behaviour are separated (section or file)
 - [ ] No non-features documented (scope guards only if they change behaviour)
+- [ ] Deterministic operations use scripts where appropriate
 - [ ] No duplication/collision with existing skills
 - [ ] No time-sensitive info
 - [ ] Consistent terminology
