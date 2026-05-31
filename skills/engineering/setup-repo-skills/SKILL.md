@@ -1,7 +1,6 @@
 ---
 name: setup-repo-skills
-description: Configure the current repo so the engineering skills work in it — scaffolds working directories, repo settings, the `## Agent skills` block in CLAUDE.md/AGENTS.md, and `docs/agents/` (issue tracker, skill vocabularies, and domain-doc rules). Run once when setting up a repo for these skills, or to reconfigure any of them.
-disable-model-invocation: true
+description: Configure the current repo so the engineering skills work in it — scaffolds working directories, repo settings, CLAUDE.md/AGENTS.md, and `docs/agents/` (issue tracker, skill vocabularies, and domain-doc rules). Use when the user wants to set up, wire, or configure a repo for the engineering skills (run once per repo, or to reconfigure any of them).
 ---
 
 # Setup Repo Skills
@@ -141,15 +140,21 @@ Then write the `docs/agents/` files from the seed templates in this skill folder
 
 For an "other" issue tracker, write `docs/agents/issue-tracker.md` from scratch using the user's description.
 
-## 5. Punch list
+## 5. Finish
 
-Finish with recommended next steps, based on what step 1 found. Offer, don't run:
+Tell the user setup is done and that `docs/agents/*.md` are theirs to edit. Then suggest the applicable next steps from the rubric below in your own prose.
 
-- **No global setup detected** (file absent or no `_setupClaudeCode` marker) → "Run `/setup-claude-code` to install security guardrails — it's the global counterpart to this repo setup."
-- **No `CONTEXT.md` and no `CONTEXT-MAP.md`** → "Run `/bootstrap-context` to capture this repo's domain language. It surveys the tree and decides single- vs multi-context with evidence — better than guessing." (If the user runs it later and the layout changes, re-running this skill is safe and idempotent.)
-- **`package.json` present** → "Run `/setup-pre-commit` to add Husky/lint-staged pre-commit hooks."
+### Rubric (internal)
 
-Tell the user setup is complete and that they can edit `docs/agents/*.md` directly later — re-running is only needed to switch issue trackers or start fresh.
+Suggest only the rows whose condition is met. Never run these yourself.
+
+| Condition from step 1                                                             | Suggest                                                                               |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `~/.claude/settings.json` missing, or present without a `_setupClaudeCode` marker | `/setup-claude-code` — global security guardrails, counterpart to this repo setup     |
+| Neither `CONTEXT.md` nor `CONTEXT-MAP.md` at the repo root                        | `/bootstrap-context` — captures domain language; safe to re-run this skill afterwards |
+| `package.json` present                                                            | `/setup-pre-commit` — Husky + lint-staged pre-commit hooks                            |
+
+Do not quote the conditions, marker names, or arrow syntax in your message — those are internal.
 
 ---
 
