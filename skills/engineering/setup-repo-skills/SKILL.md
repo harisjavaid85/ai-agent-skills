@@ -135,7 +135,7 @@ Then write the `docs/agents/` files from the seed templates in this skill folder
 
 - [issue-tracker-github.md](./issue-tracker-github.md) / [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) / [issue-tracker-local.md](./issue-tracker-local.md) — pick the chosen one
 - [triage-labels.md](./triage-labels.md) — fill in the user's label strings
-- [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template
+- [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template from Section C's answer (e.g. `[<tag>] <summary>` for bracketed, `<tag>: <summary>` for Conventional Commits); the resulting file should describe only the chosen format
 - [domain.md](./domain.md) — the consumer contract, written as-is (no per-repo decision)
 
 For an "other" issue tracker, write `docs/agents/issue-tracker.md` from scratch using the user's description.

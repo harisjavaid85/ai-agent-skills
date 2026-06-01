@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Stage and commit working-tree changes — group them into a sensible commit plan, write concise [Tag]-prefixed messages (commit after approval or automatically). Use when the user wants to commit changes.
+description: Stage and commit working-tree changes — group them into a sensible commit plan, write concise tagged messages following the repo's convention (commit after approval or automatically). Use when the user wants to commit changes.
 ---
 
 # Commit

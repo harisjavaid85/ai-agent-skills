@@ -15,6 +15,6 @@ The `commit` skill prefixes each commit subject with a tag. This file maps the e
 
 **Subject template:** `[<tag>] <summary>`
 
-`<tag>` is the right-column string; `<summary>` is an imperative summary (≤ ~50 chars including the tag, no trailing period). The mood is always imperative. For Conventional Commits, set the template to `<tag>: <summary>` and lowercase the tag strings (e.g. `feat`, `fix`).
+`<tag>` is the right-column string; `<summary>` is an imperative summary (≤ ~50 chars including the tag, no trailing period). The mood is always imperative.
 
-Edit the right-hand column and the subject template to match the house style you actually use.
+Edit the right-hand column and the subject template if the house style changes.
