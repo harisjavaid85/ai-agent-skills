@@ -39,6 +39,22 @@ FIND_PATTERNS=(
   '(^|[;&|"'"'"'[:space:]])find[[:space:]]+.*-delete\b'
 )
 
+# gh: destructive or identity-mutating operations. Read-only `gh auth status`/`gh auth token`
+# are deliberately not matched.
+GH_PATTERNS=(
+  # auth mutations (swap/refresh/clear the active token)
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+auth[[:space:]]+(login|logout|refresh|switch|setup-git)\b'
+  # deletions / closures
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+repo[[:space:]]+delete\b'
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+release[[:space:]]+delete\b'
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+issue[[:space:]]+delete\b'
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+pr[[:space:]]+close\b'
+  # PR approvals — flag can appear anywhere after `pr review`
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+pr[[:space:]]+review([[:space:]]+[^[:space:]]+)*[[:space:]]+(--approve|-a)\b'
+  # raw API mutating verbs (catches wrappers that bypass the static Bash(gh api:*) deny)
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+api([[:space:]]+[^[:space:]]+)*[[:space:]]+(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)\b'
+)
+
 block() {
   local pattern="$1"
   echo "BLOCKED: '$COMMAND' matches dangerous pattern '$pattern'. The user has prevented you from doing this." >&2
@@ -64,5 +80,6 @@ check_group GIT_PATTERNS
 check_group GIT_PUSH_MAIN_PATTERNS
 check_group RM_PATTERNS
 check_group FIND_PATTERNS
+check_group GH_PATTERNS
 
 exit 0

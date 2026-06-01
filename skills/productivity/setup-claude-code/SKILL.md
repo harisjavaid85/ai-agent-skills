@@ -48,7 +48,7 @@ Start from existing `settings.json`. Apply changes per mode:
 
 **`host` and `sandbox` modes only:**
 
-- Set `additionalDirectories`, deny/ask lists, and other permissions per [REFERENCE.md](REFERENCE.md).
+- Set `additionalDirectories`, deny/ask/allow lists, and other permissions per [REFERENCE.md](REFERENCE.md).
 
 ### 4. Ask about opt-ins (host/sandbox only, interactive only)
 

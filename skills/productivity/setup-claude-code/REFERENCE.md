@@ -32,8 +32,15 @@ Read(~/.psql_history)
 Bash(curl:*)
 Bash(wget:*)
 Bash(sudo:*)
+Bash(gh repo delete:*)
+Bash(gh release delete:*)
+Bash(gh issue delete:*)
+Bash(gh pr close:*)
+Bash(gh api:*)
 WebFetch
 ```
+
+`gh api:*` is a blanket deny — it also blocks read-only GETs through `gh api`. Lift case-by-case in user-edited allow entries if needed. `gh auth` is intentionally not in the static deny list — the hook blocks the mutating subcommands (`login`/`logout`/`refresh`/`switch`/`setup-git`) so read-only `gh auth status` and `gh auth token` work without prompts.
 
 ### `permissions.ask`
 
@@ -46,6 +53,19 @@ Bash(docker volume rm:*)
 Bash(docker system prune:*)
 Bash(kubectl delete:*)
 ```
+
+### `permissions.allow`
+
+```
+Bash(gh pr create:*)
+Bash(gh pr comment:*)
+Bash(gh pr review:*)
+Bash(gh issue create:*)
+Bash(gh issue comment:*)
+Bash(gh label:*)
+```
+
+`gh pr review:*` is allowed at the harness layer for ergonomics; the hook still blocks `--approve`/`-a` in any flag position.
 
 ## Profile: `sandbox`
 
@@ -70,6 +90,11 @@ Read(**/.netrc)
 Read(~/.bash_history)
 Read(~/.zsh_history)
 Read(~/.psql_history)
+Bash(gh repo delete:*)
+Bash(gh release delete:*)
+Bash(gh issue delete:*)
+Bash(gh pr close:*)
+Bash(gh api:*)
 ```
 
 ### `permissions.ask`
@@ -80,13 +105,24 @@ Bash(docker push:*)
 Bash(kubectl delete:*)
 ```
 
+### `permissions.allow`
+
+```
+Bash(gh pr create:*)
+Bash(gh pr comment:*)
+Bash(gh pr review:*)
+Bash(gh issue create:*)
+Bash(gh issue comment:*)
+Bash(gh label:*)
+```
+
 ## Profile: `guardrails`
 
 Adds the PreToolUse hook entry to `settings.json` only. No deny/ask or other entries written.
 
 ## Hook patterns (all modes)
 
-See [`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) — covers `rm -rf` variants, `find . -delete`, and dangerous git operations.
+See [`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) — covers `rm -rf` variants, `find . -delete`, dangerous git operations, and destructive/identity-mutating `gh` operations.
 
 ## `~/.claude/GUARDRAILS.md` template
 
@@ -114,21 +150,22 @@ Installed by `setup-claude-code` — profile **{{profile}}**, last run {{timesta
 - git push to main/master (other branches allowed)
 - git push --force / -f (any branch)
 - git reset --hard, git clean -f, git branch -D, git checkout .
+- ...
 
 To regenerate: re-run `/setup-claude-code {{profile}}`.
 ```
 
 ## Merge rules
 
-| Field                                  | Strategy                                                                                                                 |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `permissions.defaultMode`              | Write only if user chose a value (opt-in); skip if user chose `skip`                                                     |
-| `permissions.additionalDirectories`    | Union by value.                                                                                                          |
-| `permissions.deny` / `permissions.ask` | Replace previously-managed entries (tracked in `_setupClaudeCode.managedDeny`/`managedAsk`); preserve user-added entries |
-| `hooks.PreToolUse[]`                   | Append if no entry matches the command string                                                                            |
-| `statusLine`                           | Write only if user chose `yes` (opt-in); skip if user chose `skip`                                                       |
-| `model`                                | Write only if user chose a value (opt-in); skip if user chose `skip`                                                     |
-| `_setupClaudeCode`                     | Overwrite with current run's state                                                                                       |
+| Field                                                        | Strategy                                                                                                                                |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `permissions.defaultMode`                                    | Write only if user chose a value (opt-in); skip if user chose `skip`                                                                    |
+| `permissions.additionalDirectories`                          | Union by value.                                                                                                                         |
+| `permissions.deny` / `permissions.ask` / `permissions.allow` | Replace previously-managed entries (tracked in `_setupClaudeCode.managedDeny`/`managedAsk`/`managedAllow`); preserve user-added entries |
+| `hooks.PreToolUse[]`                                         | Append if no entry matches the command string                                                                                           |
+| `statusLine`                                                 | Write only if user chose `yes` (opt-in); skip if user chose `skip`                                                                      |
+| `model`                                                      | Write only if user chose a value (opt-in); skip if user chose `skip`                                                                    |
+| `_setupClaudeCode`                                           | Overwrite with current run's state                                                                                                      |
 
 ## Sentinel shape
 
@@ -139,6 +176,7 @@ To regenerate: re-run `/setup-claude-code {{profile}}`.
     "profile": "host",
     "managedDeny": ["Read(./.env)", "..."],
     "managedAsk": ["Bash(npm publish:*)", "..."],
+    "managedAllow": ["Bash(gh pr create:*)", "..."],
     "hookInstalled": true,
     "statuslineInstalled": false,
     "modelSet": false,
