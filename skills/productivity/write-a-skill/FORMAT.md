@@ -39,7 +39,7 @@ description: Brief description of capability. Use when [specific triggers].
 
 - ≤ 512 chars
 - Third person
-- Exactly two sentences: first sentence is the capability, second sentence is `Use when [specific triggers]`. If you need a third sentence, you're overspecifying.
+- Exactly two sentences. The first names **what** the skill does or produces, in terms a user would recognize. Not a recipe — no enumerated steps, command literals (`pnpm install`), no file-level counts ("three prompt.md edits"). The second is `Use when [specific triggers]`. If you need a third sentence, you're overspecifying.
 - **No navigational paths or filenames** — i.e. where things live in this repo (`docs/agents/`, `settings.local.json`, `CLAUDE.md/AGENTS.md`). Those belong in the body.
 - **Trigger markers are fine** — file extensions or filename patterns that are how the agent *recognises* the situation (`.env`, `*.pem`, `package.json`) belong in the trigger sentence when they're load-bearing for matching.
 
@@ -61,4 +61,16 @@ Set up the repo's docs/agents/ folder with issue-tracker.md, triage-labels.md, c
 
 ```
 Configure the current repo so the engineering skills work in it — scaffolds working directories, repo settings, and the per-skill config files the other skills consume. Use when the user wants to set up, wire, or configure a repo for the engineering skills.
+```
+
+**Bad** — enumerated steps in description:
+
+```
+Scaffold a new experiment in this rehearsal harness — copy a base template, `pnpm install`, run `sandcastle init` and apply surgical patches (one main.ts replacement + three prompt.md edits), seed a runnable PRD, seed AGENTS/findings stubs, create the `exp/<name>` GitHub label, and seed one GitHub Issue per acceptance criterion labeled `exp/<name>` + `needs-triage`, all committed on `main`. Use when the user wants to start a new experiment, scaffold an experiment dir, or says "create experiment" / "new experiment from <template>".
+```
+
+**Rewritten clean** — names what's produced, not the recipe:
+
+```
+Scaffold a new experiment from a template in the rehearsal harness — produces a runnable PRD and one GitHub issue per acceptance criterion. Use when the user wants to start a new experiment, or says "create experiment" or "new experiment from <template>".
 ```
