@@ -5,7 +5,7 @@ description: Stage and commit working-tree changes — group them into a sensibl
 
 # Commit
 
-Group working-tree changes into one or more commits, each with a `[Tag] summary` message, and commit them. Commit only — no pushing and branch ops.
+Group working-tree changes into one or more commits, each with a tagged subject following the repo's convention, and commit them. Commit only — no pushing and branch ops.
 
 ## Tags & message format
 
@@ -19,7 +19,7 @@ Tags and message style are defined in the **Tags & message convention** section 
 ## Workflow
 
 1. **Survey** the whole working tree (staged + unstaged + untracked; `.gitignore` respected). If nothing to commit, report "nothing to commit" and stop.
-2. **Group & tag.** Group by **logical change first**: all files that make up one coherent change belong in one commit, even when they span categories (e.g. doc edits plus the config file the same change renames). Only split into separate commits when the working tree holds genuinely _independent_ changes that happen to be staged together. Whole files only. Give each commit the **dominant tag** for its change. When a single logical change truly spans two categories and one tag alone would mislead, use `[Tag1][Tag2]` (dominant tag first, never three); otherwise one tag. The resulting grouping is shown in the plan in both modes.
+2. **Group & tag.** Group by **logical change first**: all files that make up one coherent change belong in one commit, even when they span categories (e.g. doc edits plus the config file the same change renames). Only split into separate commits when the working tree holds genuinely _independent_ changes that happen to be staged together. Whole files only. Give each commit the **dominant tag** for its change. When a single logical change truly spans two categories and one tag alone would mislead, combine both tags per the repo's template (dominant first, never three); otherwise one tag. The resulting grouping is shown in the plan in both modes.
 3. **Build the plan:** for each commit, list its files and proposed message. Mark untracked files `NEW:`.
 4. **Handle the two cases where the modes differ:**
    - **No fitting tag at all** — the change matches none of the canonical tags (distinct from spanning two; usually means it's doing two things). _Review:_ stop and ask. _Auto:_ commit under the best-fit dominant tag.
