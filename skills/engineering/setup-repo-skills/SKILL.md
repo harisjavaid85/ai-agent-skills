@@ -1,6 +1,6 @@
 ---
 name: setup-repo-skills
-description: Configure the current repo so the engineering skills work in it — scaffolds working directories, repo settings, CLAUDE.md/AGENTS.md, and `docs/agents/` (issue tracker, skill vocabularies, and domain-doc rules). Use when the user wants to set up, wire, or configure a repo for the engineering skills (run once per repo, or to reconfigure any of them).
+description: Configure the current repo so the engineering skills work in it — declares the repo's mode (prototype/standard/production), wires the issue tracker and vocabulary the other skills consume, and scaffolds working directories. Use when the user wants to set up, wire, or configure a repo for the engineering skills (run once per repo, or to reconfigure any of them).
 ---
 
 # Setup Repo Skills
@@ -20,7 +20,7 @@ Read the current repo to understand its starting state. Don't assume:
 
 - `~/.claude/settings.json` — is it present, and does it contain a `_setupClaudeCode` marker? (For the setup-claude-code nudge — detection only, never to change global settings.)
 - `git remote -v` — is this GitHub, GitLab, or neither?
-- `CLAUDE.md` and `AGENTS.md` at the root — does either exist? Is there already an `## Agent skills` section?
+- `CLAUDE.md` and `AGENTS.md` at the root — does either exist? Is there already an `## Agent skills` section, and does it already contain a `### Repo mode: <mode>` subsection?
 - `.claude/` — which of `settings.json`, `plans/`, `handoffs/`, `overviews/` already exist?
 - `.gitignore` — does it already ignore the `.claude/` working dirs?
 - `CONTEXT.md` / `CONTEXT-MAP.md` at the root — present or absent? (For the bootstrap-context nudge, never to decide domain layout.)
@@ -72,7 +72,23 @@ Scope the rules to the three specific dirs — a blanket `Write(./.claude/**)` w
 
 Walk the user through the following decisions **one at a time** — present, get the answer, then move on. Assume the user doesn't know these terms; each starts with a short explainer.
 
-**Section A — Issue tracker.**
+**Section A — Repo mode.**
+
+> Tell the agent what this codebase _is_. Will it outlive the week? Will it ship to users? Or are you finding out if an idea works? The answer tunes how aggressively skills like `tdd`, `code-review`, and `simplify` push for tests, error handling, and refactoring.
+
+Three modes:
+
+- **`prototype`** — throwaway / exploratory. The agent gets permission to cut corners.
+- **`standard`** _(default)_ — build it like you might keep it. Almost-production quality so promotion later isn't a rewrite.
+- **`production`** — load-bearing. Strict defaults; the agent fights entropy.
+
+If the user has no opinion, pick `standard`.
+
+If step 1 found an existing `### Repo mode: <mode>` subsection in `CLAUDE.md`/`AGENTS.md`, show the user the current mode and ask **keep or change** (default keep). Mode is stickier than vocabulary — don't re-prompt blindly.
+
+The rendered block per mode is defined in step 4.
+
+**Section B — Issue tracker.**
 
 > The "issue tracker" is where issues live for this repo. Skills like `to-issues`, `triage`, and `to-prd` read from and write to it — they need to know whether to call `gh issue create`, `glab issue create`, write a markdown file under `.scratch/`, or follow some other workflow.
 
@@ -83,17 +99,19 @@ Propose based on `git remote`: GitHub remote → GitHub; GitLab remote → GitLa
 - **Local markdown** — files under `.scratch/<feature>/` (good for solo projects or repos with no remote)
 - **Other** (Jira, Linear, etc.) — ask the user to describe the workflow in one paragraph; record it as freeform prose
 
-**Section B — Triage label vocabulary.**
+**Section C — Triage label vocabulary.**
 
 > When `triage` processes an issue, it moves it through a state machine and applies labels. It needs labels that match strings you've actually configured. If your repo already uses different names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones.
 
 The five canonical roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Default each role's string to its own name; ask if the user wants to override any.
 
-**Section C — Commit tag vocabulary.**
+**Section D — Commit tag vocabulary.**
 
 > When `commit` writes a message, it prefixes the subject with a tag — e.g. `[Feature] Add parser`. If this repo uses different tag names, or a different subject format such as Conventional Commits (`feat: add parser`), map them here so the skill matches your house style.
 
 The eight canonical tags: `Feature`, `Bugfix`, `Doc`, `Refactor`, `Test`, `Chore`, `Merge`, `Revert`. Default each tag's string to its own name and the subject template to `[<tag>] <summary>`; ask if the user wants to rename any tag or change the template (e.g. `<tag>: <summary>` with lowercased tags for Conventional Commits). The mood is always imperative — not configurable.
+
+A `prototype` repo still goes through Sections B–D. Mode doesn't skip them — a prototype can still live on GitHub and use the standard label/tag vocabulary.
 
 There is **no** domain-layout question. The domain-doc rules are static and written as-is (see step 4).
 
@@ -109,10 +127,18 @@ Show the user a draft of everything before writing; let them edit.
 
 If an `## Agent skills` block already exists, update it in place rather than appending a duplicate. Don't overwrite surrounding sections.
 
-The block:
+The block (substitute the prose and bullets for the chosen mode from the table below):
 
 ```markdown
 ## Agent skills
+
+### Repo mode: <mode>
+
+<mode-specific prose>
+
+- **Tests:** …
+- **Errors:** …
+- **Refactoring:** …
 
 ### Issue tracker
 
@@ -131,11 +157,41 @@ The block:
 How to read this repo's glossary and ADRs. See `docs/agents/domain.md`.
 ```
 
+**Mode content** — substitute the prose and bullets for the chosen mode verbatim.
+
+`prototype`:
+
+> This code is exploratory. Optimize for learning speed. The goal is to find out if the idea works, not to ship it.
+
+- **Tests:** skip unless they help you think
+- **Errors:** happy path only
+- **Refactoring:** don't touch adjacent code; hardcode values are fine
+
+`standard`:
+
+> This code is real. It might not be load-bearing yet, but it could be — assume you'll want to promote it later without a rewrite. Build it like you might keep it.
+
+- **Tests:** tests for new logic; add tests to existing code when you change it; don't backfill broadly
+- **Errors:** handle at boundaries (user input, external APIs); trust internal code
+- **Refactoring:** fix smells you actively trip over; don't go hunting
+
+`production`:
+
+> This codebase will outlive you. Every shortcut you take becomes someone else's burden. Every hack compounds into technical debt that slows the whole team down.
+>
+> You are not just writing code. You are shaping the future of this project. The patterns you establish will be copied. The corners you cut will be cut again.
+>
+> Fight entropy. Leave the codebase better than you found it.
+
+- **Tests:** TDD by default; cover edge cases
+- **Errors:** handle at boundaries; assert invariants
+- **Refactoring:** leave the code better than you found it
+
 Then write the `docs/agents/` files from the seed templates in this skill folder:
 
 - [issue-tracker-github.md](./issue-tracker-github.md) / [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) / [issue-tracker-local.md](./issue-tracker-local.md) — pick the chosen one
 - [triage-labels.md](./triage-labels.md) — fill in the user's label strings
-- [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template from Section C's answer (e.g. `[<tag>] <summary>` for bracketed, `<tag>: <summary>` for Conventional Commits); the resulting file should describe only the chosen format
+- [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template from Section D's answer (e.g. `[<tag>] <summary>` for bracketed, `<tag>: <summary>` for Conventional Commits); the resulting file should describe only the chosen format
 - [domain.md](./domain.md) — the consumer contract, written as-is (no per-repo decision)
 
 For an "other" issue tracker, write `docs/agents/issue-tracker.md` from scratch using the user's description.
