@@ -88,6 +88,8 @@ If step 1 found an existing `### Repo mode: <mode>` subsection in `CLAUDE.md`/`A
 
 The rendered block per mode is defined in step 4.
 
+A `prototype` repo still goes through Sections B–E. Mode doesn't skip them — a prototype can still live on GitHub and use the standard label/tag vocabulary.
+
 **Section B — Issue tracker.**
 
 > The "issue tracker" is where issues live for this repo. Skills like `to-issues`, `triage`, and `to-prd` read from and write to it — they need to know whether to call `gh issue create`, `glab issue create`, write a markdown file under `.scratch/`, or follow some other workflow.
@@ -111,7 +113,22 @@ The five canonical roles: `needs-triage`, `needs-info`, `ready-for-agent`, `read
 
 The eight canonical tags: `Feature`, `Bugfix`, `Doc`, `Refactor`, `Test`, `Chore`, `Merge`, `Revert`. Default each tag's string to its own name and the subject template to `[<tag>] <summary>`; ask if the user wants to rename any tag or change the template (e.g. `<tag>: <summary>` with lowercased tags for Conventional Commits). The mood is always imperative — not configurable.
 
-A `prototype` repo still goes through Sections B–D. Mode doesn't skip them — a prototype can still live on GitHub and use the standard label/tag vocabulary.
+**Section E — Verify tiers.**
+
+> The `## Verify` block in `AGENTS.md` / `CLAUDE.md` tells agents how to confirm a change works. It splits verification commands into a **Fast** tier (run often, every change) and a **Full** tier (run before a PR). Skills like `verify`, `commit`, and pre-commit hooks read this block to pick what to run.
+
+Detect the ecosystem from files at the repo root:
+
+- `package.json` — JS/TS. Hints: `typecheck`/`tsc`, `lint`, `test:unit`/`test` → Fast; `build`, `e2e`, `integration`, `cypress`, `playwright` → Full.
+- `pyproject.toml` — Python. Hints: `mypy`/`pyright`, `ruff`, unit pytest → Fast; integration/e2e pytest, packaging → Full.
+- `Makefile` / `Justfile` — read targets, classify recognizable ones, ask the user to assign ambiguous targets.
+- Other ecosystem — use `WebSearch` to look up conventional Fast/Full verification commands for the detected tooling.
+
+Classification rule: a command goes in **Fast** only if it (a) doesn't bundle or package artifacts, (b) doesn't touch external services, (c) scales with code not infrastructure. Everything else → **Full**.
+
+Present the proposal with one-line rationale per command (e.g. "`pnpm build` → Full because Vite bundling adds no new error coverage beyond typecheck"). Let the user edit before write. Rationale stays in the proposal — don't write it to the file.
+
+If a `## Verify` block already exists, show its contents and ask: keep / edit / regenerate.
 
 There is **no** domain-layout question. The domain-doc rules are static and written as-is (see step 4).
 
@@ -187,6 +204,8 @@ How to read this repo's glossary and ADRs. See `docs/agents/domain.md`.
 - **Errors:** handle at boundaries; assert invariants
 - **Refactoring:** leave the code better than you found it
 
+Write the `## Verify` block from Section E as a sibling top-level section. If a `## Verify` block already exists, follow Section E's keep / edit / regenerate rule.
+
 Then write the `docs/agents/` files from the seed templates in this skill folder:
 
 - [issue-tracker-github.md](./issue-tracker-github.md) / [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) / [issue-tracker-local.md](./issue-tracker-local.md) — pick the chosen one
@@ -195,6 +214,13 @@ Then write the `docs/agents/` files from the seed templates in this skill folder
 - [domain.md](./domain.md) — the consumer contract, written as-is (no per-repo decision)
 
 For an "other" issue tracker, write `docs/agents/issue-tracker.md` from scratch using the user's description.
+
+Provision the `kind:prd` marker label on the tracker:
+
+- GitHub: `gh label create kind:prd --description "Marker for PRD tracker issues" --color ededed --force`
+- GitLab: `glab label create --name kind:prd --description "Marker for PRD tracker issues" --color "#ededed"` (or equivalent idempotent form)
+- Local markdown: skip — labels are not a native primitive.
+- Other: skip and tell the operator they need to provision the marker manually in their tracker.
 
 ## 5. Finish
 

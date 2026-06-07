@@ -1,11 +1,15 @@
 ---
 name: triage
-description: Triage issues through a state machine driven by triage roles. Use when user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.
+description: Triage per-issue work tickets keyed by slug through a category and roles state machine. Use when triaging the work queue for a PRD slug, reviewing reviewer-filed issues, or when the user says "/triage <slug>".
 ---
 
 # Triage
 
 Move issues on the project issue tracker through a small state machine of triage roles.
+
+The skill takes one argument: `<slug>` (kebab-case). All queries are scoped to issues carrying `prd:<slug>` and excluding `kind:prd`. If invoked without a slug, error with:
+
+> Pass a slug: `/triage <slug>`. List active slugs with `gh issue list --label kind:prd --state open`.
 
 Every comment or issue posted to the issue tracker during triage **must** start with this disclaimer:
 
@@ -37,11 +41,13 @@ Every triaged issue should carry exactly one category role and one state role. I
 
 These are canonical role names — the actual label strings used in the issue tracker may differ. The mapping should have been provided to you - run `/setup-repo-skills` if not.
 
-State transitions: an unlabeled issue normally goes to `needs-triage` first; from there it moves to `needs-info`, `ready-for-agent`, `ready-for-human`, or `wontfix`. `needs-info` returns to `needs-triage` once the reporter replies. The maintainer can override at any time — flag transitions that look unusual and ask before proceeding.
+`/triage` is the canonical place where category is applied. Default category for PRD-derived tickets: `enhancement`; assign `bug` only if reproduction surfaces an actual defect.
+
+State transitions: from `needs-triage` an issue moves to `needs-info`, `ready-for-agent`, `ready-for-human`, or `wontfix`. `needs-info` returns to `needs-triage` once the reporter replies. The maintainer can override at any time — flag transitions that look unusual and ask before proceeding.
 
 ## Invocation
 
-The maintainer invokes `/triage` and describes what they want in natural language. Interpret the request and act. Examples:
+The maintainer invokes `/triage <slug>` and describes what they want in natural language. Interpret the request and act. Examples:
 
 - "Show me anything that needs my attention"
 - "Let's look at #42"
@@ -50,11 +56,10 @@ The maintainer invokes `/triage` and describes what they want in natural languag
 
 ## Show what needs attention
 
-Query the issue tracker and present three buckets, oldest first:
+Query the issue tracker scoped to `prd:<slug>`, excluding `kind:prd`, and present two buckets, oldest first:
 
-1. **Unlabeled** — never triaged.
-2. **`needs-triage`** — evaluation in progress.
-3. **`needs-info` with reporter activity since the last triage notes** — needs re-evaluation.
+1. **`needs-triage`** — evaluation in progress.
+2. **`needs-info` with reporter activity since the last triage notes** — needs re-evaluation.
 
 Show counts and a one-line summary per issue. Let the maintainer pick.
 
