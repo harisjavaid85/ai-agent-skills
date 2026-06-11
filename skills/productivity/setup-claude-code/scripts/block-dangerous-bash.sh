@@ -29,8 +29,8 @@ GIT_PUSH_MAIN_PATTERNS=(
   '(^|[;&|"'"'"'[:space:]])git[[:space:]]+push[[:space:]]+origin[[:space:]]+HEAD:(main|master)\b'
 )
 
-# rm -rf and its syntactic variants
-RM_PATTERNS=(
+# rm -rf detection (used by check_rm_smart, not check_group).
+RM_DETECT_PATTERNS=(
   '(^|[;&|"'"'"'[:space:]])rm[[:space:]]+(-[[:alnum:]]*r[[:alnum:]]*f|-[[:alnum:]]*f[[:alnum:]]*r|-r[[:space:]]+-f|-f[[:space:]]+-r|--recursive[[:space:]]+--force|--force[[:space:]]+--recursive)\b'
 )
 
@@ -39,20 +39,17 @@ FIND_PATTERNS=(
   '(^|[;&|"'"'"'[:space:]])find[[:space:]]+.*-delete\b'
 )
 
-# gh: destructive or identity-mutating operations. Read-only `gh auth status`/`gh auth token`
+# gh: destructive or identity-mutating operations. Read-only `gh auth status` / `gh auth token`
 # are deliberately not matched.
 GH_PATTERNS=(
   # auth mutations (swap/refresh/clear the active token)
   '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+auth[[:space:]]+(login|logout|refresh|switch|setup-git)\b'
-  # deletions / closures
-  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+repo[[:space:]]+delete\b'
-  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+release[[:space:]]+delete\b'
-  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+issue[[:space:]]+delete\b'
-  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+pr[[:space:]]+close\b'
   # PR approvals — flag can appear anywhere after `pr review`
   '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+pr[[:space:]]+review([[:space:]]+[^[:space:]]+)*[[:space:]]+(--approve|-a)\b'
-  # raw API mutating verbs (catches wrappers that bypass the static Bash(gh api:*) deny)
+  # gh api REST mutating verbs in all three flag forms (-X POST, -XPOST, --method=POST).
   '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+api([[:space:]]+[^[:space:]]+)*[[:space:]]+(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)\b'
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+api([[:space:]]+[^[:space:]]+)*[[:space:]]+-X(POST|PUT|PATCH|DELETE)\b'
+  '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+api([[:space:]]+[^[:space:]]+)*[[:space:]]+--method=(POST|PUT|PATCH|DELETE)\b'
 )
 
 block() {
@@ -76,9 +73,51 @@ check_group() {
   done
 }
 
+# Smart rm -rf: when rm -rf is detected, inspect each positional target.
+# Allow when every target is a plain relative path under cwd; block escapes.
+# Unsafe targets: absolute (/...), home (~ or ~/...), parent (.., ../...),
+# anything traversing via .. mid-path (foo/../bar), cwd literal (.), bare glob (*).
+rm_target_unsafe() {
+  case "$1" in
+    /*) return 0 ;;
+    '~'|'~/'*) return 0 ;;
+    '..'|'../'*) return 0 ;;
+    *'/..') return 0 ;;
+    *'/../'*) return 0 ;;
+    '.') return 0 ;;
+    '*') return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+check_rm_smart() {
+  # Split haystack into command segments on ; & | so each rm invocation is isolated.
+  local segments
+  segments=$(echo "$HAYSTACK" | tr ';&|' '\n')
+  while IFS= read -r seg; do
+    [ -z "$seg" ] && continue
+    local matched=0
+    for pat in "${RM_DETECT_PATTERNS[@]}"; do
+      if echo "$seg" | grep -qE "$pat"; then matched=1; break; fi
+    done
+    [ "$matched" -eq 0 ] && continue
+    # Strip everything up to and including the rm keyword, then tokenise the rest.
+    local after_rm
+    after_rm=$(echo "$seg" | sed -E 's/^.*[^[:alnum:]_]rm[[:space:]]+//; s/^rm[[:space:]]+//')
+    local -a words=()
+    read -ra words <<< "$after_rm"
+    for w in "${words[@]}"; do
+      case "$w" in -*) continue ;; esac
+      if rm_target_unsafe "$w"; then
+        block "rm -rf with target outside cwd: $w"
+      fi
+    done
+  done <<< "$segments"
+}
+
 check_group GIT_PATTERNS
 check_group GIT_PUSH_MAIN_PATTERNS
-check_group RM_PATTERNS
+check_rm_smart
 check_group FIND_PATTERNS
 check_group GH_PATTERNS
 

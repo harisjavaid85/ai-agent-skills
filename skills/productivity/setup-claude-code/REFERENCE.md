@@ -29,18 +29,19 @@ Read(**/.netrc)
 Read(~/.bash_history)
 Read(~/.zsh_history)
 Read(~/.psql_history)
-Bash(curl:*)
-Bash(wget:*)
 Bash(sudo:*)
 Bash(gh repo delete:*)
 Bash(gh release delete:*)
 Bash(gh issue delete:*)
 Bash(gh pr close:*)
-Bash(gh api:*)
-WebFetch
+Bash(gh api graphql:*)
 ```
 
-`gh api:*` is a blanket deny — it also blocks read-only GETs through `gh api`. Lift case-by-case in user-edited allow entries if needed. `gh auth` is intentionally not in the static deny list — the hook blocks the mutating subcommands (`login`/`logout`/`refresh`/`switch`/`setup-git`) so read-only `gh auth status` and `gh auth token` work without prompts.
+`Bash(gh api graphql:*)` blocks all `gh api graphql` calls — GraphQL reads and writes share the same HTTP verb and the read/write distinction lives in the query body, which the hook can't inspect. REST `gh api <path>` is allowed; the hook blocks `gh api -X POST/PUT/PATCH/DELETE` and `-XPOST` / `--method=POST` forms.
+
+`gh auth` is not denied — the hook blocks the mutating subcommands (`login`/`logout`/`refresh`/`switch`/`setup-git`) so `gh auth status` and `gh auth token` work without prompts.
+
+`Bash(curl:*)`, `Bash(wget:*)`, and `WebFetch` default to "ask" — opt in per-repo if needed.
 
 ### `permissions.ask`
 
@@ -52,6 +53,9 @@ Bash(docker rmi:*)
 Bash(docker volume rm:*)
 Bash(docker system prune:*)
 Bash(kubectl delete:*)
+Bash(curl:*)
+Bash(wget:*)
+WebFetch
 ```
 
 ### `permissions.allow`
@@ -131,13 +135,13 @@ Regenerate on every skill run. Replace `{{profile}}` and the static lists with t
 ```md
 # Claude Code guardrails
 
-Installed by `setup-claude-code` — profile **{{profile}}**, last run {{timestamp}}.
+Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regenerate, re-run the command.
 
 ## Static (settings.json)
 
 ### Deny
 
-- Read(./.env), Read(~/.ssh/\*_), Bash(curl:_) …
+- Read(./.env), Read(~/.ssh/\*_), Bash(sudo:_), Bash(gh api graphql:\*) …
 
 ### Ask before running
 
@@ -145,14 +149,12 @@ Installed by `setup-claude-code` — profile **{{profile}}**, last run {{timesta
 
 ## Hook-enforced (~/.claude/hooks/block-dangerous-bash.sh)
 
-- rm -rf and all syntactic variants
+- rm -rf: targets must stay inside cwd (allowed relative paths only; blocked /…, ~…, .., ., \*)
 - find . -delete
 - git push to main/master (other branches allowed)
 - git push --force / -f (any branch)
 - git reset --hard, git clean -f, git branch -D, git checkout .
 - ...
-
-To regenerate: re-run `/setup-claude-code {{profile}}`.
 ```
 
 ## Merge rules
