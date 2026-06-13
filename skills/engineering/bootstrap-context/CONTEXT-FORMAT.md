@@ -54,6 +54,7 @@ _Avoid_: Client, buyer, account
 
 ## Rules
 
+- **Domain language only.** Operational invariants, coding conventions, implementation details, agreements, and recurring gotchas belong in other documentation.
 - **Be opinionated.** When multiple words exist for the same concept, pick the best one and list the others as aliases to avoid.
 - **Flag conflicts explicitly.** If a term is used ambiguously, call it out in "Flagged ambiguities" with a clear resolution.
 - **Keep definitions tight.** One or two sentences max. Define what it IS, not what it does.

@@ -54,7 +54,7 @@ Extract text and tables from PDF files, fill forms, merge documents. Use when wo
 **Bad** — navigational paths in description:
 
 ```
-Set up the repo's docs/agents/ folder with issue-tracker.md, triage-labels.md, commit-tags.md, and domain.md, plus the .claude/ working directories (.claude/plans/, .claude/handoffs/, .claude/overviews/) and the ## Agent skills block in CLAUDE.md/AGENTS.md. Use when configuring a repo for the engineering skills.
+Set up the repo's docs/agents/ folder with issue-tracker.md, triage-labels.md, commit-tags.md, and domain.md, plus harness-specific working directories and the ## Agent skills block in AGENTS.md/CLAUDE.md. Use when configuring a repo for the engineering skills.
 ```
 
 **Rewritten clean** — capability without the file tour:

@@ -1,6 +1,6 @@
 ---
 name: grill-with-context
-description: Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.
+description: Challenge a plan against the existing domain model, sharpen terminology, and record durable decisions as they crystallise. Use when the user wants to stress-test a plan against the project's language and documented decisions.
 ---
 
 <what-to-do>

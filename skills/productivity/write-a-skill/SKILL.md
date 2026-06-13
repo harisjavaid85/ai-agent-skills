@@ -1,6 +1,6 @@
 ---
 name: write-a-skill
-description: Convert settled requirements into a well-structured agent skill (vocabulary, behaviour, progressive disclosure). Use when the user wants to create, update, refactor, or iterate on a skill. Grill first if scope is fuzzy.
+description: Convert settled requirements into a well-structured agent skill with clear vocabulary and behaviour. Use when the user wants to create, update, refactor, or iterate on a skill after its scope is settled.
 ---
 
 # Writing Skills
@@ -59,7 +59,7 @@ Scan the existing skills first:
 Keep the nouns and the verbs apart — the **progressive disclosure** the skill should embody.
 
 - **Behaviour** always lives in `SKILL.md` — process, decision rules, steps.
-- **Vocabulary** — a few terms or a small mapping go in a `## Vocabulary` section near the top of `SKILL.md`; a verbatim template/format/spec, anything long, or anything that would push `SKILL.md` past ~100 lines goes in one separate file (`VOCABULARY.md` or `FORMAT.md`). Keep references one level deep.
+- **Vocabulary** — a few terms or a small mapping go in a `## Vocabulary` section near the top of `SKILL.md`. Extract a separate file (`VOCABULARY.md`, `FORMAT.md`, or a focused reference) when the content is shared, independently reusable, or needed only on some workflow branches. Never split based on line count alone. Keep references one level deep.
 
 Never interleave "here's the format of X" with "here's when you do Y" — that smear makes drafts noisy to edit.
 

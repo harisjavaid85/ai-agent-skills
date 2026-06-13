@@ -1,18 +1,19 @@
 ---
 name: bootstrap-context
-description: Bootstrap context for a repo focusing on terminology, invariants, and non-obvious agreements, resulting in a mental model which is meant to be read by both humans and AI agents. Use when the user asks to create an initial or update an existing context for a repo.
+description: Create or update a repository's domain-language glossary and context map for humans and agents. Use when the user wants to establish, reconcile, or refresh the project's canonical terminology.
 ---
 
 ## Guiding principle
 
-The audience is a human onboarding _and_ an agent loading context - both should walk away with the same mental model. Keep it a glossary, not a spec. If a single tool call or glance at the tree would reveal it, it doesn't belong.
+The audience is a human onboarding _and_ an agent loading context - both should use the same domain language. Keep it a glossary, not a spec or operational handbook.
 
 ### What to capture
 
-- **Shared terminology** - terms this repo gives a specific meaning that differs from common usage, plus the aliases to avoid. E.g. "Order" means a placed customer order, not a sort order.
-- **Cross-cutting invariants** - rules that hold everywhere, which other code is allowed to rely on without checking. E.g. "all timestamps are UTC".
-- **Non-obvious agreements** - conventions not enforced by compiler/linter/CI but the team (humans and agents) follows. E.g. "never edit `vendor/`", "migration files are append-only once merged".
-- **Recurring gotchas** - sharp edges people keep cutting themselves on. E.g. "the test DB resets between files but not between tests in the same file".
+- **Shared terminology** - domain terms this repo gives a specific meaning that differs from common usage, plus aliases to avoid. E.g. "Order" means a placed customer order, not a sort order.
+- **Relationships** - how domain concepts and contexts relate, especially distinctions that prevent ambiguous language.
+- **Flagged ambiguities** - overloaded or conflicting terms with an explicit canonical resolution.
+
+Do not capture implementation details, operational invariants, coding conventions, agreements, or recurring gotchas in `CONTEXT.md`. Those belong in `AGENTS.md`, `CLAUDE.md`, `README.md`, ADRs, or other dedicated documentation.
 
 ## Terminology used in this skill
 
@@ -37,8 +38,9 @@ If any exist -> **update mode**: diff against current repo state and list:
 - **Missing**: modules with their own terminology but no per-folder `CONTEXT.md`; terms used in recent code/README files but absent from the glossary.
 - **Stale**: terms whose referenced code is gone or renamed; cross-links that no longer resolve.
 - **Drifted**: definitions that no longer match how the code uses the term.
+- **Out of contract**: implementation details, operational rules, conventions, or gotchas that are not domain language.
 
-Surface this list to the user before touching anything.
+Surface this list to the user before touching anything. Preserve out-of-contract content until the user chooses where it should move; never relocate or delete it automatically.
 
 ### 2. Choose layout
 

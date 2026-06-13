@@ -1,6 +1,6 @@
 ---
 name: setup-claude-code
-description: Bootstrap global Claude Code setup at ~/.claude/ — permissions baseline, dangerous-command hook, optional statusline/model. Use when user wants to set up Claude Code on a new machine (host, sandbox, etc.).
+description: Bootstrap a global Claude Code configuration with permissions, command guardrails, and optional interface settings. Use when the user wants to configure Claude Code on a host, sandbox, or new machine.
 argument-hint: host | sandbox | guardrails
 ---
 
