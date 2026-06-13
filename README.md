@@ -16,13 +16,13 @@ These skills are designed to be small, easy to adapt, and composable. They work 
 npx skills@latest add harisjavaid85/ai-agent-skills
 ```
 
-2. Pick the skills you want, and which coding agents you want to install them on. **Make sure you select `/setup-repo-skills`**.
+2. Pick the skills you want, and which coding agents you want to install them on. Select `/setup-repo-skills` when using the GitHub lifecycle skills.
 
 3. Run `/setup-repo-skills` in your agent. It will:
-   - Set up the repo's local `.claude` config
+   - Set up harness-specific working directories (`.claude` for Claude, `.agents` for Codex and other agents)
    - Ask whether this repo is `prototype`, `standard`, or `production` (tunes how aggressively skills push for tests, error handling, and refactoring)
-   - Ask you which issue tracker you want to use (GitHub, GitLab, or local files)
-   - Ask you what labels you apply to tickets when you triage them (`/triage` uses labels)
+   - Write the shared GitHub Issues workflow used by `/to-prd`, `/to-issues`, and `/triage`
+   - Ask what labels represent your triage roles, then create any required GitHub labels that are missing
    - Write the `docs/agents/` config the other skills read
 
 4. Bam - you're ready to go.
@@ -33,12 +33,20 @@ If you've cloned this repo and want the whole workflow, rather than installing a
 
 ### Once per machine
 
-1. `./scripts/link-skills.sh` — symlink every skill into `~/.claude/skills` so your local Claude CLI can use them.
-2. `/setup-claude-code` — bootstrap your global `~/.claude` config.
+1. Install every skill for the harness you use:
+
+```bash
+./scripts/link-skills.sh --claude # links into ~/.claude/skills
+./scripts/link-skills.sh --codex  # links into ~/.agents/skills
+```
+
+The script requires exactly one target per run. Run it twice to install for both harnesses.
+
+2. When using Claude Code, `/setup-claude-code` bootstraps your global `~/.claude` config.
 
 ### Once per repo
 
-3. `/setup-repo-skills` — declare the repo's mode, set up the local `.claude` config, and write the `docs/agents/` config the other skills read.
+3. `/setup-repo-skills` — required before `/to-prd`, `/to-issues`, and `/triage`; strongly recommended for other engineering and agent-loop workflows.
 4. `/bootstrap-context` — create the repo's `CONTEXT.md` glossary so skills speak your project's language.
 
 ## Why These Skills Exist
@@ -153,10 +161,10 @@ Skills I use daily for code work.
 - **[grill-with-context](./skills/engineering/grill-with-context/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
 - **[triage](./skills/engineering/triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[improve-codebase-architecture](./skills/engineering/improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `CONTEXT.md` and the decisions in `docs/adr/`.
-- **[setup-repo-skills](./skills/engineering/setup-repo-skills/SKILL.md)** — Configure the current repo so the engineering skills work in it: declares the repo's mode (prototype/standard/production), wires the issue tracker and vocabulary the other skills consume, and scaffolds working directories. Run once per repo before using `to-issues`, `to-prd`, `triage`, `diagnose`, `tdd`, `improve-codebase-architecture`, or `zoom-out`.
+- **[setup-repo-skills](./skills/engineering/setup-repo-skills/SKILL.md)** — Configure the current repo with working directories, GitHub workflow conventions, repo mode, Verify guidance, and shared vocabularies. Required before `to-prd`, `to-issues`, and `triage`; strongly recommended for other engineering and agent-loop workflows.
 - **[tdd](./skills/engineering/tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[to-issues](./skills/engineering/to-issues/SKILL.md)** — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
-- **[to-prd](./skills/engineering/to-prd/SKILL.md)** — Turn the current conversation context into a PRD and submit it as a GitHub issue. No interview — just synthesizes what you've already discussed.
+- **[to-prd](./skills/engineering/to-prd/SKILL.md)** — Turn settled conversation context into a PRD, confirm its implementation shape, and publish it as a GitHub tracker issue.
 - **[zoom-out](./skills/engineering/zoom-out/SKILL.md)** — Tell the agent to zoom out and give broader context or a higher-level perspective on an unfamiliar section of code.
 - **[prototype](./skills/engineering/prototype/SKILL.md)** — Build a throwaway prototype to flesh out a design — either a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route.
 

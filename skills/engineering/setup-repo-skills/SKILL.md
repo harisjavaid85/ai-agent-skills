@@ -1,6 +1,6 @@
 ---
 name: setup-repo-skills
-description: Configure the current repo so the engineering skills work in it — declares the repo's mode (prototype/standard/production), wires the issue tracker and vocabulary the other skills consume, and scaffolds working directories. Use when the user wants to set up, wire, or configure a repo for the engineering skills (run once per repo, or to reconfigure any of them).
+description: Configure the current repo for the engineering skills with working directories, GitHub workflow conventions, and agent guidance. Use when the user wants to set up, wire, or reconfigure a repo for these skills.
 ---
 
 # Setup Repo Skills
@@ -9,8 +9,8 @@ Wire a repo for the engineering skills. This skill owns the **structural** setup
 
 It sets up two things:
 
-- **The repo's local `.claude` config** — working directories and settings (details in step 2).
-- **`docs/agents/` config** — issue tracker, skill vocabularies, and domain-doc rules, summarised in an `## Agent skills` block in `CLAUDE.md`/`AGENTS.md`.
+- **Harness-specific working state** — `.claude` for Claude Code, `.agents` for Codex and other agents, plus Claude settings when applicable (details in step 2).
+- **`docs/agents/` config** — GitHub workflow conventions, skill vocabularies, and domain-doc rules, summarised in an `## Agent skills` block in `AGENTS.md` or `CLAUDE.md`.
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
@@ -18,37 +18,38 @@ This is a prompt-driven skill, not a deterministic script. Explore, present what
 
 Read the current repo to understand its starting state. Don't assume:
 
-- `~/.claude/settings.json` — is it present, and does it contain a `_setupClaudeCode` marker? (For the setup-claude-code nudge — detection only, never to change global settings.)
-- `git remote -v` — is this GitHub, GitLab, or neither?
-- `CLAUDE.md` and `AGENTS.md` at the root — does either exist? Is there already an `## Agent skills` section, and does it already contain a `### Repo mode: <mode>` subsection?
-- `.claude/` — which of `settings.json`, `plans/`, `handoffs/`, `overviews/` already exist?
-- `.gitignore` — does it already ignore the `.claude/` working dirs?
+- Which harness is active? Use `.claude` for Claude Code and `.agents` for Codex or any other agent.
+- When running in Claude Code, is `~/.claude/settings.json` present, and does it contain a `_setupClaudeCode` marker? (For the setup-claude-code nudge — detection only, never to change global settings.)
+- `git remote -v` — is there a GitHub remote?
+- `gh auth status` — is the GitHub CLI available and authenticated? (Detection only until label provisioning.)
+- `AGENTS.md` and `CLAUDE.md` at the root — does either exist? Is there already an `## Agent skills` section, and does it already contain a `### Repo mode: <mode>` subsection?
+- The active harness directory — which of `plans/`, `handoffs/`, and `overviews/` already exist? For Claude Code, also check `.claude/settings.json`.
+- `.gitignore` — does it already ignore the active harness's working dirs?
 - `CONTEXT.md` / `CONTEXT-MAP.md` at the root — present or absent? (For the bootstrap-context nudge, never to decide domain layout.)
 - `docs/agents/` — does this skill's prior output already exist?
 - `package.json` — is this a JS/TS repo? (For the pre-commit nudge.)
-- `.scratch/` — sign that a local-markdown issue-tracker convention is already in use.
 
 Summarise what's present and what's missing before changing anything.
 
 ## 2. Structural scaffolding
 
-Create the `.claude/` working directories if absent:
+Set `agent-dir` to `.claude` for Claude Code or `.agents` for Codex and other agents. Create these working directories if absent:
 
-- `.claude/plans/`
-- `.claude/handoffs/`
-- `.claude/overviews/`
+- `<agent-dir>/plans/`
+- `<agent-dir>/handoffs/`
+- `<agent-dir>/overviews/`
 
 Add these to `.gitignore` (append if the file exists, create it if not; don't duplicate entries that are already present):
 
 ```
-.claude/plans/
-.claude/handoffs/
-.claude/overviews/
+<agent-dir>/plans/
+<agent-dir>/handoffs/
+<agent-dir>/overviews/
 ```
 
-These three are ephemeral agent working memory. `.claude/settings.json` is **not** ignored — it's checked in.
+Replace `<agent-dir>` with the selected directory before writing. These three are ephemeral agent working memory.
 
-Write `.claude/settings.json` if it doesn't exist (don't clobber an existing one — merge the keys in instead and dedupe):
+For Claude Code only, `.claude/settings.json` is **not** ignored — it's checked in. Write it if it doesn't exist (don't clobber an existing one — merge the keys in instead and dedupe):
 
 ```json
 {
@@ -68,13 +69,15 @@ Write `.claude/settings.json` if it doesn't exist (don't clobber an existing one
 
 Scope the rules to the three specific dirs — a blanket `Write(./.claude/**)` would also let the agent change its own `settings.json`, which should never be done (settings must stay reviewable).
 
+For Codex and other agents, do not create a harness settings file; only create the `.agents` working directories and ignore entries.
+
 ## 3. Agent-skills wiring
 
-Walk the user through the following decisions **one at a time** — present, get the answer, then move on. Assume the user doesn't know these terms; each starts with a short explainer.
+Walk the user through the following sections **one at a time** — present each decision, get the answer where one is needed, then move on. Assume the user doesn't know these terms; each starts with a short explainer.
 
 **Section A — Repo mode.**
 
-> Tell the agent what this codebase _is_. Will it outlive the week? Will it ship to users? Or are you finding out if an idea works? The answer tunes how aggressively skills like `tdd`, `code-review`, and `simplify` push for tests, error handling, and refactoring.
+> Tell the agent what this codebase _is_. Will it outlive the week? Will it ship to users? Or are you finding out if an idea works? The answer guides agents on tests, error handling, and refactoring.
 
 Three modes:
 
@@ -84,28 +87,23 @@ Three modes:
 
 If the user has no opinion, pick `standard`.
 
-If step 1 found an existing `### Repo mode: <mode>` subsection in `CLAUDE.md`/`AGENTS.md`, show the user the current mode and ask **keep or change** (default keep). Mode is stickier than vocabulary — don't re-prompt blindly.
+If step 1 found an existing `### Repo mode: <mode>` subsection in `AGENTS.md` or `CLAUDE.md`, show the user the current mode and ask **keep or change** (default keep). Mode is stickier than vocabulary — don't re-prompt blindly.
 
 The rendered block per mode is defined in step 4.
 
 A `prototype` repo still goes through Sections B–E. Mode doesn't skip them — a prototype can still live on GitHub and use the standard label/tag vocabulary.
 
-**Section B — Issue tracker.**
+**Section B — GitHub workflow.**
 
-> The "issue tracker" is where issues live for this repo. Skills like `to-issues`, `triage`, and `to-prd` read from and write to it — they need to know whether to call `gh issue create`, `glab issue create`, write a markdown file under `.scratch/`, or follow some other workflow.
+> GitHub Issues is the supported issue tracker for `to-prd`, `to-issues`, and `triage`. This setup writes the shared `gh` conventions those skills consume.
 
-Propose based on `git remote`: GitHub remote → GitHub; GitLab remote → GitLab; otherwise offer the full list:
+Do not ask the user to select an issue tracker. If step 1 found no GitHub remote, no `gh` command, or unauthenticated `gh`, warn that the GitHub lifecycle skills cannot run yet, but continue the local setup.
 
-- **GitHub** — GitHub Issues via the `gh` CLI
-- **GitLab** — GitLab Issues via the [`glab`](https://gitlab.com/gitlab-org/cli) CLI
-- **Local markdown** — files under `.scratch/<feature>/` (good for solo projects or repos with no remote)
-- **Other** (Jira, Linear, etc.) — ask the user to describe the workflow in one paragraph; record it as freeform prose
+**Section C — Triage-role label vocabulary.**
 
-**Section C — Triage label vocabulary.**
+> When `triage` processes an issue, it assigns one Issue category (`bug` or `enhancement`) and moves it through a state machine of triage roles. The five triage roles need labels that match strings you've actually configured. If your repo uses `bug:triage` instead of `needs-triage`, map that role so the skills apply the right label.
 
-> When `triage` processes an issue, it moves it through a state machine and applies labels. It needs labels that match strings you've actually configured. If your repo already uses different names (e.g. `bug:triage` instead of `needs-triage`), map them here so the skill applies the right ones.
-
-The five canonical roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Default each role's string to its own name; ask if the user wants to override any.
+The five canonical triage roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Default each role's string to its own name; ask if the user wants to override any. The confirmed strings will be provisioned on GitHub during step 4 when GitHub is available.
 
 **Section D — Commit tag vocabulary.**
 
@@ -115,7 +113,7 @@ The eight canonical tags: `Feature`, `Bugfix`, `Doc`, `Refactor`, `Test`, `Chore
 
 **Section E — Verify tiers.**
 
-> The `## Verify` block in `AGENTS.md` / `CLAUDE.md` tells agents how to confirm a change works. It splits verification commands into a **Fast** tier (run often, every change) and a **Full** tier (run before a PR). Skills like `verify`, `commit`, and pre-commit hooks read this block to pick what to run.
+> The `## Verify` block in `AGENTS.md` or `CLAUDE.md` tells agents how to confirm their work. Agents run the **Fast** tier after each coherent implementation step and after fixing a failure. They run the **Full** tier before declaring substantial work complete, handing it off, or requesting human review. If a command cannot run, they report the blocker and what remains unverified.
 
 Detect the ecosystem from files at the repo root:
 
@@ -130,6 +128,22 @@ Present the proposal with one-line rationale per command (e.g. "`pnpm build` →
 
 If a `## Verify` block already exists, show its contents and ask: keep / edit / regenerate.
 
+When generating or regenerating it, use this shape with the confirmed commands:
+
+```markdown
+## Verify
+
+Agents run Fast checks after each coherent implementation step and after fixing a failure. Agents run Full checks before declaring substantial work complete, handing it off, or requesting human review. If a command cannot run, report the blocker and what remains unverified.
+
+### Fast
+
+- `<command>`
+
+### Full
+
+- `<command>`
+```
+
 There is **no** domain-layout question. The domain-doc rules are static and written as-is (see step 4).
 
 ## 4. Confirm and write
@@ -138,9 +152,9 @@ Show the user a draft of everything before writing; let them edit.
 
 **Pick the file to edit:**
 
-- If `CLAUDE.md` exists, edit it.
-- Else if `AGENTS.md` exists, edit it.
-- If neither exists, ask which to create — don't pick for them. Never create one when the other already exists.
+- If `AGENTS.md` exists, edit it.
+- Else if `CLAUDE.md` exists, edit it.
+- If neither exists, create `AGENTS.md`.
 
 If an `## Agent skills` block already exists, update it in place rather than appending a duplicate. Don't overwrite surrounding sections.
 
@@ -159,11 +173,11 @@ The block (substitute the prose and bullets for the chosen mode from the table b
 
 ### Issue tracker
 
-[one-line summary of where issues are tracked]. See `docs/agents/issue-tracker.md`.
+GitHub Issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-[one-line summary of the label vocabulary]. See `docs/agents/triage-labels.md`.
+[one-line summary of the triage-role label vocabulary]. See `docs/agents/triage-labels.md`.
 
 ### Commit tags
 
@@ -208,19 +222,33 @@ Write the `## Verify` block from Section E as a sibling top-level section. If a 
 
 Then write the `docs/agents/` files from the seed templates in this skill folder:
 
-- [issue-tracker-github.md](./issue-tracker-github.md) / [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) / [issue-tracker-local.md](./issue-tracker-local.md) — pick the chosen one
+- [issue-tracker-github.md](./issue-tracker-github.md) — always write this as `docs/agents/issue-tracker.md`
 - [triage-labels.md](./triage-labels.md) — fill in the user's label strings
 - [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template from Section D's answer (e.g. `[<tag>] <summary>` for bracketed, `<tag>: <summary>` for Conventional Commits); the resulting file should describe only the chosen format
 - [domain.md](./domain.md) — the consumer contract, written as-is (no per-repo decision)
 
-For an "other" issue tracker, write `docs/agents/issue-tracker.md` from scratch using the user's description.
+If a GitHub remote exists and `gh auth status` succeeds, provision the five configured triage-role labels, the fixed issue category labels, and the fixed `kind:prd` marker. Use the confirmed mapped string as each triage label's name.
 
-Provision the `kind:prd` marker label on the tracker:
+Create only labels that are missing. Match names exactly; do not use a fuzzy search. Preserve every existing label's color and description rather than updating it with `--force`.
 
-- GitHub: `gh label create kind:prd --description "Marker for PRD tracker issues" --color ededed --force`
-- GitLab: `glab label create --name kind:prd --description "Marker for PRD tracker issues" --color "#ededed"` (or equivalent idempotent form)
-- Local markdown: skip — labels are not a native primitive.
-- Other: skip and tell the operator they need to provision the marker manually in their tracker.
+| Label or canonical role | Description                              | Default color |
+| ----------------------- | ---------------------------------------- | ------------- |
+| `needs-triage`          | Maintainer needs to evaluate this issue  | `BFD4F2`      |
+| `needs-info`            | Waiting on reporter for more information | `FBCA04`      |
+| `ready-for-agent`       | Fully specified, ready for an AFK agent  | `0E8A16`      |
+| `ready-for-human`       | Requires human implementation            | `C5DEF5`      |
+| `wontfix`               | This will not be worked on               | `FFFFFF`      |
+| fixed `bug`             | Something isn't working                  | `D73A4A`      |
+| fixed `enhancement`     | New feature or request                   | `A2EEEF`      |
+| fixed `kind:prd`        | Marker for PRD tracker issues            | `EDEDED`      |
+
+For each missing label, run:
+
+```bash
+gh label create "<confirmed-label-name>" --description "<description>" --color "<color>"
+```
+
+If any label cannot be listed or created, continue writing the local setup, then report the failed label provisioning and error in the finish summary. Otherwise report that all required GitHub labels exist. If GitHub is unavailable, skip provisioning and include the GitHub prerequisite warning in the finish summary.
 
 ## 5. Finish
 
@@ -230,11 +258,11 @@ Tell the user setup is done and that `docs/agents/*.md` are theirs to edit. Then
 
 Suggest only the rows whose condition is met. Never run these yourself.
 
-| Condition from step 1                                                             | Suggest                                                                               |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `~/.claude/settings.json` missing, or present without a `_setupClaudeCode` marker | `/setup-claude-code` — global security guardrails, counterpart to this repo setup     |
-| Neither `CONTEXT.md` nor `CONTEXT-MAP.md` at the repo root                        | `/bootstrap-context` — captures domain language; safe to re-run this skill afterwards |
-| `package.json` present                                                            | `/setup-pre-commit` — Husky + lint-staged pre-commit hooks                            |
+| Condition from step 1                                                                                | Suggest                                                                               |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Running in Claude Code and `~/.claude/settings.json` is missing or lacks a `_setupClaudeCode` marker | `/setup-claude-code` — global security guardrails, counterpart to this repo setup     |
+| Neither `CONTEXT.md` nor `CONTEXT-MAP.md` at the repo root                                           | `/bootstrap-context` — captures domain language; safe to re-run this skill afterwards |
+| `package.json` present                                                                               | `/setup-pre-commit` — Husky + lint-staged pre-commit hooks                            |
 
 Do not quote the conditions, marker names, or arrow syntax in your message — those are internal.
 

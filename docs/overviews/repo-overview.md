@@ -37,9 +37,10 @@ The skills coordinate around two groups of terms.
 
 **Coordination terms** (how skills hand work to each other):
 
-- **Issue tracker** — where a repo's issues live (GitHub, GitLab, or local files)
+- **Issue tracker** — GitHub Issues, where this workflow stores PRDs and implementation issues
 - **Issue** — one tracked unit of work
-- **Triage role** — a state-machine label on an Issue (e.g. `needs-triage`, `ready-for-afk`), mapped to real labels via `docs/agents/triage-labels.md`
+- **Issue category** — the GitHub `bug` or `enhancement` classification applied during triage
+- **Triage role** — a state-machine label on an Issue (e.g. `needs-triage`, `ready-for-agent`), mapped to real labels via `docs/agents/triage-labels.md`
 - **Commit tag** — a canonical category prefixing a commit subject, applied by `commit`
 
 **Skill-authoring terms** (how a skill is structured):
@@ -71,7 +72,7 @@ commit              → group changes into a sensible commit plan, [Tag]-prefixe
 zoom-out / improve-codebase-architecture  → keep the design clean over time
 ```
 
-`setup-repo-skills` is the keystone: it emits the per-repo `docs/agents/` config (issue tracker choice, triage labels) that the other skills consume. The README's quickstart tells every new user to run it first.
+`setup-repo-skills` is the keystone: it emits the per-repo `docs/agents/` config (GitHub workflow, triage-role labels, commit tags, and domain-doc rules) that the other skills consume, and provisions missing required GitHub labels. It is required for the GitHub lifecycle skills and strongly recommended for other engineering workflows.
 
 ## Where the meta-work happens
 
@@ -84,4 +85,4 @@ This repo is also self-documenting about its _own_ design decisions:
 ## Where it's useful
 
 - **As a user**: install via `npx skills@latest add harisjavaid85/ai-agent-skills`, run `/setup-repo-skills` in any project, then invoke skills like `/grill-with-context`, `/tdd`, `/diagnose` as slash commands. They're model-agnostic and meant to be hacked on.
-- **As a maintainer**: editing the skills themselves. The main things to respect are the bucket promotion rules in `CLAUDE.md` and the domain vocabulary in `CONTEXT.md`. Install using `link-skills.sh` script.
+- **As a maintainer**: editing the skills themselves. The main things to respect are the bucket promotion rules in `CLAUDE.md` and the domain vocabulary in `CONTEXT.md`. Install using `link-skills.sh --claude` or `link-skills.sh --codex`.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installed by setup-claude-code. Overwritten on each skill re-run — edit the source in
-# the skill's scripts/ folder, not the installed copy at ~/.claude/hooks/.
+# the skill's scripts/ folder, not the installed copy at ~/.claude/statusline.sh.
 # Claude Code status line - oh-my-posh agnoster style
 # Segments: user@host | cwd | git branch | model | context %
 

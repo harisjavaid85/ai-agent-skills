@@ -1,6 +1,6 @@
 ---
 name: to-issues
-description: Break a PRD into per-issue work tickets keyed by slug, as tracer-bullet vertical slices on the project issue tracker. Use when starting implementation work on a PRD with a chosen slug, or when the user says "/to-issues <slug>".
+description: Break a GitHub PRD tracker into independently grabbable, tracer-bullet issues (vertical slices) keyed by slug. Use when starting implementation work on a PRD or when the user invokes `/to-issues <slug>`.
 ---
 
 # To Issues
@@ -11,7 +11,7 @@ The skill takes one argument: `<slug>` (kebab-case). If invoked without a slug, 
 
 > Pass a slug: `/to-issues <slug>`. List active slugs with `gh issue list --label kind:prd --state open`.
 
-The issue tracker and triage label vocabulary should have been provided to you — run `/setup-repo-skills` if not.
+The GitHub workflow and triage-role label mapping must have been provided by `/setup-repo-skills`. Stop and ask the user to run it if either `docs/agents/issue-tracker.md` or `docs/agents/triage-labels.md` is missing.
 
 ## Process
 
@@ -65,6 +65,8 @@ Iterate until the user approves the breakdown.
 
 Publish in **dependency order** (blockers first) so `## Blocked by` references resolve to real `#N`.
 
+Read the actual GitHub label mapped from the canonical `needs-triage` role in `docs/agents/triage-labels.md`.
+
 For each approved slice, in order:
 
 1. Render the issue body using the `<issue-template>` at the bottom of this file.
@@ -75,7 +77,7 @@ For each approved slice, in order:
      --title "<slice title>" \
      --body-file /tmp/to-issues-<slug>-<N>.md \
      --label "prd:<slug>" \
-     --label "needs-triage"
+     --label "<actual needs-triage label>"
    ```
 4. Capture the returned issue number for use in later slices' `## Blocked by` sections.
 

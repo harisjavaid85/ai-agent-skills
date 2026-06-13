@@ -1,15 +1,15 @@
 ---
 name: to-prd
-description: Author a PRD from the current conversation and publish it as a GitHub tracker issue plus an empty agent branch keyed by slug. Use when starting work on a new feature with a chosen slug, or when the user says "/to-prd <slug>".
+description: Author a PRD from settled conversation context and publish it as a GitHub tracker issue with an agent branch keyed by slug. Use when starting a feature from already-decided requirements or when the user invokes `/to-prd <slug>`.
 ---
 
-This skill takes the current conversation context and codebase understanding and produces a PRD. Do NOT interview the user — just synthesize what you already know.
+This skill takes the current conversation context and codebase understanding and produces a PRD. Do not interview for new product requirements or reopen settled decisions. Do confirm the inferred module boundaries and testing decisions before publishing; those checkpoints translate requirements into implementation shape rather than gathering new requirements.
 
 The skill takes one argument: `<slug>` (kebab-case). If invoked without a slug, error with:
 
 > Pass a slug: `/to-prd <slug>`.
 
-The issue tracker and triage label vocabulary should have been provided to you — run `/setup-repo-skills` if not.
+The GitHub workflow must have been provided by `/setup-repo-skills`. Stop and ask the user to run it if `docs/agents/issue-tracker.md` is missing.
 
 ## Process
 
@@ -19,19 +19,22 @@ The issue tracker and triage label vocabulary should have been provided to you �
 
    A deep module (as opposed to a shallow module) is one which encapsulates a lot of functionality in a simple, testable interface which rarely changes.
 
-   Check with the user that these modules match their expectations. Check with the user which modules they want tests written for.
+   Present the inferred modules and testing decisions together. Ask the user to confirm or correct that implementation shape without introducing new product requirements.
 
 3. Write the PRD using the template below.
 
-4. Publish. This flow is **atomic**: pre-flight → write body → create label → push branch → create tracker. The tracker creation is the commit point.
+4. Publish in stages: pre-flight → choose base → write body → create label → push branch → create tracker. A failure after pushing the branch leaves partial remote state; follow the recovery instructions below.
 
    **4.1 Run pre-flight checks. Abort if any fail.**
    - `gh auth status` succeeds.
    - `origin` remote exists.
-   - `git fetch origin main` succeeds.
+   - Resolve GitHub's default branch with `gh repo view --json defaultBranchRef --jq .defaultBranchRef.name`, then fetch it from `origin`.
+   - Resolve the current branch with `git branch --show-current` and its commit with `git rev-parse HEAD`. If HEAD is detached, only offer the GitHub default branch.
+   - Present GitHub's default branch and the current branch as base options, recommending the GitHub default. If both resolve to the same commit, use that commit without asking a redundant question.
+   - If the user selects the current branch, warn that uncommitted working-tree changes are not included.
    - `git ls-remote --exit-code origin agent/<slug>` returns non-zero (`agent/<slug>` does not exist on origin).
    - `gh issue list --label "prd:<slug>" --state open` (No open tracker issue with `prd:<slug>` exists).
-   - If a local-only `agent/<slug>` branch exists with no remote counterpart, delete it (`git branch -D agent/<slug>`) and proceed — leftover from a prior failed run.
+   - If a local-only `agent/<slug>` branch exists with no remote counterpart, show its commit and divergence from the selected base using `git log --oneline <selected-base-commit>..agent/<slug>` and `git log --oneline agent/<slug>..<selected-base-commit>`. Offer only: delete it with explicit confirmation, or abort. Never delete or reuse it automatically.
 
    **4.2 Write the PRD body to `/tmp/to-prd-<slug>-body.md` using the `Write` tool.** Render the template below verbatim including AI disclaimer.
 
@@ -41,10 +44,10 @@ The issue tracker and triage label vocabulary should have been provided to you �
    gh label create "prd:<slug>" --description "PRD: <slug>" --force
    ```
 
-   **4.4 Push the empty `agent/<slug>` branch.**
+   **4.4 Push the `agent/<slug>` branch from the selected base commit.**
 
    ```
-   git push origin origin/main:refs/heads/agent/<slug>
+   git push origin <selected-base-commit>:refs/heads/agent/<slug>
    ```
 
    If this fails, abort with the error — no state to roll back.
@@ -62,7 +65,8 @@ The issue tracker and triage label vocabulary should have been provided to you �
    If this fails after step 4.4 succeeded, do **not** auto-rollback. Print:
 
    > Branch `agent/<slug>` pushed to origin but tracker creation failed: `<error>`.
-   > To retry: either create the tracker issue manually with body `/tmp/to-prd-<slug>-body.md` and labels `prd:<slug>` + `kind:prd`, or delete the branch (`git push origin --delete agent/<slug>`) and re-run.
+   > Partial publish: branch `agent/<slug>` exists, but the tracker issue does not.
+   > To recover: either create the tracker issue manually with body `/tmp/to-prd-<slug>-body.md` and labels `prd:<slug>` + `kind:prd`, or explicitly confirm deletion of the remote branch (`git push origin --delete agent/<slug>`) before re-running.
 
    **4.6 Print success exactly.**
 

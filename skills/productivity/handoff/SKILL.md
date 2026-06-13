@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Compact the current conversation into a handoff document for another agent to pick up.
+description: Compact the current conversation into a focused handoff document for another agent. Use when the user wants to continue the work in a fresh session or transfer it to another agent.
 argument-hint: "What will the next session be used for?"
 ---
 
@@ -16,7 +16,12 @@ If the user passed arguments, treat them as a description of what the next sessi
 
 ## Output
 
-Save to `.claude/handoffs/` in this repo (create the directory if it does not exist).
+Select the working directory for the active harness:
+
+- Claude Code: `.claude/handoffs/`
+- Codex and other agents: `.agents/handoffs/`
+
+Save the output in that directory in this repo (create the directory if it does not exist).
 
 Filename: kebab-case, topical, no date in it (e.g. `build-claude-skill.md`).
 

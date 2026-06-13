@@ -1,11 +1,13 @@
 ---
 name: triage
-description: Triage per-issue work tickets keyed by slug through a category and roles state machine. Use when triaging the work queue for a PRD slug, reviewing reviewer-filed issues, or when the user says "/triage <slug>".
+description: Triage GitHub work issues keyed by PRD slug through an issue category and triage-role state machine. Use when reviewing or changing the triage state of issues for a PRD slug.
 ---
 
 # Triage
 
-Move issues on the project issue tracker through a small state machine of triage roles.
+Move GitHub issues through a small state machine of triage roles.
+
+The GitHub workflow and triage-role label mapping must have been provided by `/setup-repo-skills`. Stop and ask the user to run it if either `docs/agents/issue-tracker.md` or `docs/agents/triage-labels.md` is missing.
 
 The skill takes one argument: `<slug>` (kebab-case). All queries are scoped to issues carrying `prd:<slug>` and excluding `kind:prd`. If invoked without a slug, error with:
 
@@ -22,14 +24,14 @@ Every comment or issue posted to the issue tracker during triage **must** start 
 - [AGENT-BRIEF.md](AGENT-BRIEF.md) — how to write durable agent briefs
 - [OUT-OF-SCOPE.md](OUT-OF-SCOPE.md) — how the `docs/out-of-scope/` knowledge base works
 
-## Roles
+## Issue categories and Triage roles
 
-Two **category** roles:
+Two **Issue categories**:
 
 - `bug` — something is broken
 - `enhancement` — new feature or improvement
 
-Five **state** roles:
+Five **Triage roles**:
 
 - `needs-triage` — maintainer needs to evaluate
 - `needs-info` — waiting on reporter for more information
@@ -37,13 +39,13 @@ Five **state** roles:
 - `ready-for-human` — needs human implementation
 - `wontfix` — will not be actioned
 
-Every triaged issue should carry exactly one category role and one state role. If state roles conflict, flag it and ask the maintainer before doing anything else.
+Every triaged issue should carry exactly one Issue category and one Triage role. If Triage roles conflict, flag it and ask the maintainer before doing anything else.
 
-These are canonical role names — the actual label strings used in the issue tracker may differ. The mapping should have been provided to you - run `/setup-repo-skills` if not.
+The triage roles are canonical names; their actual GitHub label strings may differ. Resolve them through `docs/agents/triage-labels.md` before every query or mutation. Issue categories use GitHub's `bug` and `enhancement` labels directly.
 
 `/triage` is the canonical place where category is applied. Default category for PRD-derived tickets: `enhancement`; assign `bug` only if reproduction surfaces an actual defect.
 
-State transitions: from `needs-triage` an issue moves to `needs-info`, `ready-for-agent`, `ready-for-human`, or `wontfix`. `needs-info` returns to `needs-triage` once the reporter replies. The maintainer can override at any time — flag transitions that look unusual and ask before proceeding.
+Triage-role transitions: from `needs-triage` an issue moves to `needs-info`, `ready-for-agent`, `ready-for-human`, or `wontfix`. `needs-info` returns to `needs-triage` once the reporter replies. The maintainer can override at any time — flag transitions that look unusual and ask before proceeding.
 
 ## Invocation
 
@@ -67,7 +69,7 @@ Show counts and a one-line summary per issue. Let the maintainer pick.
 
 1. **Gather context.** Read the full issue (body, comments, labels, reporter, dates). Parse any prior triage notes so you don't re-ask resolved questions. Explore the codebase using the project's domain glossary, respecting ADRs in the area. Read `docs/out-of-scope/*.md` and surface any prior rejection that resembles this issue.
 
-2. **Recommend.** Tell the maintainer your category and state recommendation with reasoning, plus a brief codebase summary relevant to the issue. Wait for direction.
+2. **Recommend.** Tell the maintainer your Issue-category and Triage-role recommendation with reasoning, plus a brief codebase summary relevant to the issue. Wait for direction.
 
 3. **Reproduce (bugs only).** Before any grilling, attempt reproduction: read the reporter's steps, trace the relevant code, run tests or commands. Report what happened — successful repro with code path, failed repro, or insufficient detail (a strong `needs-info` signal). A confirmed repro makes a much stronger agent brief.
 

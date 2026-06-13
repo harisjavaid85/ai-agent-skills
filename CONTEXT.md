@@ -1,11 +1,11 @@
 # AI Agent Skills
 
-A collection of agent skills (slash commands and behaviors) loaded by Claude Code. Skills are organized into buckets and consumed by per-repo configuration emitted by `/setup-repo-skills`.
+A collection of composable skills used by Claude Code, Codex, and other coding agents. Skills are organized into buckets and can consume per-repo configuration emitted by `/setup-repo-skills`.
 
 ## Language
 
 **Issue tracker**:
-The tool that hosts a repo's issues — GitHub Issues, Linear, a local `.scratch/` markdown convention, or similar. Skills like `to-issues`, `to-prd`, `triage`, and `qa` read from and write to it.
+GitHub Issues, the supported place where this workflow stores PRDs and implementation issues. Skills like `to-issues`, `to-prd`, and `triage` read from and write to it through the `gh` conventions in `docs/agents/issue-tracker.md`.
 _Avoid_: backlog manager, backlog backend, issue host
 
 **Issue**:
@@ -13,7 +13,10 @@ A single tracked unit of work inside an **Issue tracker** — a bug, task, PRD, 
 _Avoid_: ticket (use only when quoting external systems that call them tickets)
 
 **Triage role**:
-A canonical state-machine label applied to an **Issue** during triage (e.g. `needs-triage`, `ready-for-afk`). Each role maps to a real label string in the **Issue tracker** via `docs/agents/triage-labels.md`.
+A canonical state-machine label applied to an **Issue** during triage (e.g. `needs-triage`, `ready-for-agent`). Each role maps to a real label string in the **Issue tracker** via `docs/agents/triage-labels.md`.
+
+**Issue category**:
+The GitHub classification applied during triage: `bug` for broken behavior or `enhancement` for new functionality and improvements.
 
 **Commit tag**:
 A canonical category prefixing a commit subject, applied by `commit` (e.g. `Feature`, `Bugfix`). Each tag maps to the repo's actual tag string and subject format via `docs/agents/commit-tags.md`.
@@ -26,13 +29,13 @@ _Avoid_: glossary (too narrow — vocabulary includes templates and mappings, no
 The *verbs* a skill performs — its process, decision rules, when-to-do-what, and the steps the agent executes (e.g. "gather requirements → draft → review", "offer ADRs only when all three are true").
 
 **Progressive disclosure** (of a skill):
-The structuring principle that `SKILL.md` is the always-loaded entry point holding **Behaviour**, while verbatim formats and long reference material (**Vocabulary**) live in linked files loaded on demand. References stay one level deep.
+The structuring principle that `SKILL.md` is the always-loaded entry point holding **Behaviour**, while shared, independently reusable, or branch-specific reference material lives in linked files loaded on demand. Split by usage, never by line count alone; references stay one level deep.
 _Avoid_: lazy loading, file splitting
 
 ## Relationships
 
 - An **Issue tracker** holds many **Issues**
-- An **Issue** carries one **Triage role** at a time
+- A triaged **Issue** carries one **Issue category** and one **Triage role**
 
 ## Flagged ambiguities
 
