@@ -144,7 +144,7 @@ Agents run Fast checks after each coherent implementation step and after fixing 
 - `<command>`
 ```
 
-There is **no** domain-layout question. The domain-doc rules are static and written as-is (see step 4).
+There is **no** domain-layout question. The domain-doc rules are static and written as-is (see step 4). The settled-state output rules (step 4) are likewise static — no question, written verbatim.
 
 ## 4. Confirm and write
 
@@ -155,6 +155,17 @@ Show the user a draft of everything before writing; let them edit.
 - If `AGENTS.md` exists, edit it.
 - Else if `CLAUDE.md` exists, edit it.
 - If neither exists, create `AGENTS.md`.
+
+Write this static `## Artifacts ...` block verbatim as a sibling top-level section. If it already exists, update it in place rather than appending a duplicate.
+
+```markdown
+## Artifacts (docs, code, etc.) represent settled state
+
+- Write what IS true, not how you got there. A reader who wasn't in the session shouldn't be able to tell a debate happened. No "we considered", "originally", "previously", "changed from", "after discussion".
+- Keep rationale only when it constrains a future choice — a tradeoff, a "don't do X, it breaks Y". Historical "why we picked this" is noise.
+- Say each thing once, in one place. Don't restate a point across sections, and don't pad to fill a section.
+- Match the surrounding density. Don't add comments, summaries, or prose the existing code or docs wouldn't already carry.
+```
 
 If an `## Agent skills` block already exists, update it in place rather than appending a duplicate. Don't overwrite surrounding sections.
 
