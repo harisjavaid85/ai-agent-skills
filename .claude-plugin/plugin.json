@@ -13,6 +13,7 @@
     "./skills/engineering/zoom-out",
     "./skills/engineering/prototype",
     "./skills/productivity/caveman",
+    "./skills/productivity/cross-check-with-codex",
     "./skills/productivity/grill-me",
     "./skills/productivity/handoff",
     "./skills/productivity/setup-claude-code",
