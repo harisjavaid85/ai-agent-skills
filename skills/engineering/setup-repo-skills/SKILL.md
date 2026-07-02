@@ -156,7 +156,7 @@ Show the user a draft of everything before writing; let them edit.
 - Else if `CLAUDE.md` exists, edit it.
 - If neither exists, create `AGENTS.md`.
 
-Write this static `## Artifacts ...` block verbatim as a sibling top-level section. If it already exists, update it in place rather than appending a duplicate.
+Write this static `## Artifacts ...` block as a sibling top-level section. Replace `<agent-dir>` with the selected harness directory before writing. If it already exists, update it in place rather than appending a duplicate.
 
 ```markdown
 ## Artifacts (docs, code, etc.) represent settled state
@@ -165,6 +165,10 @@ Write this static `## Artifacts ...` block verbatim as a sibling top-level secti
 - Keep rationale only when it constrains a future choice — a tradeoff, a "don't do X, it breaks Y". Historical "why we picked this" is noise.
 - Say each thing once, in one place. Don't restate a point across sections, and don't pad to fill a section.
 - Match the surrounding density. Don't add comments, summaries, or prose the existing code or docs wouldn't already carry.
+
+## Plan mode artifacts
+
+Plan/design docs and artifacts produced in plan mode go in `<agent-dir>/plans/<slug>.md`. Don't invent other locations (`docs/design/`, etc.). The slug should be kebab-case, topical, with no date in it.
 ```
 
 If an `## Agent skills` block already exists, update it in place rather than appending a duplicate. Don't overwrite surrounding sections.
@@ -203,31 +207,35 @@ How to read this repo's glossary and ADRs. See `docs/agents/domain.md`.
 
 `prototype`:
 
-> This code is exploratory. Optimize for learning speed. The goal is to find out if the idea works, not to ship it.
+> This code is exploratory. Optimize for learning speed and feedback. The goal is to find out if the idea works, not to ship it.
+>
+> Prefer the shortest path to a clear answer. Make shortcuts visible, keep experiments easy to change or delete, and avoid building production infrastructure before the shape of the problem is known.
 
-- **Tests:** skip unless they help you think
-- **Errors:** happy path only
-- **Refactoring:** don't touch adjacent code; hardcode values are fine
+- **Tests:** skip unless they clarify behavior, protect tricky logic, or speed up iteration
+- **Errors:** handle only the failures needed to keep the experiment understandable; call out known gaps
+- **Refactoring:** keep changes local; hardcode values when it speeds learning, but don't bury assumptions
 
 `standard`:
 
-> This code is real. It might not be load-bearing yet, but it could be — assume you'll want to promote it later without a rewrite. Build it like you might keep it.
+> This code is real. It might not be load-bearing yet, but it could be. Build it so promotion to production is an upgrade path, not a rewrite.
+>
+> Prefer straightforward, maintainable solutions. Make tradeoffs explicit when they affect future work, but don't over-engineer for scale, compliance, or operational needs the repo does not have yet.
 
-- **Tests:** tests for new logic; add tests to existing code when you change it; don't backfill broadly
-- **Errors:** handle at boundaries (user input, external APIs); trust internal code
-- **Refactoring:** fix smells you actively trip over; don't go hunting
+- **Tests:** test new logic and changed behavior; add regression tests for bugs; don't backfill broadly
+- **Errors:** handle errors at user input, persistence, network, and other external boundaries; keep internal assumptions clear
+- **Refactoring:** fix smells you actively touch when it clarifies the change; don't go hunting
 
 `production`:
 
-> This codebase will outlive you. Every shortcut you take becomes someone else's burden. Every hack compounds into technical debt that slows the whole team down.
+> This codebase is meant for production deployment. Treat it as load-bearing software: correctness, maintainability, security, observability, and operability matter.
 >
-> You are not just writing code. You are shaping the future of this project. The patterns you establish will be copied. The corners you cut will be cut again.
+> Act with the judgment of an experienced principal engineer. When planning, designing, or implementing, choose proven best practices and make tradeoffs explicit. Prefer simple, durable designs over clever shortcuts.
 >
-> Fight entropy. Leave the codebase better than you found it.
+> Fight entropy. If a requested approach would create avoidable risk, technical debt, brittle behavior, or operational burden, say so and propose a better path. Leave the codebase easier to understand, verify, operate, and evolve.
 
-- **Tests:** TDD by default; cover edge cases
-- **Errors:** handle at boundaries; assert invariants
-- **Refactoring:** leave the code better than you found it
+- **Tests:** TDD by default for new behavior; cover edge cases, regressions, and failure paths
+- **Errors:** handle errors at boundaries; assert invariants; avoid silent failure
+- **Refactoring:** improve code you touch when it reduces risk or clarifies behavior; avoid unrelated churn
 
 Write the `## Verify` block from Section E as a sibling top-level section. If a `## Verify` block already exists, follow Section E's keep / edit / regenerate rule.
 
