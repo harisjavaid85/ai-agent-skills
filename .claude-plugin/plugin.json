@@ -2,6 +2,7 @@
   "name": "ai-agent-skills",
   "skills": [
     "./skills/engineering/commit",
+    "./skills/engineering/open-pr",
     "./skills/engineering/diagnose",
     "./skills/engineering/grill-with-context",
     "./skills/engineering/triage",

@@ -1,0 +1,115 @@
+---
+name: open-pr
+description: Open or update a GitHub pull request from the current branch in a standard format — a tagged title, a summary, and the branch's commit list, with optional PRD-slug enrichment. Use when the user wants to open, create, update, or refresh a PR, or when an agent needs to compose a PR in a standard format.
+---
+
+# Open PR
+
+Push the current branch and open — or update — its GitHub pull request with a standard title and body. Idempotent: re-running pushes new commits and refreshes the PR. It opens a PR only — never commits and never merges.
+
+## Modes
+
+- **Review (default, plain `/open-pr`):** compose the title and body, emit the plan, and wait for approval. User approving the plan _is_ the go-ahead to push and create/update.
+- **Auto (`/open-pr auto`):** emit the plan, then push and create/update best-effort without blocking. Where review mode would stop to ask, auto takes the safe default and keeps going. This is the path an agent invokes.
+
+## Arguments
+
+All optional, parsed loosely from the invocation:
+
+- `auto` — Auto mode.
+- `<slug>` — turn on lifecycle enrichment for a `prd:<slug>` tracker (see **Slug enrichment**).
+- `draft` — open PR as a draft instead of ready-for-review.
+- `base=<branch>` — override the base branch.
+
+Callers may also supply an **extra markdown block** (see **Caller extra block**).
+
+## Workflow
+
+1. **Preflight.** Confirm a GitHub remote exists and `gh` is authenticated (`git remote -v`, `gh auth status`). If either fails, report the blocker and stop — a PR is impossible. Both modes.
+2. **Check the branch.** Resolve the base (see **Base**). Then:
+   - HEAD **is** the base/default branch → refuse; a branch can't PR itself. Tell the user to branch first.
+   - No commits ahead of base (`git log <base>..HEAD` empty) → report "nothing to PR" and stop.
+   - Working tree **dirty** → _Review:_ stop, "uncommitted changes; run `/commit` first" (approval is not a license to commit them). _Auto:_ push only committed work and report what was left uncommitted.
+3. **Detect an existing PR:** `gh pr list --head <branch> --json number,url --limit 1`. Capture the number if one exists — this is the update path.
+4. **Compose** the title and body per **Format**. With a `<slug>`, add the enrichment sections. Append the caller extra block if provided.
+5. **Build the plan:** title, base, draft/ready, body preview, and any warnings (dirty tree, ambiguous tag, suspected non-default base). In Review, wait for approval; in Auto, print it as a trail and proceed.
+6. **Push:** `git push -u origin <branch>` (idempotent; sets upstream if unset). Pushing new commits refreshes the PR's diff on its own.
+7. **Create or update:**
+   - **No PR exists:** `gh pr create --base <base> --head <branch> --title "<title>" --body-file <body>` (add `--draft` when `draft` is set). Write the body with the `Write` tool to a scratchpad file and pass it via `--body-file`.
+   - **PR exists:** `gh pr edit <number> --body-file <body>` (and `--title` if it changed). See **Re-run** for body handling. **Never** change the existing PR's draft/ready state.
+
+## Re-run (existing PR)
+
+Always push. Then refresh the body:
+
+- **Review:** compose the fresh body and compare it to the live PR body. If they diverge, show the diff and ask — keep / replace / merge. The diff surfaces any hand-edit before it's overwritten; there is no pre-set default.
+- **Auto:** regenerate and overwrite unconditionally.
+
+Draft/ready is set only at create time. A re-run never toggles it.
+
+## Base
+
+Default to GitHub's default branch: `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`. `base=<branch>` overrides. In Review, if the branch's tracking info or merge-base points at a non-default base, surface it and ask; in Auto, use the default silently. The commit list is `git log <base>..HEAD`, so the body stays consistent with the chosen base.
+
+## Slug enrichment
+
+With a `<slug>`, read the `prd:<slug>` tracker and add the **PRD** and **Issues completed** sections (see **Format**):
+
+- Tracker number: `gh issue list --label "prd:<slug>" --label "kind:prd" --state open --json number --limit 1`.
+- Completed issues: `gh issue list --state closed --label "prd:<slug>" --json number,title`.
+
+If no `prd:<slug>` tracker exists, do **not** fail — warn, skip enrichment, and open the standalone PR. Review notes it in the plan; Auto proceeds and reports.
+
+## Caller extra block
+
+A caller may provide an extra markdown block — its own sections such as remaining issues, stuck branches, or a status note. Append it verbatim after the last standard section and before the trailer. `open-pr` stays ignorant of the caller's semantics.
+
+## Failure handling
+
+- **No remote / `gh` unauthenticated:** hard stop, both modes; report the blocker, do nothing partial.
+- **Push succeeds but PR creation fails:** partial remote state — the branch is up, no PR. Report it and say _re-run to retry_; the re-run finds no PR and creates it, and the bare pushed branch needs no unwinding.
+
+## Format
+
+### Title
+
+`[Tag] imperative summary` — imperative mood, no trailing period. Pick the **dominant** tag across the branch's commits. Tag source, in order:
+
+1. `docs/agents/commit-tags.md` present → use its vocabulary and subject template.
+2. Absent → infer from the branch's own commit subjects (`git log <base>..HEAD`); mirror their style (bracketed `[Feature]`, Conventional `feat:`, etc.).
+3. Commits carry no recognizable tags → no bracket; the title is the plain imperative summary. Never fabricate a tag.
+
+Review asks when the commits' tags are genuinely mixed or ambiguous; Auto picks the dominant silently.
+
+### Body
+
+Sections in this order; the **PRD** and **Issues completed** sections appear only with a `<slug>`:
+
+```markdown
+## Summary
+
+<2–3 sentences: what changed and why>
+
+## PRD
+
+Implements #<tracker>.
+
+## Commits
+
+- [Tag] subject
+- ...
+
+## Issues completed (<N>)
+
+- Closes #<n>: <title>
+
+<caller extra block, if any>
+
+---
+
+<co-authored-by trailer>
+```
+
+- **Summary:** what and why, 2–3 sentences.
+- **Commits:** the subjects from `git log <base>..HEAD`, verbatim with their tags.
+- **Trailer:** identifies the agent that authored the PR, following the same `Co-Authored-By:` format as a commit would use (Claude Code → `Co-Authored-By: Claude <noreply@anthropic.com>`; other harnesses use their own identities).

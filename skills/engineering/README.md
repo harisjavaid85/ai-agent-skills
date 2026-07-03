@@ -3,6 +3,7 @@
 Skills I use daily for code work.
 
 - **[commit](./commit/SKILL.md)** — Stage and commit working-tree changes: group them into a sensible commit plan, write concise tagged messages following the repo's convention, and commit only after approval.
+- **[open-pr](./open-pr/SKILL.md)** — Push the current branch and open or update its GitHub PR in a standard format: a tagged title, a summary, and the branch's commit list, with optional PRD-slug enrichment.
 - **[diagnose](./diagnose/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[grill-with-context](./grill-with-context/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
 - **[triage](./triage/SKILL.md)** — Triage issues through a state machine of triage roles.
