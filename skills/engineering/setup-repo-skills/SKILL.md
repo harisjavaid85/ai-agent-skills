@@ -39,22 +39,40 @@ Set `agent-dir` to `.claude` for Claude Code or `.agents` for Codex and other ag
 - `<agent-dir>/handoffs/`
 - `<agent-dir>/overviews/`
 
-Add these to `.gitignore` (append if the file exists, create it if not; don't duplicate entries that are already present):
+### `.gitignore`
+
+Update `.gitignore` for the selected harness. If `.gitignore` is absent, create it. If it already exists, merge the relevant entries into the existing file: preserve unrelated entries, do not clobber comments or project-specific rules, and dedupe entries that are already present.
+
+For Claude Code, ignore `.claude/*` by default, then explicitly allow the checked-in Claude config and repo-local skills:
 
 ```
-<agent-dir>/plans/
-<agent-dir>/handoffs/
-<agent-dir>/overviews/
+.claude/*
+!.claude/settings.json
+!.claude/skills/
+!.claude/skills/**
 ```
 
-Replace `<agent-dir>` with the selected directory before writing. These three are ephemeral agent working memory.
+This allowlist keeps `.claude/settings.json` and `.claude/skills/**` trackable while ignoring ephemeral Claude working state such as `.claude/plans/`, `.claude/handoffs/`, and `.claude/overviews/`.
 
-For Claude Code only, `.claude/settings.json` is **not** ignored — it's checked in. Write it if it doesn't exist (don't clobber an existing one — merge the keys in instead and dedupe):
+If the repo already has older narrow Claude entries such as `.claude/plans/`, `.claude/handoffs/`, and `.claude/overviews/`, replace those entries with the allowlist block above when practical. If replacing them would risk disturbing nearby hand-written rules, leave the old entries and add the allowlist block; correctness matters more than perfect tidiness.
+
+For Codex and other agents, ignore only the ephemeral working-memory directories:
+
+```
+.agents/plans/
+.agents/handoffs/
+.agents/overviews/
+```
+
+### Claude Code settings
+
+For Claude Code only, `.claude/settings.json` is checked in. Write it if it does not exist. If it already exists, merge the following settings into it: preserve unrelated keys, preserve user-added permission entries, and dedupe `permissions.allow` values.
 
 ```json
 {
   "permissions": {
     "allow": [
+      "Read(./.claude/skills/**)",
       "Write(./.claude/plans/**)",
       "Edit(./.claude/plans/**)",
       "Write(./.claude/handoffs/**)",
@@ -67,9 +85,9 @@ For Claude Code only, `.claude/settings.json` is **not** ignored — it's checke
 }
 ```
 
-Scope the rules to the three specific dirs — a blanket `Write(./.claude/**)` would also let the agent change its own `settings.json`, which should never be done (settings must stay reviewable).
+Do not use a blanket `Write(./.claude/**)` or `Edit(./.claude/**)` rule. That would let the agent change `.claude/settings.json`, which must stay reviewable. Repo-local Claude skills are read-only by default: agents can load `.claude/skills/**` without a prompt, but changing those skills still requires review.
 
-For Codex and other agents, do not create a harness settings file; only create the `.agents` working directories and ignore entries.
+For Codex and other agents, do not create a harness settings file.
 
 ## 3. Agent-skills wiring
 
@@ -163,7 +181,7 @@ Write this static `## Artifacts ...` block as a sibling top-level section. Repla
 
 - Write what IS true, not how you got there. A reader who wasn't in the session shouldn't be able to tell a debate happened. No "we considered", "originally", "previously", "changed from", "after discussion".
 - Keep rationale only when it constrains a future choice — a tradeoff, a "don't do X, it breaks Y". Historical "why we picked this" is noise.
-- Say each thing once, in one place. Don't restate a point across sections, and don't pad to fill a section.
+- Say each thing once, in the place it belongs. Don't restate a point across sections, summarize one file from another, or add comments that describe what other classes/modules/files contain. Cross-reference only when a real dependency, invariant, or ordering constraint would be unclear without it.
 - Match the surrounding density. Don't add comments, summaries, or prose the existing code or docs wouldn't already carry.
 
 ## Plan mode artifacts

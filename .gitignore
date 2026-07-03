@@ -1,5 +1,6 @@
 *settings.local.json
-.claude/plans/
-.claude/handoffs/
-.claude/overviews/
 
+.claude/*
+!.claude/settings.json
+!.claude/skills/
+!.claude/skills/**
