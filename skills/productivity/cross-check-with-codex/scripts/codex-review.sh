@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-readonly MAX_REVIEWS=3
+readonly MAX_REVIEWS=5
 readonly SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 readonly REVIEW_INSTRUCTIONS="$SCRIPT_DIR/../REVIEW-INSTRUCTIONS.md"
 readonly REVISION_INSTRUCTIONS="$SCRIPT_DIR/../REVISION-INSTRUCTIONS.md"

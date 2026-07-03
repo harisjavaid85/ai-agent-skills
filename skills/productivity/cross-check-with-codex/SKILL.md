@@ -21,10 +21,10 @@ Examples:
 Defaults:
 
 - Revisions are allowed for Claude-authored artifacts.
-- The review budget is three Codex reviews.
+- The review budget is 5 Codex reviews.
 - Stop early when both blocking issue counters are zero.
 - "Review only" means no revisions and a budget of one review.
-- An explicit review budget may be one, two, or three; never exceed three.
+- An explicit review budget may be 1 through 5; never exceed 5.
 
 Revision permission and review budget are independent. With a one-review budget, Claude may revise accepted findings when permitted, but must report the result as revised and not re-reviewed.
 
