@@ -8,7 +8,7 @@ Skills I use daily for code work.
 - **[grill-with-context](./grill-with-context/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
 - **[triage](./triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[improve-codebase-architecture](./improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `CONTEXT.md` and the decisions in `docs/adr/`.
-- **[setup-repo-skills](./setup-repo-skills/SKILL.md)** — Configure the current repo with working directories, GitHub workflow conventions, required labels, repo mode, Verify guidance, and shared vocabularies.
+- **[setup-repo-skills](./setup-repo-skills/SKILL.md)** — Configure the current repo with working directories, GitHub workflow conventions, required labels, repo mode, per-language coding standards, Verify guidance, and shared vocabularies.
 - **[tdd](./tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[to-issues](./to-issues/SKILL.md)** — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
 - **[to-prd](./to-prd/SKILL.md)** — Turn settled conversation context into a PRD, confirm its implementation shape, and publish it as a GitHub tracker issue.

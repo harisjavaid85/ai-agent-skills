@@ -1,6 +1,6 @@
 ---
 name: setup-repo-skills
-description: Configure the current repo for the engineering skills with working directories, GitHub workflow conventions, and agent guidance. Use when the user wants to set up, wire, or reconfigure a repo for these skills.
+description: Configure the current repo for the engineering skills with working directories, GitHub workflow conventions, per-language coding standards, and agent guidance. Use when the user wants to set up, wire, or reconfigure a repo for these skills.
 ---
 
 # Setup Repo Skills
@@ -73,11 +73,8 @@ For Claude Code only, `.claude/settings.json` is checked in. Write it if it does
   "permissions": {
     "allow": [
       "Read(./.claude/skills/**)",
-      "Write(./.claude/plans/**)",
       "Edit(./.claude/plans/**)",
-      "Write(./.claude/handoffs/**)",
       "Edit(./.claude/handoffs/**)",
-      "Write(./.claude/overviews/**)",
       "Edit(./.claude/overviews/**)"
     ]
   },
@@ -85,7 +82,7 @@ For Claude Code only, `.claude/settings.json` is checked in. Write it if it does
 }
 ```
 
-Do not use a blanket `Write(./.claude/**)` or `Edit(./.claude/**)` rule. That would let the agent change `.claude/settings.json`, which must stay reviewable. Repo-local Claude skills are read-only by default: agents can load `.claude/skills/**` without a prompt, but changing those skills still requires review.
+Do not use a blanket `Edit(./.claude/**)` rule. That would let the agent change `.claude/settings.json`, which must stay reviewable. Repo-local Claude skills are read-only by default: agents can load `.claude/skills/**` without a prompt, but changing those skills still requires review.
 
 For Codex and other agents, do not create a harness settings file.
 
@@ -162,6 +159,14 @@ Agents run Fast checks after each coherent implementation step and after fixing 
 - `<command>`
 ```
 
+**Section F — Coding standards.**
+
+> Coding standards bind agents to a per-language style guide so they write idiomatic, high-quality code by default. This is orthogonal to Repo mode: mode sets _rigor_ (how much you test and harden), standards set _convention_ (how the code reads). A `prototype` still writes guide-conformant code.
+
+Reuse the language detection from Section E — root manifests, plus the dominant source-file extension for a language with no manifest. For each detected language, read the matching row in [coding-standards.md](./coding-standards.md)'s _Catalog defaults_ table and propose that guide as the default. Ask the user to confirm or override, and to add any house deviations (default none). A detected language with no catalog row gets an open prompt for its guide.
+
+Standards are **referenced, never installed**. If a language's canonical linter is not configured in the repo, still record it under "Enforced by" and add the finish-summary nudge from step 5 — never run or install it.
+
 There is **no** domain-layout question. The domain-doc rules are static and written as-is (see step 4). The settled-state output rules (step 4) are likewise static — no question, written verbatim.
 
 ## 4. Confirm and write
@@ -174,14 +179,26 @@ Show the user a draft of everything before writing; let them edit.
 - Else if `CLAUDE.md` exists, edit it.
 - If neither exists, create `AGENTS.md`.
 
-Write this static `## Artifacts ...` block as a sibling top-level section. Replace `<agent-dir>` with the selected harness directory before writing. If it already exists, update it in place rather than appending a duplicate.
+Write these static blocks as sibling top-level sections. Replace `<agent-dir>` with the selected harness directory before writing. If a block already exists, update it in place rather than appending a duplicate.
+
+For Claude Code only, write the `## Memory` block — it describes how that harness loads memory, and has no meaning for Codex or other agents:
 
 ```markdown
-## Artifacts (docs, code, etc.) represent settled state
+## Memory
+
+The harness surfaces this project's memory index by default, but not the global one. At session start, also read the global memory if it exists and load the entries that carry cross-project working discipline — they apply here as much as project memory does.
+```
+
+For every harness, write the rest:
+
+```markdown
+## Artifacts represent settled state — code comments as much as docs
+
+These rules govern everything you produce that carries comments or prose — inline code comments, docs, commit messages, PR text, plan files, etc. If it needs a comment or a sentence, it needs this discipline.
 
 - Write what IS true, not how you got there. A reader who wasn't in the session shouldn't be able to tell a debate happened. No "we considered", "originally", "previously", "changed from", "after discussion".
 - Keep rationale only when it constrains a future choice — a tradeoff, a "don't do X, it breaks Y". Historical "why we picked this" is noise.
-- Say each thing once, in the place it belongs. Don't restate a point across sections, summarize one file from another, or add comments that describe what other classes/modules/files contain. Cross-reference only when a real dependency, invariant, or ordering constraint would be unclear without it.
+- Say each thing once, in the place it belongs, ensuring **a single source of truth**. Don't restate a point across sections, summarize one file from another, or add comments that describe what other classes/modules/files contain. Cross-reference only when a real dependency, invariant, or ordering constraint would be unclear without it.
 - Match the surrounding density. Don't add comments, summaries, or prose the existing code or docs wouldn't already carry.
 
 ## Plan mode artifacts
@@ -204,6 +221,10 @@ The block (substitute the prose and bullets for the chosen mode from the table b
 - **Errors:** …
 - **Refactoring:** …
 
+### Coding standards
+
+Per-language style-guide bindings agents follow when writing code — orthogonal to Repo mode. See `docs/agents/coding-standards.md`.
+
 ### Issue tracker
 
 GitHub Issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
@@ -218,8 +239,13 @@ GitHub Issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Domain docs
 
-How to read this repo's glossary and ADRs. See `docs/agents/domain.md`.
+How to find and consume them: `docs/agents/domain.md`.
+
+- _Glossary_ — canonical vocabulary: the `CONTEXT.md` files, indexed by `CONTEXT-MAP.md` in a multi-context repo.
+- _Knowledge base_ — durable, learned facts about how the system behaves (gotchas, non-obvious invariants): a root `KNOWLEDGE.md` for system-wide facts, or a `KNOWLEDGE.md` beside a context's `CONTEXT.md`.
+- _Capture_ — when you learn a durable, non-obvious behavioral fact a future agent would waste time rediscovering, add it per `docs/agents/domain.md`, and note it in your summary to user.
 ```
+
 
 **Mode content** — substitute the prose and bullets for the chosen mode verbatim.
 
@@ -262,7 +288,8 @@ Then write the `docs/agents/` files from the seed templates in this skill folder
 - [issue-tracker-github.md](./issue-tracker-github.md) — always write this as `docs/agents/issue-tracker.md`
 - [triage-labels.md](./triage-labels.md) — fill in the user's label strings
 - [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template from Section D's answer (e.g. `[<tag>] <summary>` for bracketed, `<tag>: <summary>` for Conventional Commits); the resulting file should describe only the chosen format
-- [domain.md](./domain.md) — the consumer contract, written as-is (no per-repo decision)
+- [domain.md](./domain.md) — the agent contract for reading and extending domain docs, written as-is (no per-repo decision)
+- [coding-standards.md](./coding-standards.md) — write as `docs/agents/coding-standards.md`; emit one binding block per detected language (guide, authoritative URL, enforcing linter, deviations, emphases) from Section F, and keep the complete _Catalog defaults_ table so a producing agent can add a language later
 
 If a GitHub remote exists and `gh auth status` succeeds, provision the five configured triage-role labels, the fixed issue category labels, and the fixed `kind:prd` marker. Use the confirmed mapped string as each triage label's name.
 
@@ -300,6 +327,7 @@ Suggest only the rows whose condition is met. Never run these yourself.
 | Running in Claude Code and `~/.claude/settings.json` is missing or lacks a `_setupClaudeCode` marker | `/setup-claude-code` — global security guardrails, counterpart to this repo setup     |
 | Neither `CONTEXT.md` nor `CONTEXT-MAP.md` at the repo root                                           | `/bootstrap-context` — captures domain language; safe to re-run this skill afterwards |
 | `package.json` present                                                                               | `/setup-pre-commit` — Husky + lint-staged pre-commit hooks                            |
+| A detected language's canonical linter (from its coding standard) is not configured in the repo      | Wiring that linter/formatter so the coding standard is machine-enforced               |
 
 Do not quote the conditions, marker names, or arrow syntax in your message — those are internal.
 

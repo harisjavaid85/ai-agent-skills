@@ -1,11 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Write(./.claude/plans/**)",
       "Edit(./.claude/plans/**)",
-      "Write(./.claude/handoffs/**)",
       "Edit(./.claude/handoffs/**)",
-      "Write(./.claude/overviews/**)",
       "Edit(./.claude/overviews/**)"
     ]
   },

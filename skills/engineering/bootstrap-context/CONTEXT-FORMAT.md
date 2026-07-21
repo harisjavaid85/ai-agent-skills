@@ -5,27 +5,27 @@ Most repos have a single context — one `CONTEXT.md` at the root:
 ```
 /
 ├── CONTEXT.md
+├── KNOWLEDGE.md                      ← learned facts
 ├── docs/
 │   └── adr/
 │       ├── 0001-event-sourced-orders.md
 │       └── 0002-postgres-for-write-model.md
-└── src/
+└── <code>/                           ← wherever this repo keeps its code
 ```
 
-Multi-context repos add a `CONTEXT-MAP.md` at the root; each context owns its `CONTEXT.md` and optionally its own `docs/adr/`:
+Multi-context repos add a `CONTEXT-MAP.md` at the root; each context owns its `CONTEXT.md` and optionally its own `docs/adr/`. A root `CONTEXT.md` may sit alongside the map for repo-wide carrier vocabulary:
 
 ```
 /
 ├── CONTEXT-MAP.md
+├── CONTEXT.md                        ← repo-wide carrier vocabulary
+├── KNOWLEDGE.md                      ← system-wide learned facts
 ├── docs/
 │   └── adr/                          ← system-wide decisions
-├── src/
-│   ├── ordering/
-│   │   ├── CONTEXT.md
-│   │   └── docs/adr/                 ← context-specific decisions
-│   └── billing/
-│       ├── CONTEXT.md
-│       └── docs/adr/
+└── <context dir>/                    ← wherever each context's code lives
+    ├── CONTEXT.md
+    ├── KNOWLEDGE.md                  ← context-specific facts
+    └── docs/adr/                     ← context-scoped decisions
 ```
 
 # CONTEXT.md Format
@@ -54,7 +54,7 @@ _Avoid_: Client, buyer, account
 
 ## Rules
 
-- **Domain language only.** Operational invariants, coding conventions, implementation details, agreements, and recurring gotchas belong in other documentation.
+- **Domain language only.** Operational invariants, coding conventions, implementation details, and agreements belong in other documentation; recurring gotchas and learned behavioral facts belong in `KNOWLEDGE.md`.
 - **Be opinionated.** When multiple words exist for the same concept, pick the best one and list the others as aliases to avoid.
 - **Flag conflicts explicitly.** If a term is used ambiguously, call it out in "Flagged ambiguities" with a clear resolution.
 - **Keep definitions tight.** One or two sentences max. Define what it IS, not what it does.
@@ -70,9 +70,9 @@ _Avoid_: Client, buyer, account
 
 ## Contexts
 
-- [Ordering](./src/ordering/CONTEXT.md) – receives and tracks customer orders
-- [Billing](./src/billing/CONTEXT.md) – generates invoices and processes payments
-- [Fulfillment](./src/fulfillment/CONTEXT.md) – manages warehouse picking and shipping
+- [Ordering](./ordering/CONTEXT.md) – receives and tracks customer orders
+- [Billing](./billing/CONTEXT.md) – generates invoices and processes payments
+- [Fulfillment](./fulfillment/CONTEXT.md) – manages warehouse picking and shipping
 
 ## Relationships
 

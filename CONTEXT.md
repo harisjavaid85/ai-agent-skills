@@ -21,6 +21,14 @@ The GitHub classification applied during triage: `bug` for broken behavior or `e
 **Commit tag**:
 A canonical category prefixing a commit subject, applied by `commit` (e.g. `Feature`, `Bugfix`). Each tag maps to the repo's actual tag string and subject format via `docs/agents/commit-tags.md`.
 
+**Repo mode**:
+The rigor posture `setup-repo-skills` assigns a repo — `prototype`, `standard`, or `production` — governing how much an agent tests, hardens error paths, and refactors.
+_Avoid_: repo type, quality level
+
+**Coding standard**:
+A per-language binding to a named external style guide (e.g. Google Python Style Guide) plus this repo's deviations, that an agent follows when writing code. Emitted by `setup-repo-skills` and read by the producing agent; the guide, not the binding, holds the rules.
+_Avoid_: style guide (the external source, not this repo's binding to it), linting rules
+
 **Vocabulary** (of a skill):
 The *nouns* a skill operates on — canonical term definitions, the fixed templates/formats it emits, label/tag mappings, file-format specs. Stable reference data (e.g. `commit-tags.md`, `CONTEXT-FORMAT.md`, a `SKILL.md` frontmatter template).
 _Avoid_: glossary (too narrow — vocabulary includes templates and mappings, not just term definitions)
@@ -36,6 +44,7 @@ _Avoid_: lazy loading, file splitting
 
 - An **Issue tracker** holds many **Issues**
 - A triaged **Issue** carries one **Issue category** and one **Triage role**
+- A **Repo mode** and a **Coding standard** are orthogonal axes: mode sets rigor, standard sets convention
 
 ## Flagged ambiguities
 

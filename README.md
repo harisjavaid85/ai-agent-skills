@@ -21,6 +21,7 @@ npx skills@latest add harisjavaid85/ai-agent-skills
 3. Run `/setup-repo-skills` in your agent. It will:
    - Set up harness-specific working directories (`.claude` for Claude, `.agents` for Codex and other agents)
    - Ask whether this repo is `prototype`, `standard`, or `production` (tunes how aggressively skills push for tests, error handling, and refactoring)
+   - Propose a per-language coding standard (a style-guide binding, e.g. Google Python) so agents write high-quality code by default
    - Write the shared GitHub Issues workflow used by `/to-prd`, `/to-issues`, and `/triage`
    - Ask what labels represent your triage roles, then create any required GitHub labels that are missing
    - Write the `docs/agents/` config the other skills read
@@ -162,7 +163,7 @@ Skills I use daily for code work.
 - **[grill-with-context](./skills/engineering/grill-with-context/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
 - **[triage](./skills/engineering/triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[improve-codebase-architecture](./skills/engineering/improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `CONTEXT.md` and the decisions in `docs/adr/`.
-- **[setup-repo-skills](./skills/engineering/setup-repo-skills/SKILL.md)** — Configure the current repo with working directories, GitHub workflow conventions, repo mode, Verify guidance, and shared vocabularies. Required before `to-prd`, `to-issues`, and `triage`; strongly recommended for other engineering and agent-loop workflows.
+- **[setup-repo-skills](./skills/engineering/setup-repo-skills/SKILL.md)** — Configure the current repo with working directories, GitHub workflow conventions, repo mode, per-language coding standards, Verify guidance, and shared vocabularies. Required before `to-prd`, `to-issues`, and `triage`; strongly recommended for other engineering and agent-loop workflows.
 - **[tdd](./skills/engineering/tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
 - **[to-issues](./skills/engineering/to-issues/SKILL.md)** — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
 - **[to-prd](./skills/engineering/to-prd/SKILL.md)** — Turn settled conversation context into a PRD, confirm its implementation shape, and publish it as a GitHub tracker issue.
