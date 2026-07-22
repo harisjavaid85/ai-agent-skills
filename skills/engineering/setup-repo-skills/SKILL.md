@@ -198,7 +198,8 @@ These rules govern everything you produce that carries comments or prose — inl
 
 - Write what IS true, not how you got there. A reader who wasn't in the session shouldn't be able to tell a debate happened. No "we considered", "originally", "previously", "changed from", "after discussion".
 - Keep rationale only when it constrains a future choice — a tradeoff, a "don't do X, it breaks Y". Historical "why we picked this" is noise.
-- Say each thing once, in the place it belongs, ensuring **a single source of truth**. Don't restate a point across sections, summarize one file from another, or add comments that describe what other classes/modules/files contain. Cross-reference only when a real dependency, invariant, or ordering constraint would be unclear without it.
+- Single source of truth — define once at the declaration; elsewhere name it, don't re-describe it. _What_ a thing is belongs to the type, field, function, or glossary entry that declares it; every use site leans on that name and adds, if needed, only what's true there and nowhere else (why it's used here, an ordering or coupling the name can't carry).
+  - _Portability test:_ a comment that would read as equally true at another use site is a misplaced definition — move it to the declaration and delete the copies. Classic trap: re-explaining a param or field at each site that touches it when its type name already says what it is.
 - Match the surrounding density. Don't add comments, summaries, or prose the existing code or docs wouldn't already carry.
 
 ## Plan mode artifacts
@@ -245,7 +246,6 @@ How to find and consume them: `docs/agents/domain.md`.
 - _Knowledge base_ — durable, learned facts about how the system behaves (gotchas, non-obvious invariants): a root `KNOWLEDGE.md` for system-wide facts, or a `KNOWLEDGE.md` beside a context's `CONTEXT.md`.
 - _Capture_ — when you learn a durable, non-obvious behavioral fact a future agent would waste time rediscovering, add it per `docs/agents/domain.md`, and note it in your summary to user.
 ```
-
 
 **Mode content** — substitute the prose and bullets for the chosen mode verbatim.
 

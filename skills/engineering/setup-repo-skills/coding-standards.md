@@ -4,6 +4,8 @@ How agents write code in this repo, per language. The **producing** agent reads 
 
 A section binds the agent to a named external style guide. The guide is the source of truth for the whole convention set — both what tooling enforces and the judgment calls it cannot (naming, docstrings, module boundaries). The linter is the mechanical safety net; the guide covers the rest. When a rule is unclear, fetch the authoritative URL and follow it.
 
+Across every language: reach for an existing helper before writing a near-duplicate; don't extract a shared abstraction until a second caller genuinely earns it.
+
 **Writing a language with no section below?** Add one first, using the matching row from the _Catalog defaults_ table. If the language isn't in that table either, pick its best-adopted style guide, add the section, and add a table row.
 
 ## Python
