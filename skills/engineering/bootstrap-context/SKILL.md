@@ -13,7 +13,7 @@ The audience is a human onboarding _and_ an agent loading context - both should 
 - **Relationships** - how domain concepts and contexts relate, especially distinctions that prevent ambiguous language.
 - **Flagged ambiguities** - overloaded or conflicting terms with an explicit canonical resolution.
 
-Do not capture implementation details, operational invariants, coding conventions, agreements, or recurring gotchas in `CONTEXT.md`. Conventions and agreements belong in `AGENTS.md`, `CLAUDE.md`, or `README.md`; decisions in ADRs; gotchas and learned behavioral facts in a `KNOWLEDGE.md` beside the relevant `CONTEXT.md`.
+Do not capture implementation details, operational rules, coding conventions, agreements, or recurring gotchas in `CONTEXT.md` — these belong in other documentation and `CONTEXT.md` holds domain vocabulary only.
 
 ## Terminology used in this skill
 

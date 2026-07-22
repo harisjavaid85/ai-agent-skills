@@ -7,10 +7,11 @@ description: Configure the current repo for the engineering skills with working 
 
 Wire a repo for the engineering skills. This skill owns the **structural** setup — mechanical scaffolding derivable from disk and convention. It never decides the repo's domain layout.
 
-It sets up two things:
+It sets up three things:
 
 - **Harness-specific working state** — `.claude` for Claude Code, `.agents` for Codex and other agents, plus Claude settings when applicable (details in step 2).
-- **`docs/agents/` config** — GitHub workflow conventions, skill vocabularies, and domain-doc rules, summarised in an `## Agent skills` block in `AGENTS.md` or `CLAUDE.md`.
+- **The agent guide** — the repo's `AGENTS.md` or `CLAUDE.md`: repo mode, output discipline, and pointers to everything below.
+- **`docs/agents/` config** — GitHub workflow conventions, skill vocabularies, and domain-doc rules the agent guide points to.
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
@@ -22,7 +23,7 @@ Read the current repo to understand its starting state. Don't assume:
 - When running in Claude Code, is `~/.claude/settings.json` present, and does it contain a `_setupClaudeCode` marker? (For the setup-claude-code nudge — detection only, never to change global settings.)
 - `git remote -v` — is there a GitHub remote?
 - `gh auth status` — is the GitHub CLI available and authenticated? (Detection only until label provisioning.)
-- `AGENTS.md` and `CLAUDE.md` at the root — does either exist? Is there already an `## Agent skills` section, and does it already contain a `### Repo mode: <mode>` subsection?
+- `AGENTS.md` and `CLAUDE.md` at the root — does either exist? Do the agent-guide sections already exist — e.g. a `### Repo mode: <mode>` subsection under `## Operating mode`?
 - The active harness directory — which of `plans/`, `handoffs/`, and `overviews/` already exist? For Claude Code, also check `.claude/settings.json`.
 - `.gitignore` — does it already ignore the active harness's working dirs?
 - `CONTEXT.md` / `CONTEXT-MAP.md` at the root — present or absent? (For the bootstrap-context nudge, never to decide domain layout.)
@@ -118,7 +119,7 @@ Do not ask the user to select an issue tracker. If step 1 found no GitHub remote
 
 > When `triage` processes an issue, it assigns one Issue category (`bug` or `enhancement`) and moves it through a state machine of triage roles. The five triage roles need labels that match strings you've actually configured. If your repo uses `bug:triage` instead of `needs-triage`, map that role so the skills apply the right label.
 
-The five canonical triage roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Default each role's string to its own name; ask if the user wants to override any. The confirmed strings will be provisioned on GitHub during step 4 when GitHub is available.
+The five canonical triage roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Default each role's string to its own name; ask if the user wants to override any. The confirmed strings will be provisioned on GitHub during step 5 when GitHub is available.
 
 **Section D — Commit tag vocabulary.**
 
@@ -130,44 +131,20 @@ The eight canonical tags: `Feature`, `Bugfix`, `Doc`, `Refactor`, `Test`, `Chore
 
 > The `## Verify` block in `AGENTS.md` or `CLAUDE.md` tells agents how to confirm their work. Agents run the **Fast** tier after each coherent implementation step and after fixing a failure. They run the **Full** tier before declaring substantial work complete, handing it off, or requesting human review. If a command cannot run, they report the blocker and what remains unverified.
 
-Detect the ecosystem from files at the repo root:
+Verify setups vary too much to guess well, so don't auto-classify or web-search for commands. Note the build manifests at the repo root (`package.json`, `pyproject.toml`, `Makefile`, …) and ask the user for their **Fast** and **Full** commands:
 
-- `package.json` — JS/TS. Hints: `typecheck`/`tsc`, `lint`, `test:unit`/`test` → Fast; `build`, `e2e`, `integration`, `cypress`, `playwright` → Full.
-- `pyproject.toml` — Python. Hints: `mypy`/`pyright`, `ruff`, unit pytest → Fast; integration/e2e pytest, packaging → Full.
-- `Makefile` / `Justfile` — read targets, classify recognizable ones, ask the user to assign ambiguous targets.
-- Other ecosystem — use `WebSearch` to look up conventional Fast/Full verification commands for the detected tooling.
+- **Fast** — checks that scale with code, don't bundle or package, and don't touch external services: lint, typecheck, unit tests.
+- **Full** — everything heavier: production build, integration, e2e.
 
-Classification rule: a command goes in **Fast** only if it (a) doesn't bundle or package artifacts, (b) doesn't touch external services, (c) scales with code not infrastructure. Everything else → **Full**.
-
-Present the proposal with one-line rationale per command (e.g. "`pnpm build` → Full because Vite bundling adds no new error coverage beyond typecheck"). Let the user edit before write. Rationale stays in the proposal — don't write it to the file.
-
-If a `## Verify` block already exists, show its contents and ask: keep / edit / regenerate.
-
-When generating or regenerating it, use this shape with the confirmed commands:
-
-```markdown
-## Verify
-
-Agents run Fast checks after each coherent implementation step and after fixing a failure. Agents run Full checks before declaring substantial work complete, handing it off, or requesting human review. If a command cannot run, report the blocker and what remains unverified.
-
-### Fast
-
-- `<command>`
-
-### Full
-
-- `<command>`
-```
+If the user hasn't settled these yet, write the block with the cadence prose and empty tiers for them to fill. If a `## Verify` block already exists, show its contents and ask: keep / edit / regenerate.
 
 **Section F — Coding standards.**
 
 > Coding standards bind agents to a per-language style guide so they write idiomatic, high-quality code by default. This is orthogonal to Repo mode: mode sets _rigor_ (how much you test and harden), standards set _convention_ (how the code reads). A `prototype` still writes guide-conformant code.
 
-Reuse the language detection from Section E — root manifests, plus the dominant source-file extension for a language with no manifest. For each detected language, read the matching row in [coding-standards.md](./coding-standards.md)'s _Catalog defaults_ table and propose that guide as the default. Ask the user to confirm or override, and to add any house deviations (default none). A detected language with no catalog row gets an open prompt for its guide.
+Detect languages from root manifests, plus the dominant source-file extension for a language with no manifest. For each detected language, read the matching row in [coding-standards.md](./coding-standards.md)'s _Catalog defaults_ table and propose that guide as the default. Ask the user to confirm or override, and to add any house deviations (default none). A detected language with no catalog row gets an open prompt for its guide.
 
-Standards are **referenced, never installed**. If a language's canonical linter is not configured in the repo, still record it under "Enforced by" and add the finish-summary nudge from step 5 — never run or install it.
-
-There is **no** domain-layout question. The domain-doc rules are static and written as-is (see step 4). The settled-state output rules (step 4) are likewise static — no question, written verbatim.
+Standards are **referenced, never installed**. If a language's canonical linter is not configured in the repo, still record it under "Enforced by" and add the finish-summary nudge from step 6 — never run or install it.
 
 ## 4. Confirm and write
 
@@ -179,22 +156,28 @@ Show the user a draft of everything before writing; let them edit.
 - Else if `CLAUDE.md` exists, edit it.
 - If neither exists, create `AGENTS.md`.
 
-Write these static blocks as sibling top-level sections. Replace `<agent-dir>` with the selected harness directory before writing. If a block already exists, update it in place rather than appending a duplicate.
+If the file already exists and carries its own section structure, **do not restructure it silently.** Show the user how its sections map onto the shape below and ask whether to keep their structure (adding only missing pieces), adopt this shape, or merge. Default to keeping their structure. The shape below is for a fresh file.
 
-For Claude Code only, write the `## Memory` block — it describes how that harness loads memory, and has no meaning for Codex or other agents:
-
-```markdown
-## Memory
-
-The harness surfaces this project's memory index by default, but not the global one. At session start, also read the global memory if it exists and load the entries that carry cross-project working discipline — they apply here as much as project memory does.
-```
-
-For every harness, write the rest:
+Write the file as these top-level sections, in order. Replace `<agent-dir>` with the selected harness directory. Include the `## Operating mode` _Memory_ paragraph and the _Plan mode artifacts_ item **only for Claude Code** — they have no meaning for Codex or other agents. If a section already exists, update it in place rather than appending a duplicate.
 
 ```markdown
-## Artifacts represent settled state — code comments as much as docs
+# <AGENTS.md or CLAUDE.md>
 
-These rules govern everything you produce that carries comments or prose — inline code comments, docs, commit messages, PR text, plan files, etc. If it needs a comment or a sentence, it needs this discipline.
+## Operating mode
+
+_(Claude Code only)_ **Memory** — the harness surfaces this project's memory index by default, but not the global one. At session start, also read the global memory if it exists and load the entries that carry cross-project working discipline; they apply here as much as project memory does.
+
+### Repo mode: <mode>
+
+<mode-specific prose — from the table below>
+
+- **Tests:** …
+- **Errors:** …
+- **Refactoring:** …
+
+## Producing code & docs
+
+**Settled state — code comments as much as docs.** These rules govern everything you produce that carries comments or prose — inline code comments, docs, commit messages, PR text, plan files. If it needs a comment or a sentence, it needs this discipline.
 
 - Write what IS true, not how you got there. A reader who wasn't in the session shouldn't be able to tell a debate happened. No "we considered", "originally", "previously", "changed from", "after discussion".
 - Keep rationale only when it constrains a future choice — a tradeoff, a "don't do X, it breaks Y". Historical "why we picked this" is noise.
@@ -202,50 +185,50 @@ These rules govern everything you produce that carries comments or prose — inl
   - _Portability test:_ a comment that would read as equally true at another use site is a misplaced definition — move it to the declaration and delete the copies. Classic trap: re-explaining a param or field at each site that touches it when its type name already says what it is.
 - Match the surrounding density. Don't add comments, summaries, or prose the existing code or docs wouldn't already carry.
 
-## Plan mode artifacts
+**Coding standards** — per-language style-guide bindings agents follow when writing code, orthogonal to Repo mode. See `docs/agents/coding-standards.md`.
 
-Plan/design docs and artifacts produced in plan mode go in `<agent-dir>/plans/<slug>.md`. Don't invent other locations (`docs/design/`, etc.). The slug should be kebab-case, topical, with no date in it.
+_(Claude Code only)_ **Plan mode artifacts** — plan and design docs produced in plan mode go in `<agent-dir>/plans/<slug>.md` (kebab-case, topical, no date in the slug). Don't invent other locations (`docs/design/`, etc.).
+
+## Issues, triage & commits
+
+- **Issue tracker** — GitHub Issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+- **Triage labels** — [one-line summary of the triage-role label vocabulary]. See `docs/agents/triage-labels.md`.
+- **Commit tags** — [one-line summary of the tag vocabulary and subject format]. See `docs/agents/commit-tags.md`.
+
+## Navigating & extending the repo
+
+**Where things go.** When you learn or decide something durable, route it — don't dump it in memory or the nearest open file:
+
+| What you have | Goes to |
+| --- | --- |
+| a term / domain concept | glossary — `CONTEXT.md` |
+| a decision + its tradeoffs | an ADR — `docs/adr/` |
+| how the system behaves (gotcha, non-obvious invariant) | knowledge — `KNOWLEDGE.md` |
+| a rule for how the agent should work | operational policy — this file |
+| a purely local invariant | a comment at the code |
+
+Agent memory is **not** on this list — it holds cross-project working style, not facts about this repo. Full routing rules (register, scope, the high bar): `docs/agents/domain.md`. Note anything you add in your summary.
+
+- **Domain docs** — read before exploring: `docs/agents/domain.md`.
+
+## Repo conventions
+
+_Repo-specific — record durable local rules agents must follow (secrets handling, migration policy, branching & PR flow, debug-flag naming…). Leave empty if none yet._
+
+## Verify
+
+Run Fast checks after each coherent implementation step and after fixing a failure. Run Full checks before declaring substantial work complete, handing off, or requesting human review. If a command cannot run, report the blocker and what remains unverified.
+
+### Fast
+
+- <Fast commands from Section E, or leave empty for the user to fill>
+
+### Full
+
+- <Full commands from Section E, or leave empty for the user to fill>
 ```
 
-If an `## Agent skills` block already exists, update it in place rather than appending a duplicate. Don't overwrite surrounding sections.
-
-The block (substitute the prose and bullets for the chosen mode from the table below):
-
-```markdown
-## Agent skills
-
-### Repo mode: <mode>
-
-<mode-specific prose>
-
-- **Tests:** …
-- **Errors:** …
-- **Refactoring:** …
-
-### Coding standards
-
-Per-language style-guide bindings agents follow when writing code — orthogonal to Repo mode. See `docs/agents/coding-standards.md`.
-
-### Issue tracker
-
-GitHub Issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-[one-line summary of the triage-role label vocabulary]. See `docs/agents/triage-labels.md`.
-
-### Commit tags
-
-[one-line summary of the tag vocabulary and subject format]. See `docs/agents/commit-tags.md`.
-
-### Domain docs
-
-How to find and consume them: `docs/agents/domain.md`.
-
-- _Glossary_ — canonical vocabulary: the `CONTEXT.md` files, indexed by `CONTEXT-MAP.md` in a multi-context repo.
-- _Knowledge base_ — durable, learned facts about how the system behaves (gotchas, non-obvious invariants): a root `KNOWLEDGE.md` for system-wide facts, or a `KNOWLEDGE.md` beside a context's `CONTEXT.md`.
-- _Capture_ — when you learn a durable, non-obvious behavioral fact a future agent would waste time rediscovering, add it per `docs/agents/domain.md`, and note it in your summary to user.
-```
+The `### Repo mode` prose and bullets come from the mode table below. Everything not marked for substitution — settled-state, the Navigating routing, Repo conventions — is written verbatim.
 
 **Mode content** — substitute the prose and bullets for the chosen mode verbatim.
 
@@ -281,15 +264,15 @@ How to find and consume them: `docs/agents/domain.md`.
 - **Errors:** handle errors at boundaries; assert invariants; avoid silent failure
 - **Refactoring:** improve code you touch when it reduces risk or clarifies behavior; avoid unrelated churn
 
-Write the `## Verify` block from Section E as a sibling top-level section. If a `## Verify` block already exists, follow Section E's keep / edit / regenerate rule.
-
 Then write the `docs/agents/` files from the seed templates in this skill folder:
 
 - [issue-tracker-github.md](./issue-tracker-github.md) — always write this as `docs/agents/issue-tracker.md`
 - [triage-labels.md](./triage-labels.md) — fill in the user's label strings
 - [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template from Section D's answer (e.g. `[<tag>] <summary>` for bracketed, `<tag>: <summary>` for Conventional Commits); the resulting file should describe only the chosen format
-- [domain.md](./domain.md) — the agent contract for reading and extending domain docs, written as-is (no per-repo decision)
+- [domain.md](./domain.md) — the agent contract for reading and extending the domain docs and knowledge base, written as-is (no per-repo decision)
 - [coding-standards.md](./coding-standards.md) — write as `docs/agents/coding-standards.md`; emit one binding block per detected language (guide, authoritative URL, enforcing linter, deviations, emphases) from Section F, and keep the complete _Catalog defaults_ table so a producing agent can add a language later
+
+## 5. Provision GitHub labels
 
 If a GitHub remote exists and `gh auth status` succeeds, provision the five configured triage-role labels, the fixed issue category labels, and the fixed `kind:prd` marker. Use the confirmed mapped string as each triage label's name.
 
@@ -314,7 +297,7 @@ gh label create "<confirmed-label-name>" --description "<description>" --color "
 
 If any label cannot be listed or created, continue writing the local setup, then report the failed label provisioning and error in the finish summary. Otherwise report that all required GitHub labels exist. If GitHub is unavailable, skip provisioning and include the GitHub prerequisite warning in the finish summary.
 
-## 5. Finish
+## 6. Finish
 
 Tell the user setup is done and that `docs/agents/*.md` are theirs to edit. Then suggest the applicable next steps from the rubric below in your own prose.
 
