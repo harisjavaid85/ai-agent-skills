@@ -49,7 +49,7 @@ The canonical vocabulary and message style.
 | Tag        | Covers                                                        |
 | ---------- | ------------------------------------------------------------- |
 | `Feature`  | new functionality (`feat`)                                    |
-| `Bugfix`   | fixes broken behavior (`fix`)                                 |
+| `Fix`      | fixes broken behavior (`fix`)                                 |
 | `Doc`      | documentation (`docs`)                                        |
 | `Refactor` | behavior-preserving restructure, including `perf` and `style` |
 | `Test`     | tests                                                         |

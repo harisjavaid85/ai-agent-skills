@@ -19,7 +19,7 @@ A canonical state-machine label applied to an **Issue** during triage (e.g. `nee
 The GitHub classification applied during triage: `bug` for broken behavior or `enhancement` for new functionality and improvements.
 
 **Commit tag**:
-A canonical category prefixing a commit subject, applied by `commit` (e.g. `Feature`, `Bugfix`). Each tag maps to the repo's actual tag string and subject format via `docs/agents/commit-tags.md`.
+A canonical category prefixing a commit subject, applied by `commit` (e.g. `Feature`, `Fix`). Each tag maps to the repo's actual tag string and subject format via `docs/agents/commit-tags.md`.
 
 **Repo mode**:
 The rigor posture `setup-repo-skills` assigns a repo — `prototype`, `standard`, or `production` — governing how much an agent tests, hardens error paths, and refactors.

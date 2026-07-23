@@ -125,7 +125,7 @@ The five canonical triage roles: `needs-triage`, `needs-info`, `ready-for-agent`
 
 > When `commit` writes a message, it prefixes the subject with a tag — e.g. `[Feature] Add parser`. If this repo uses different tag names, or a different subject format such as Conventional Commits (`feat: add parser`), map them here so the skill matches your house style.
 
-The eight canonical tags: `Feature`, `Bugfix`, `Doc`, `Refactor`, `Test`, `Chore`, `Merge`, `Revert`. Default each tag's string to its own name and the subject template to `[<tag>] <summary>`; ask if the user wants to rename any tag or change the template (e.g. `<tag>: <summary>` with lowercased tags for Conventional Commits). The mood is always imperative — not configurable.
+The eight canonical tags: `Feature`, `Fix`, `Doc`, `Refactor`, `Test`, `Chore`, `Merge`, `Revert`. Default each tag's string to its own name and the subject template to `[<tag>] <summary>`; ask if the user wants to rename any tag or change the template (e.g. `<tag>: <summary>` with lowercased tags for Conventional Commits). The mood is always imperative — not configurable.
 
 **Section E — Verify tiers.**
 

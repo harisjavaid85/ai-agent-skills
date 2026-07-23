@@ -5,7 +5,7 @@ The `commit` skill prefixes each commit subject with a tag. This file maps the e
 | Canonical tag | Tag in this repo | Covers                                                        |
 | ------------- | ---------------- | ------------------------------------------------------------- |
 | `Feature`     | `Feature`        | new functionality (`feat`)                                    |
-| `Bugfix`      | `Bugfix`         | fixes broken behavior (`fix`)                                 |
+| `Fix`         | `Fix`            | fixes broken behavior (`fix`)                                 |
 | `Doc`         | `Doc`            | documentation (`docs`)                                        |
 | `Refactor`    | `Refactor`       | behavior-preserving restructure, including `perf` and `style` |
 | `Test`        | `Test`           | tests                                                         |
