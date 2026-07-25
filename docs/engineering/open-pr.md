@@ -28,4 +28,4 @@ Passed a `<slug>`, the skill enriches the PR from the matching spec-tracker issu
 
 ## Where it fits
 
-The public face of the build chain: [to-tickets](https://aihero.dev/skills-to-tickets) shapes the work, [implement](https://aihero.dev/skills-implement) builds it, [commit](https://aihero.dev/skills-commit) writes the history, and `open-pr` proposes it for review. [ask-matt](https://aihero.dev/skills-ask-matt) routes the wider system.
+The public face of the build chain: [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md) shapes the work, [implement](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/implement.md) builds it, [commit](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/commit.md) writes the history, and `open-pr` proposes it for review. [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes the wider system.

@@ -28,4 +28,4 @@ Requires the `codex` CLI installed and authenticated on the machine — this is 
 
 ## Where it fits
 
-A **reach-for-it-anytime standalone** that slots in after anything produces an artifact worth verifying — commonly after [grill-with-context](https://aihero.dev/skills-grill-with-context) settles a design, or before [implement](https://aihero.dev/skills-implement) starts building from it. [ask-matt](https://aihero.dev/skills-ask-matt) routes the wider system.
+A **reach-for-it-anytime standalone** that slots in after anything produces an artifact worth verifying — commonly after [grill-with-context](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/grill-with-context.md) settles a design, or before [implement](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/implement.md) starts building from it. [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes the wider system.

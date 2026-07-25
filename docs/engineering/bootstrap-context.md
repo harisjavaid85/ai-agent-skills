@@ -20,7 +20,7 @@ Its defining constraint is the mode: this is the **batched** counterpart to inli
 
 Type `/bootstrap-context`, or the agent reaches for it automatically when a task fits.
 
-Reach for it when a repo has no `CONTEXT.md` yet, or when an existing one has drifted — terms referencing dead code, modules with their own jargon and no glossary entry. For sharpening a single term mid-conversation, that's [domain-modeling](https://aihero.dev/skills-domain-modeling) — usually driven for you by [grill-with-context](https://aihero.dev/skills-grill-with-context).
+Reach for it when a repo has no `CONTEXT.md` yet, or when an existing one has drifted — terms referencing dead code, modules with their own jargon and no glossary entry. For sharpening a single term mid-conversation, that's [domain-modeling](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/domain-modeling.md) — usually driven for you by [grill-with-context](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/grill-with-context.md).
 
 ## The audit
 
@@ -30,4 +30,4 @@ In multi-context repos it enforces one placement rule: **each term has exactly o
 
 ## Where it fits
 
-A **run-once** (then occasional) setup step: run it after [setup-repo-skills](https://aihero.dev/skills-setup-repo-skills) on a new repo, and revisit it when the codebase's language has visibly drifted. Its inline counterpart [domain-modeling](https://aihero.dev/skills-domain-modeling) keeps the glossary current between audits. [ask-matt](https://aihero.dev/skills-ask-matt) routes the wider system.
+A **run-once** (then occasional) setup step: run it after [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md) on a new repo, and revisit it when the codebase's language has visibly drifted. Its inline counterpart [domain-modeling](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/domain-modeling.md) keeps the glossary current between audits. [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes the wider system.

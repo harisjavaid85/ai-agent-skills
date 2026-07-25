@@ -24,7 +24,7 @@ Reach for it whenever the working tree should become commits. Plain `/commit` pr
 
 ## Tags
 
-Each commit gets a **commit tag** — `Feature`, `Fix`, `Doc`, `Refactor`, and friends — prefixed to an imperative subject, e.g. `[Feature] Add parser`. The vocabulary is configurable per repo by [setup-repo-skills](https://aihero.dev/skills-setup-repo-skills), so the skill matches your house style (including Conventional Commits) instead of imposing one.
+Each commit gets a **commit tag** — `Feature`, `Fix`, `Doc`, `Refactor`, and friends — prefixed to an imperative subject, e.g. `[Feature] Add parser`. The vocabulary is configurable per repo by [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md), so the skill matches your house style (including Conventional Commits) instead of imposing one.
 
 ## It's working if
 
@@ -34,4 +34,4 @@ Each commit gets a **commit tag** — `Feature`, `Fix`, `Doc`, `Refactor`, and f
 
 ## Where it fits
 
-The tail of the build chain: after [implement](https://aihero.dev/skills-implement) or any manual change, `commit` turns the diff into history, and [open-pr](https://aihero.dev/skills-open-pr) takes it from there. [ask-matt](https://aihero.dev/skills-ask-matt) routes the wider system.
+The tail of the build chain: after [implement](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/implement.md) or any manual change, `commit` turns the diff into history, and [open-pr](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/open-pr.md) takes it from there. [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes the wider system.

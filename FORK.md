@@ -4,7 +4,8 @@ This fork (`harisjavaid85/ai-agent-skills`) tracks `mattpocock/skills` as `upstr
 
 ## Renames kept from this fork
 
-- **`grill-with-context`** (upstream: `grill-with-docs`) — same thin composition ("run a `/grilling` session, using the `/domain-modeling` skill"), fork name kept. Cross-references in `ask-matt`, `write-a-skill`, `setup-repo-skills/domain.md`, docs pages, and `engineering/README.md` point to the fork name.
+- **`ask-author`** (upstream: `ask-matt`) — author-neutral name for the router over this skill set. The skill directory, metadata, docs page, plugin manifest, READMEs, and active cross-references use the fork name; imported upstream `CHANGELOG.md` and `.changeset/` entries retain the historical name.
+- **`grill-with-context`** (upstream: `grill-with-docs`) — same thin composition ("run a `/grilling` session, using the `/domain-modeling` skill"), fork name kept. Cross-references in `ask-author`, `write-a-skill`, `setup-repo-skills/domain.md`, docs pages, and `engineering/README.md` point to the fork name.
 
 ## Skills that replace upstream skills
 
@@ -29,16 +30,18 @@ Upstream has no knowledge-base file. This fork's `KNOWLEDGE.md` (durable learned
 
 `caveman`, `zoom-out` (upstream removed both), `in-progress/review` (upstream renamed to `engineering/code-review` and promoted it). Deprecated `setup-matt-pocock-skills` kept as historical record in `deprecated/`.
 
-## Tooling
+## Tooling and docs
 
 - **`scripts/link-skills.sh`** — upstream's dual-destination base (`~/.claude/skills` + `~/.agents/skills`) plus fork enhancements: interactive collision prompts (never silently `rm -rf`), non-interactive abort, stale-link pruning including deprecated skills, argument strictness. Tests in `tests/link-skills.sh`.
-- **`misc/` bucket is not shipped** (upstream policy): no `README.md`/`plugin.json` entries for `misc/` skills.
-- Fork metadata in `plugin.json`, `marketplace.json`, `package.json` (name `ai-agent-skills`, this repo's URL). Docs pages under `docs/` link source to this fork.
+- **`misc/` bucket is not shipped** (upstream policy): its skills appear only in `skills/misc/README.md`, never in the top-level `README.md` or `.claude-plugin/plugin.json`.
+- Fork metadata lives in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, and `package.json` (name `ai-agent-skills`, this repo's URL).
+- Every promoted skill has a page under `docs/`. Quickstart, source, sibling, and router links use absolute `github.com/harisjavaid85/ai-agent-skills` URLs; this fork does not use upstream's `aihero.dev` publishing convention. The canonical rules and template live in `.agents/writing-docs.md`.
 
 ## Pending (Plan 2, not yet applied)
 
-- Optional `[slug]` argument in `to-spec`/`to-tickets`: when the repo's tracker config is GitHub, label issues `spec:<slug>` (renamed from the fork's old `prd:<slug>` / `kind:prd` convention — see `setup-repo-skills/triage-labels.md` Markers, still old wording).
-- `triage`: fork's category-default rule (PRD-derived tickets default to `enhancement`; `bug` only when reproduction surfaces a defect).
-- `to-tickets`: story-traceability field ("Covers user stories") + coverage check in the confirmation step (conditional on numbered stories), acceptance-criteria quality rules.
-- `agent/<slug>` companion branch: dropped from `to-spec` for now; may return as an optional GitHub-only step or move to `implement`.
-- Docs pages owed for fork skills (`bootstrap-context`, `commit`, `open-pr`, `setup-repo-skills`, `cross-check-with-codex`, `setup-claude-code`, `write-a-skill`) per the docs-page convention in `CLAUDE.md`.
+The slug groups one spec and its implementation tickets so a future agent loop can select `ready-for-agent` + `spec:<slug>` while native tracker dependencies expose the unblocked frontier.
+
+- **`to-spec`:** accept an optional `[slug]`. For a GitHub tracker, idempotently create and apply `spec:<slug>` (`gh label create --force`). Decide whether the old `agent/<slug>` companion branch returns as an optional GitHub-only step or moves to `implement`.
+- **`to-tickets`:** accept the optional `[slug]` and apply `spec:<slug>` to every ticket. Restore the `Covers user stories` field and confirmation-time coverage check when the source spec has numbered stories. Restore acceptance-criteria rules: imperative voice, an explicit success condition, and references to symbols/interfaces rather than file paths.
+- **`triage`:** spec-derived tickets default to `enhancement`; use `bug` only when reproduction surfaces a defect. Optionally scope discovery by slug.
+- **Rename the old PRD label convention:** replace `prd:<slug>` / `kind:prd` and "PRD-slug" wording with `spec:<slug>` across `setup-repo-skills/triage-labels.md`, label provisioning in `setup-repo-skills/SKILL.md`, and `open-pr/SKILL.md`.

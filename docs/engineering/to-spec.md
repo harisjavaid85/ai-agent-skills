@@ -20,11 +20,11 @@ It does **not** interview you again. By the time you reach for it, the alignment
 
 You invoke this by typing `/to-spec` — the agent won't reach for it on its own.
 
-Reach for it once a change has been talked through and the domain language is settled, and you want that shared understanding written down before any code is written. If you *haven't* aligned yet, grill first — for that, use [grill-with-context](https://aihero.dev/skills-grill-with-context). To split the finished spec into tickets, use [to-tickets](https://aihero.dev/skills-to-tickets).
+Reach for it once a change has been talked through and the domain language is settled, and you want that shared understanding written down before any code is written. If you *haven't* aligned yet, grill first — for that, use [grill-with-context](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/grill-with-context.md). To split the finished spec into tickets, use [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md).
 
 ## Prerequisites
 
-`to-spec` publishes into your issue tracker, so [setup-repo-skills](https://aihero.dev/skills-setup-repo-skills) must have configured the tracker and triage labels for this repo first. It applies the `ready-for-agent` label itself — no separate triage pass needed.
+`to-spec` publishes into your issue tracker, so [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md) must have configured the tracker and triage labels for this repo first. It applies the `ready-for-agent` label itself — no separate triage pass needed.
 
 ## What the spec includes
 
@@ -56,4 +56,4 @@ That matters for agentic development: a good interface gives tests something dur
 grill-with-context → to-spec → to-tickets → implement → code-review
 ```
 
-Reach for it after the plan and domain language are resolved, and before you break the work into implementation tickets. Its key neighbours are [grill-with-context](https://aihero.dev/skills-grill-with-context), which sharpens the context so the spec is precise, and [to-tickets](https://aihero.dev/skills-to-tickets), which turns the spec into a set of tickets for [implement](https://aihero.dev/skills-implement) to build. When you're unsure which skill or flow fits, [ask-matt](https://aihero.dev/skills-ask-matt) routes you.
+Reach for it after the plan and domain language are resolved, and before you break the work into implementation tickets. Its key neighbours are [grill-with-context](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/grill-with-context.md), which sharpens the context so the spec is precise, and [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md), which turns the spec into a set of tickets for [implement](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/implement.md) to build. When you're unsure which skill or flow fits, [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes you.

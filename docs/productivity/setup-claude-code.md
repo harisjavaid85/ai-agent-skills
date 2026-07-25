@@ -20,7 +20,7 @@ The defining constraint is **safe re-runs**: everything the skill manages is tra
 
 Type `/setup-claude-code`, or the agent reaches for it automatically when a task fits.
 
-Reach for it on a new machine, a fresh sandbox, or any host where Claude Code has no guardrails yet. Run it once per machine — its repo-level counterpart [setup-repo-skills](https://aihero.dev/skills-setup-repo-skills) runs once per repo, and will nudge you toward this one when the global setup is missing.
+Reach for it on a new machine, a fresh sandbox, or any host where Claude Code has no guardrails yet. Run it once per machine — its repo-level counterpart [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md) runs once per repo, and will nudge you toward this one when the global setup is missing.
 
 ## The two guardrail layers
 
@@ -28,4 +28,4 @@ The skill installs belt and braces: a **permissions baseline** in `~/.claude/set
 
 ## Where it fits
 
-**Run-once setup**, machine-level: this first, then [setup-repo-skills](https://aihero.dev/skills-setup-repo-skills) per repo. [ask-matt](https://aihero.dev/skills-ask-matt) routes the wider system.
+**Run-once setup**, machine-level: this first, then [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md) per repo. [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes the wider system.

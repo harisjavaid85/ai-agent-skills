@@ -18,7 +18,7 @@ npx skills update research
 
 Type `/research`, or the agent reaches for it automatically when a task turns into reading legwork.
 
-Reach for it when the next step is *finding something out* — how an API behaves, what a spec actually says, whether a claim holds — and you'd rather not stall your own thread doing the reading. For sharpening a plan by interview instead of by reading, use [grilling](https://aihero.dev/skills-grilling); for exploring what to build with throwaway code, use [prototype](https://aihero.dev/skills-prototype).
+Reach for it when the next step is *finding something out* — how an API behaves, what a spec actually says, whether a claim holds — and you'd rather not stall your own thread doing the reading. For sharpening a plan by interview instead of by reading, use [grilling](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/productivity/grilling.md); for exploring what to build with throwaway code, use [prototype](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/prototype.md).
 
 ## Delegated legwork
 
@@ -26,4 +26,4 @@ The defining move is that the reading runs as a **background agent**. You keep w
 
 ## Where it fits
 
-A reach-for-it-anytime standalone that feeds the thinking skills: the file it produces is something to grill, plan, or design against, so it sits upstream of work like [grilling](https://aihero.dev/skills-grilling) and [to-prd](https://aihero.dev/skills-to-prd) rather than in the build chain. For the whole map, see [ask-matt](https://aihero.dev/skills-ask-matt).
+A reach-for-it-anytime standalone that feeds the thinking skills: the file it produces is something to grill, plan, or design against, so it sits upstream of work like [grilling](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/productivity/grilling.md) and [to-spec](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-spec.md) rather than in the build chain. For the whole map, see [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md).
