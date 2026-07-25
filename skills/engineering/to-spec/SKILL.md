@@ -1,12 +1,18 @@
 ---
 name: to-spec
-description: Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.
+description: Turn the current conversation into a spec and publish it to the project issue tracker, optionally grouped under a lifecycle slug — no interview, just synthesis of what you've already discussed.
 disable-model-invocation: true
 ---
 
 This skill takes the current conversation context and codebase understanding and produces a spec (you may know this document as a PRD). Do NOT interview the user — just synthesize what you already know.
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-repo-skills` if not.
+
+## Arguments
+
+Invoke as `/to-spec [slug]`.
+
+The optional kebab-case slug identifies the spec's lifecycle where the tracker config defines **Spec lifecycle operations**. Without a slug, the parent remains an ungrouped spec; on a tracker without lifecycle operations, a slug has no effect.
 
 ## Process
 
@@ -16,7 +22,13 @@ The issue tracker and triage label vocabulary should have been provided to you �
 
 Check with the user that these seams match their expectations.
 
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage.
+3. Write the spec using the template below, then publish it to the project issue tracker. If the tracker config defines **Spec lifecycle operations**, follow its commands:
+
+   - Ensure the fixed parent marker exists.
+   - When a slug is supplied, run the uniqueness check; if the slug is already in use, stop and report the existing parent — creating and updating specs are separate operations. Otherwise create the lifecycle label idempotently.
+   - Publish the parent with the marker and, when supplied, the lifecycle label. Title a slugged parent `Spec: <slug>`; otherwise use a concise descriptive title.
+
+   On a tracker without lifecycle operations, publish the parent using its configured convention.
 
 <spec-template>
 

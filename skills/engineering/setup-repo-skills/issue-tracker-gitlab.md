@@ -34,6 +34,10 @@ Create a GitLab issue.
 
 Run `glab issue view <number> --comments`.
 
+## Spec lifecycle operations
+
+None — lifecycle labels are not configured for this tracker. Publish specs and tickets per the conventions above.
+
 ## Wayfinding operations
 
 Used by `/wayfinder`. The **map** is a single issue with **child** issues as tickets.

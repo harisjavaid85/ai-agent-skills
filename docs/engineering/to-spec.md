@@ -12,7 +12,7 @@ npx skills update to-spec
 
 ## What it does
 
-`to-spec` turns the current conversation and your codebase understanding into a spec (you may know this document as a PRD), then publishes it to your issue tracker.
+`to-spec` turns the current conversation and your codebase understanding into a spec (you may know this document as a PRD), then publishes it as the parent artifact in your issue tracker. An optional lifecycle slug groups that spec with its implementation tickets on GitHub.
 
 It does **not** interview you again. By the time you reach for it, the alignment work is done — `to-spec` synthesises what is already known rather than asking a fresh round of questions.
 
@@ -24,7 +24,7 @@ Reach for it once a change has been talked through and the domain language is se
 
 ## Prerequisites
 
-`to-spec` publishes into your issue tracker, so [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md) must have configured the tracker and triage labels for this repo first. It applies the `ready-for-agent` label itself — no separate triage pass needed.
+`to-spec` publishes into your issue tracker, so [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md) must have configured the tracker and labels for this repo first. On GitHub the published parent carries the `kind:spec` marker and no triage-state label — `ready-for-agent` belongs to implementation tickets.
 
 ## What the spec includes
 
@@ -35,6 +35,10 @@ Reach for it once a change has been talked through and the domain language is se
 - **Testing decisions** — the seams the feature will be tested at, and what "done" looks like.
 - **Out-of-scope items** — what this change deliberately does *not* cover, to keep the ticket bounded.
 - **Further notes** — anything else worth carrying forward that doesn't fit the sections above.
+
+## Lifecycle slug
+
+Invoke `/to-spec` without a slug for an ungrouped parent spec, or pass a kebab-case slug to establish a GitHub lifecycle such as `spec:payments-redesign`. A slug identifies one parent spec across its whole lifetime and is shared by every ticket produced from it.
 
 ## Deep modules
 
@@ -47,6 +51,7 @@ That matters for agentic development: a good interface gives tests something dur
 - It starts writing the spec instead of asking you a fresh round of questions.
 - It checks the seams with you before writing, and proposes as few as possible.
 - The spec comes back in your project's domain vocabulary, not generic boilerplate.
+- A slugged GitHub spec carries one unique lifecycle label.
 
 ## Where it fits
 

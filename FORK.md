@@ -17,6 +17,14 @@ This fork (`harisjavaid85/ai-agent-skills`) tracks `mattpocock/skills` as `upstr
 
 `commit`, `open-pr`, `cross-check-with-codex`, `setup-claude-code` — plus `write-a-skill`, `bootstrap-context`, `setup-repo-skills` above. Each carries `agents/openai.yaml` metadata. Invocation choices: `setup-repo-skills`, `setup-claude-code`, and `bootstrap-context` are **user-invoked** (`disable-model-invocation: true` + `allow_implicit_invocation: false`); the rest are model-invoked.
 
+## Spec lifecycle (fork-only)
+
+- A GitHub parent spec carries `kind:spec` and no triage-state label. An optional kebab-case slug adds the repository-wide lifecycle label `spec:<slug>`; one slug identifies one parent across open and closed states.
+- `to-tickets` resolves or inherits the lifecycle slug and applies `spec:<slug>` plus `ready-for-agent` to every implementation ticket. Numbered source stories are mapped across the tickets and checked for complete coverage before publication. Acceptance criteria use imperative voice and independently verifiable success conditions.
+- `open-pr <slug>` uses `kind:spec` + `spec:<slug>` to link the parent spec and list completed tickets.
+- `setup-repo-skills` provisions the fixed `kind:spec` marker. `to-spec` creates each dynamic `spec:<slug>` label.
+- The tracker-specific `gh` commands live in the **Spec lifecycle operations** section of `setup-repo-skills/issue-tracker-github.md` (emitted into consumer repos as `docs/agents/issue-tracker.md`); `to-spec` and `to-tickets` stay tracker-agnostic and follow that section when the tracker config defines it — mirroring how `wayfinder` consumes "Wayfinding operations".
+
 ## KNOWLEDGE.md concept (fork-only)
 
 Upstream has no knowledge-base file. This fork's `KNOWLEDGE.md` (durable learned facts, distinct from glossary/ADRs/policy) appears in:
@@ -36,12 +44,3 @@ Upstream has no knowledge-base file. This fork's `KNOWLEDGE.md` (durable learned
 - **`misc/` bucket is not shipped** (upstream policy): its skills appear only in `skills/misc/README.md`, never in the top-level `README.md` or `.claude-plugin/plugin.json`.
 - Fork metadata lives in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, and `package.json` (name `ai-agent-skills`, this repo's URL).
 - Every promoted skill has a page under `docs/`. Quickstart, source, sibling, and router links use absolute `github.com/harisjavaid85/ai-agent-skills` URLs; this fork does not use upstream's `aihero.dev` publishing convention. The canonical rules and template live in `.agents/writing-docs.md`.
-
-## Pending (Plan 2, not yet applied)
-
-The slug groups one spec and its implementation tickets so a future agent loop can select `ready-for-agent` + `spec:<slug>` while native tracker dependencies expose the unblocked frontier.
-
-- **`to-spec`:** accept an optional `[slug]`. For a GitHub tracker, idempotently create and apply `spec:<slug>` (`gh label create --force`). Decide whether the old `agent/<slug>` companion branch returns as an optional GitHub-only step or moves to `implement`.
-- **`to-tickets`:** accept the optional `[slug]` and apply `spec:<slug>` to every ticket. Restore the `Covers user stories` field and confirmation-time coverage check when the source spec has numbered stories. Restore acceptance-criteria rules: imperative voice, an explicit success condition, and references to symbols/interfaces rather than file paths.
-- **`triage`:** spec-derived tickets default to `enhancement`; use `bug` only when reproduction surfaces a defect. Optionally scope discovery by slug.
-- **Rename the old PRD label convention:** replace `prd:<slug>` / `kind:prd` and "PRD-slug" wording with `spec:<slug>` across `setup-repo-skills/triage-labels.md`, label provisioning in `setup-repo-skills/SKILL.md`, and `open-pr/SKILL.md`.

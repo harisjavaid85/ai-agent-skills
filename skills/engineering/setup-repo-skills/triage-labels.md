@@ -18,6 +18,6 @@ Edit the right-hand column to match whatever vocabulary you actually use. Re-run
 
 In addition to triage-role labels, this repo uses fixed marker labels:
 
-| Marker     | Purpose                                |
-| ---------- | -------------------------------------- |
-| `kind:prd` | Identifies the tracker issue for a PRD |
+| Marker      | Purpose                       |
+| ----------- | ----------------------------- |
+| `kind:spec` | Identifies parent spec issues |

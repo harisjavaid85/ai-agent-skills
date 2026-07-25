@@ -287,7 +287,7 @@ Then write the `docs/agents/` files from the seed templates in this skill folder
 
 ## 5. Provision GitHub labels
 
-Only when Section B chose the GitHub tracker: if a GitHub remote exists and `gh auth status` succeeds, provision the five configured triage-role labels, the fixed issue category labels, and the fixed `kind:prd` marker. Use the confirmed mapped string as each triage label's name.
+Only when Section B chose the GitHub tracker: if a GitHub remote exists and `gh auth status` succeeds, provision the five configured triage-role labels, the fixed issue category labels, and the fixed `kind:spec` marker. Use the confirmed mapped string as each triage label's name.
 
 Create only labels that are missing. Match names exactly; do not use a fuzzy search. Preserve every existing label's color and description rather than updating it with `--force`.
 
@@ -300,7 +300,7 @@ Create only labels that are missing. Match names exactly; do not use a fuzzy sea
 | `wontfix`               | This will not be worked on               | `FFFFFF`      |
 | fixed `bug`             | Something isn't working                  | `D73A4A`      |
 | fixed `enhancement`     | New feature or request                   | `A2EEEF`      |
-| fixed `kind:prd`        | Marker for PRD tracker issues            | `EDEDED`      |
+| fixed `kind:spec`       | Identifies parent spec issues             | `EDEDED`      |
 
 For each missing label, run:
 
@@ -329,4 +329,4 @@ Do not quote the conditions, marker names, or arrow syntax in your message — t
 
 ---
 
-_Background: the structural-vs-semantic split between this skill and `bootstrap-context` is recorded in [ADR-0003](../../../docs/adr/0003-semantic-vs-structural-authority-split.md)._
+_Background: the structural-vs-semantic split between this skill and `bootstrap-context` is recorded in [ADR-0004](../../../.agents/adr/0004-semantic-vs-structural-authority-split.md)._
