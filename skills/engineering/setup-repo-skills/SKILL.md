@@ -1,6 +1,7 @@
 ---
 name: setup-repo-skills
 description: Configure the current repo for the engineering skills with working directories, issue-tracker conventions, per-language coding standards, and agent guidance. Use when the user wants to set up, wire, or reconfigure a repo for these skills.
+disable-model-invocation: true
 ---
 
 # Setup Repo Skills

@@ -1,3 +1,5 @@
 interface:
   display_name: "Bootstrap Context"
   short_description: "Establish or audit the repo's domain glossary"
+policy:
+  allow_implicit_invocation: false

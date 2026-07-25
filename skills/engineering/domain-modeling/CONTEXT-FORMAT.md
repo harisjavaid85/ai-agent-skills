@@ -34,7 +34,7 @@ _Avoid_: Client, buyer, account
 
 **Single context (most repos):** One `CONTEXT.md` at the repo root.
 
-**Multiple contexts:** A `CONTEXT-MAP.md` at the repo root lists the contexts, where they live, and how they relate to each other:
+**Multiple contexts:** A `CONTEXT-MAP.md` at the repo root lists the contexts, where they live, and how they relate to each other. A root `CONTEXT.md` may sit alongside the map for repo-wide carrier vocabulary:
 
 ```md
 # Context Map

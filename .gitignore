@@ -6,3 +6,6 @@
 !.claude/skills/**
 
 node_modules
+.agents/plans/
+.agents/handoffs/
+.agents/overviews/

@@ -1,6 +1,7 @@
 ---
 name: bootstrap-context
 description: Create or refresh a repository's domain-language glossary and context map in a single batched pass. Use when establishing the project's canonical terminology for the first time, or auditing it for drift — not for inline term-sharpening during design work.
+disable-model-invocation: true
 ---
 
 ## Guiding principle
@@ -34,7 +35,7 @@ If any exist → **update mode**: diff against current repo state and list:
 - **Drifted**: definitions that no longer match how the code uses the term.
 - **Out of contract**: implementation details, operational rules, conventions, or gotchas that are not domain language.
 
-Surface this list to the user before touching anything. Preserve out-of-contract content; classify each item per the taxonomy in [domain.md](../setup-repo-skills/domain.md) (ADR, `KNOWLEDGE.md`, operational policy, code comment) and always ask the user where each belongs — never relocate or delete it automatically.
+Surface this list to the user before touching anything. Preserve out-of-contract content; classify each item per the taxonomy in [domain.md](../setup-repo-skills/domain.md) and always ask the user where each belongs — never relocate or delete it automatically.
 
 ### 2. Choose layout
 

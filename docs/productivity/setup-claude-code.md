@@ -1,0 +1,31 @@
+Quickstart:
+
+```bash
+npx skills add harisjavaid85/ai-agent-skills --skill=setup-claude-code
+```
+
+```bash
+npx skills update setup-claude-code
+```
+
+[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/productivity/setup-claude-code)
+
+## What it does
+
+`setup-claude-code` bootstraps a machine's global Claude Code configuration under `~/.claude/`: a permissions baseline, a dangerous-command hook, and optional interface settings. It works in three modes — `host`, `sandbox`, and `guardrails` — for a personal machine, an ephemeral environment, or just the safety layer.
+
+The defining constraint is **safe re-runs**: everything the skill manages is tracked under a sentinel in your settings, so running it again updates its own entries while preserving every key you added by hand.
+
+## When to reach for it
+
+Type `/setup-claude-code`, or the agent reaches for it automatically when a task fits.
+
+Reach for it on a new machine, a fresh sandbox, or any host where Claude Code has no guardrails yet. Run it once per machine — its repo-level counterpart [setup-repo-skills](https://aihero.dev/skills-setup-repo-skills) runs once per repo, and will nudge you toward this one when the global setup is missing.
+
+## The two guardrail layers
+
+The skill installs belt and braces: a **permissions baseline** in `~/.claude/settings.json` (deny and ask lists for dangerous operations) and a **PreToolUse hook** that blocks destructive shell commands outright. Both layers report to one audit surface, `~/.claude/GUARDRAILS.md`, so you can see exactly what protection is in place.
+
+## Where it fits
+
+**Run-once setup**, machine-level: this first, then [setup-repo-skills](https://aihero.dev/skills-setup-repo-skills) per repo. [ask-matt](https://aihero.dev/skills-ask-matt) routes the wider system.

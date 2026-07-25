@@ -14,14 +14,14 @@ This fork (`harisjavaid85/ai-agent-skills`) tracks `mattpocock/skills` as `upstr
 
 ## Fork-only skills (additive, no upstream counterpart)
 
-`commit`, `open-pr`, `cross-check-with-codex`, `setup-claude-code` — plus `write-a-skill`, `bootstrap-context`, `setup-repo-skills` above. Each carries `agents/openai.yaml` metadata.
+`commit`, `open-pr`, `cross-check-with-codex`, `setup-claude-code` — plus `write-a-skill`, `bootstrap-context`, `setup-repo-skills` above. Each carries `agents/openai.yaml` metadata. Invocation choices: `setup-repo-skills`, `setup-claude-code`, and `bootstrap-context` are **user-invoked** (`disable-model-invocation: true` + `allow_implicit_invocation: false`); the rest are model-invoked.
 
 ## KNOWLEDGE.md concept (fork-only)
 
 Upstream has no knowledge-base file. This fork's `KNOWLEDGE.md` (durable learned facts, distinct from glossary/ADRs/policy) appears in:
 
 - `domain-modeling/SKILL.md` — tree diagrams (the two `KNOWLEDGE.md` lines are the fork block; upstream's file has none)
-- `domain-modeling/CONTEXT-FORMAT.md` — the "Domain language only" carve-out rule (first rule)
+- `domain-modeling/CONTEXT-FORMAT.md` — the "Domain language only" carve-out rule (first rule), plus the "root `CONTEXT.md` may sit alongside the map for repo-wide carrier vocabulary" line in the multi-context section
 - `setup-repo-skills/domain.md` — the full routing taxonomy (fork-authored; upstream's `domain.md` is a subset)
 - `bootstrap-context/SKILL.md` — out-of-contract audit classifies per `domain.md`
 

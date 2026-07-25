@@ -1,7 +1,7 @@
 Quickstart:
 
 ```bash
-npx skills add mattpocock/skills --skill=domain-modeling
+npx skills add harisjavaid85/ai-agent-skills --skill=domain-modeling
 ```
 
 ```bash

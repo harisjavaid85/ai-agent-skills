@@ -1,7 +1,7 @@
 Quickstart:
 
 ```bash
-npx skills add mattpocock/skills --skill=improve-codebase-architecture
+npx skills add harisjavaid85/ai-agent-skills --skill=improve-codebase-architecture
 ```
 
 ```bash

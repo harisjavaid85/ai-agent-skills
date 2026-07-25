@@ -24,7 +24,7 @@ Before writing, confirm requirements are settled. There are three cases:
 
 1. **Grilled in this conversation** — a grilling session earlier in the current context already settled scope. Write from that.
 2. **Handoff doc** — the user has (or points you to) a handoff document capturing the settled design. Read it, then write.
-3. **Cold start** — neither of the above. Do **not** improvise a requirements interview. Recommend the user run `/grilling` (general design) or `/grill-with-context` (when the skill introduces or depends on canonical domain terms), then re-run this skill.
+3. **Cold start** — neither of the above. Do **not** improvise a requirements interview. Recommend the user run `/grill-me` (general design) or `/grill-with-context` (when the skill introduces or depends on canonical domain terms), then re-run this skill.
 
 If the user declines grilling and wants a draft anyway, collect only the **irreducible inputs** — the minimum needed to emit a valid skill:
 

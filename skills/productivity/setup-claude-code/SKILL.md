@@ -2,6 +2,7 @@
 name: setup-claude-code
 description: Bootstrap a global Claude Code configuration with permissions, command guardrails, and optional interface settings. Use when the user wants to configure Claude Code on a host, sandbox, or new machine.
 argument-hint: host | sandbox | guardrails
+disable-model-invocation: true
 ---
 
 # setup-claude-code

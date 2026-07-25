@@ -72,6 +72,12 @@ Off the main flow entirely.
 - **`/research`** — delegate reading legwork to a **background agent**: it investigates a question against **primary sources**, then leaves a cited Markdown file in the repo. Keep working while it reads. The file it produces is something to take *into* the main flow at `/grill-with-context` — research feeds the thinking, it doesn't replace it.
 - **`/teach`** — learn a concept over multiple sessions, using the current directory as a stateful workspace.
 - **`/writing-great-skills`** — reference for writing and editing skills well.
+- **`/bootstrap-context`** — establish the repo's `CONTEXT.md` glossary in one batched pass, or audit it for drift later. The counterpart to `/domain-modeling`'s inline mode: batch versus as-you-go.
+- **`/commit`** — group working-tree changes into logical commits with tagged subjects (`[Feature] Add parser`), following the repo's tag vocabulary. Proposes a plan first; commits on approval.
+- **`/open-pr`** — push the current branch and open or update its GitHub PR in a standard format. The public tail of the main flow, after the work is built and committed.
+- **`/write-a-skill`** — turn settled requirements into a new skill, or update an existing one. Grill the scope first — it refuses to interview you itself.
+- **`/cross-check-with-codex`** — an independent second opinion on a plan, design, or implementation: Codex reviews, Claude reconciles, with a local audit record.
+- **`/setup-claude-code`** — once per machine: global Claude Code permissions and dangerous-command guardrails. The machine-level counterpart to the precondition below.
 
 ## Precondition
 

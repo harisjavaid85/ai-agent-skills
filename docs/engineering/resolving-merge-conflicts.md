@@ -1,7 +1,7 @@
 Quickstart:
 
 ```bash
-npx skills add mattpocock/skills --skill=resolving-merge-conflicts
+npx skills add harisjavaid85/ai-agent-skills --skill=resolving-merge-conflicts
 ```
 
 ```bash

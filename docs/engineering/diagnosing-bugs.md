@@ -1,7 +1,7 @@
 Quickstart:
 
 ```bash
-npx skills add mattpocock/skills --skill=diagnosing-bugs
+npx skills add harisjavaid85/ai-agent-skills --skill=diagnosing-bugs
 ```
 
 ```bash
