@@ -101,4 +101,4 @@ Print a one-line summary: profile, hook path, settings backup path.
 
 ## Design notes
 
-See [`docs/adr/0002-setup-claude-code-guardrails-design.md`](../../../docs/adr/0002-setup-claude-code-guardrails-design.md) for the hook-vs-static boundary and host-vs-sandbox profile rationale.
+See [ADR-0003](../../../.agents/adr/0003-setup-claude-code-guardrails-design.md) for the hook-vs-static boundary and host-vs-sandbox profile rationale.

@@ -18,7 +18,7 @@ The defining constraint is the authority split: this skill owns only **structura
 
 ## When to reach for it
 
-Type `/setup-repo-skills`, or the agent reaches for it automatically when a task fits.
+You invoke this by typing `/setup-repo-skills` — the agent won't reach for it on its own.
 
 Reach for it once per repo, before the issue-lifecycle skills — [to-spec](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-spec.md), [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md), and [triage](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/triage.md) stop and ask for it when their config is missing. It walks you through one section at a time, leading with the recommended answer: repo mode, issue tracker (GitHub, GitLab, or local markdown), label vocabularies, verify tiers, coding standards.
 

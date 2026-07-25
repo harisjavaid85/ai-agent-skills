@@ -7,7 +7,7 @@ description: DEPRECATED — folded into setup-claude-code. Use `/setup-claude-co
 
 > **Superseded by `setup-claude-code`.** For a hook-only install (the equivalent of this skill), run `/setup-claude-code guardrails`. The new hook also covers `rm -rf` variants and `find . -delete`.
 >
-> Kept here for reference. See [`../../../docs/adr/0002-setup-claude-code-guardrails-design.md`](../../../docs/adr/0002-setup-claude-code-guardrails-design.md) for the rationale.
+> Kept here for reference. See [ADR-0003](../../../.agents/adr/0003-setup-claude-code-guardrails-design.md) for the rationale.
 
 ---
 

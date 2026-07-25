@@ -4,7 +4,7 @@
 
 The primary consumer is the **producing agent**, which reads the standard before writing code in that language; `review`'s Standards axis is a backstop, not the point. Coverage of the full guide — both the mechanical rules a formatter enforces and the judgment calls it cannot — rests on the named guide, applied wholesale by the agent and fetchable on demand. The linter is the mechanical safety net, not the definition of the standard; `setup-repo-skills` references it but never installs it.
 
-The defaults catalog — which guide leads for each language — is vendored into the emitted `docs/agents/coding-standards.md` as a lookup table, not merely referenced from the skill. A repo cannot reach back into the plugin bundle, so an agent introducing a new language needs the default available locally — the same self-containment reason [ADR-0003](./0003-semantic-vs-structural-authority-split.md) gives for inlining `domain.md`'s diagram. Consistency depends on it: one vendored table makes every agent pick the same guide for a language, where per-agent recall would drift.
+The defaults catalog — which guide leads for each language — is vendored into the emitted `docs/agents/coding-standards.md` as a lookup table, not merely referenced from the skill. A repo cannot reach back into the plugin bundle, so an agent introducing a new language needs the default available locally — the same self-containment reason [ADR-0004](./0004-semantic-vs-structural-authority-split.md) gives for inlining `domain.md`'s diagram. Consistency depends on it: one vendored table makes every agent pick the same guide for a language, where per-agent recall would drift.
 
 ## Consequences
 
