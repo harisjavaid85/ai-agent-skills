@@ -41,6 +41,7 @@ Upstream has no knowledge-base file. This fork's `KNOWLEDGE.md` (durable learned
 ## Tooling and docs
 
 - **`scripts/link-skills.sh`** — upstream's dual-destination base (`~/.claude/skills` + `~/.agents/skills`) plus fork enhancements: interactive collision prompts (never silently `rm -rf`), non-interactive abort, stale-link pruning including deprecated skills, argument strictness. Tests in `tests/link-skills.sh`.
+- **Out-of-scope KB path is `docs/out-of-scope/`** (upstream: `.out-of-scope/`) in consumer repos: `triage/SKILL.md`, `triage/OUT-OF-SCOPE.md`, `triage/AGENT-BRIEF.md`, `setup-repo-skills/domain.md`, and `docs/engineering/triage.md` all use the fork path. This repo's **own** rejected-request records live at `.out-of-scope/` in upstream's location, so upstream edits to those files merge cleanly.
 - **`misc/` bucket is not shipped** (upstream policy): its skills appear only in `skills/misc/README.md`, never in the top-level `README.md` or `.claude-plugin/plugin.json`.
 - Fork metadata lives in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, and `package.json` (name `ai-agent-skills`, this repo's URL).
 - Every promoted skill has a page under `docs/`. Quickstart, source, sibling, and router links use absolute `github.com/harisjavaid85/ai-agent-skills` URLs; this fork does not use upstream's `aihero.dev` publishing convention. The canonical rules and template live in `.agents/writing-docs.md`.
