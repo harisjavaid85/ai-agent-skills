@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grill with Context"
+  short_description: "Interview that sharpens a plan and records docs"
+policy:
+  allow_implicit_invocation: false

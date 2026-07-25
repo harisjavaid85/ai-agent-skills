@@ -4,3 +4,5 @@
 !.claude/settings.json
 !.claude/skills/
 !.claude/skills/**
+
+node_modules

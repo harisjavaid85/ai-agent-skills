@@ -1,6 +1,6 @@
 ---
 name: setup-repo-skills
-description: Configure the current repo for the engineering skills with working directories, GitHub workflow conventions, per-language coding standards, and agent guidance. Use when the user wants to set up, wire, or reconfigure a repo for these skills.
+description: Configure the current repo for the engineering skills with working directories, issue-tracker conventions, per-language coding standards, and agent guidance. Use when the user wants to set up, wire, or reconfigure a repo for these skills.
 ---
 
 # Setup Repo Skills
@@ -11,7 +11,7 @@ It sets up three things:
 
 - **Harness-specific working state** — `.claude` for Claude Code, `.agents` for Codex and other agents, plus Claude settings when applicable (details in step 2).
 - **The agent guide** — the repo's `AGENTS.md` or `CLAUDE.md`: repo mode, output discipline, and pointers to everything below.
-- **`docs/agents/` config** — GitHub workflow conventions, skill vocabularies, and domain-doc rules the agent guide points to.
+- **`docs/agents/` config** — issue-tracker conventions, skill vocabularies, and domain-doc rules the agent guide points to.
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
@@ -21,8 +21,11 @@ Read the current repo to understand its starting state. Don't assume:
 
 - Which harness is active? Use `.claude` for Claude Code and `.agents` for Codex or any other agent.
 - When running in Claude Code, is `~/.claude/settings.json` present, and does it contain a `_setupClaudeCode` marker? (For the setup-claude-code nudge — detection only, never to change global settings.)
-- `git remote -v` — is there a GitHub remote?
+- `git remote -v` — which host, if any (GitHub, GitLab, other)?
 - `gh auth status` — is the GitHub CLI available and authenticated? (Detection only until label provisioning.)
+- Is the `triage` skill installed? (Gates Section C — an uninstalled skill needs no labels.)
+- `.scratch/` — is a local-markdown issue-tracker convention already in use?
+- Monorepo signals — a `pnpm-workspace.yaml`, a `workspaces` field in `package.json`, or a populated `packages/*` with its own `src/` (feeds the bootstrap-context nudge only — never a layout decision here).
 - `AGENTS.md` and `CLAUDE.md` at the root — does either exist? Do the agent-guide sections already exist — e.g. a `### Repo mode: <mode>` subsection under `## Operating mode`?
 - The active harness directory — which of `plans/`, `handoffs/`, and `overviews/` already exist? For Claude Code, also check `.claude/settings.json`.
 - `.gitignore` — does it already ignore the active harness's working dirs?
@@ -89,7 +92,7 @@ For Codex and other agents, do not create a harness settings file.
 
 ## 3. Agent-skills wiring
 
-Walk the user through the following sections **one at a time** — present each decision, get the answer where one is needed, then move on. Assume the user doesn't know these terms; each starts with a short explainer.
+Walk the user through the following sections **one at a time** — one section, one answer, then the next. Lead each section with the recommended answer so the user can accept it in a word. Assume the user doesn't know these terms; give a one-line explainer only when the choice genuinely branches, and skip a section entirely when exploration already settled it (Section C when `triage` isn't installed).
 
 **Section A — Repo mode.**
 
@@ -107,19 +110,28 @@ If step 1 found an existing `### Repo mode: <mode>` subsection in `AGENTS.md` or
 
 The rendered block per mode is defined in step 4.
 
-A `prototype` repo still goes through Sections B–E. Mode doesn't skip them — a prototype can still live on GitHub and use the standard label/tag vocabulary.
+A `prototype` repo still goes through Sections B–F. Mode doesn't skip them — a prototype can still live on GitHub and use the standard label/tag vocabulary.
 
-**Section B — GitHub workflow.**
+**Section B — Issue tracker.**
 
-> GitHub Issues is the supported issue tracker for `to-prd`, `to-issues`, and `triage`. This setup writes the shared `gh` conventions those skills consume.
+> The "issue tracker" is where issues live for this repo. Skills like `to-spec`, `to-tickets`, and `triage` read from and write to it — they need to know whether to call `gh issue create`, write a markdown file under `.scratch/`, or follow some other workflow you describe. Pick the place you actually track work for this repo.
 
-Do not ask the user to select an issue tracker. If step 1 found no GitHub remote, no `gh` command, or unauthenticated `gh`, warn that the GitHub lifecycle skills cannot run yet, but continue the local setup.
+Default posture: these skills were designed for GitHub. If a `git remote` points at GitHub, propose that. If a `git remote` points at GitLab (`gitlab.com` or a self-hosted host), propose GitLab. Otherwise (or if the user prefers), offer:
 
-**Section C — Triage-role label vocabulary.**
+- **GitHub** — issues live in the repo's GitHub Issues (uses the `gh` CLI)
+- **GitLab** — issues live in the repo's GitLab Issues (uses the `glab` CLI)
+- **Local markdown** — issues live as files under `.scratch/<feature>/` in this repo (good for solo projects or repos without a remote)
+- **Other** (Jira, Linear, etc.) — ask the user to describe the workflow in one paragraph; record it as freeform prose
+
+Record the choice in `docs/agents/issue-tracker.md` from the matching seed template in step 4. The GitHub and GitLab templates carry a "PRs as a request surface" flag, defaulted **off** — leave it off and don't raise it; a user who wants external PRs in the triage queue can flip the flag in the file later.
+
+If the user picks GitHub but step 1 found no GitHub remote, no `gh` command, or unauthenticated `gh`, warn that the GitHub lifecycle skills cannot run yet, but continue the local setup.
+
+**Section C — Triage-role label vocabulary.** Skip this section entirely if the `triage` skill isn't installed (exploration told you).
 
 > When `triage` processes an issue, it assigns one Issue category (`bug` or `enhancement`) and moves it through a state machine of triage roles. The five triage roles need labels that match strings you've actually configured. If your repo uses `bug:triage` instead of `needs-triage`, map that role so the skills apply the right label.
 
-The five canonical triage roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Default each role's string to its own name; ask if the user wants to override any. The confirmed strings will be provisioned on GitHub during step 5 when GitHub is available.
+The five canonical triage roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Default each role's string to its own name; ask if the user wants to override any. The confirmed strings will be provisioned on GitHub during step 5 when the GitHub tracker was chosen and GitHub is available.
 
 **Section D — Commit tag vocabulary.**
 
@@ -191,7 +203,7 @@ _(Claude Code only)_ **Plan mode artifacts** — plan and design docs produced i
 
 ## Issues, triage & commits
 
-- **Issue tracker** — GitHub Issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+- **Issue tracker** — [one-line summary of where issues are tracked]. See `docs/agents/issue-tracker.md`.
 - **Triage labels** — [one-line summary of the triage-role label vocabulary]. See `docs/agents/triage-labels.md`.
 - **Commit tags** — [one-line summary of the tag vocabulary and subject format]. See `docs/agents/commit-tags.md`.
 
@@ -266,15 +278,15 @@ The `### Repo mode` prose and bullets come from the mode table below. Everything
 
 Then write the `docs/agents/` files from the seed templates in this skill folder:
 
-- [issue-tracker-github.md](./issue-tracker-github.md) — always write this as `docs/agents/issue-tracker.md`
-- [triage-labels.md](./triage-labels.md) — fill in the user's label strings
+- [issue-tracker-github.md](./issue-tracker-github.md) / [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) / [issue-tracker-local.md](./issue-tracker-local.md) — write the one matching Section B's choice as `docs/agents/issue-tracker.md`; for "other" trackers, write it from scratch using the user's description
+- [triage-labels.md](./triage-labels.md) — fill in the user's label strings (only when `triage` is installed and Section C ran)
 - [commit-tags.md](./commit-tags.md) — fill in the user's tag strings and subject template from Section D's answer (e.g. `[<tag>] <summary>` for bracketed, `<tag>: <summary>` for Conventional Commits); the resulting file should describe only the chosen format
 - [domain.md](./domain.md) — the agent contract for reading and extending the domain docs and knowledge base, written as-is (no per-repo decision)
 - [coding-standards.md](./coding-standards.md) — write as `docs/agents/coding-standards.md`; emit one binding block per detected language (guide, authoritative URL, enforcing linter, deviations, emphases) from Section F, and keep the complete _Catalog defaults_ table so a producing agent can add a language later
 
 ## 5. Provision GitHub labels
 
-If a GitHub remote exists and `gh auth status` succeeds, provision the five configured triage-role labels, the fixed issue category labels, and the fixed `kind:prd` marker. Use the confirmed mapped string as each triage label's name.
+Only when Section B chose the GitHub tracker: if a GitHub remote exists and `gh auth status` succeeds, provision the five configured triage-role labels, the fixed issue category labels, and the fixed `kind:prd` marker. Use the confirmed mapped string as each triage label's name.
 
 Create only labels that are missing. Match names exactly; do not use a fuzzy search. Preserve every existing label's color and description rather than updating it with `--force`.
 
@@ -295,7 +307,7 @@ For each missing label, run:
 gh label create "<confirmed-label-name>" --description "<description>" --color "<color>"
 ```
 
-If any label cannot be listed or created, continue writing the local setup, then report the failed label provisioning and error in the finish summary. Otherwise report that all required GitHub labels exist. If GitHub is unavailable, skip provisioning and include the GitHub prerequisite warning in the finish summary.
+If any label cannot be listed or created, continue writing the local setup, then report the failed label provisioning and error in the finish summary. Otherwise report that all required GitHub labels exist. If the GitHub tracker wasn't chosen, skip provisioning. If it was chosen but GitHub is unavailable, skip provisioning and include the GitHub prerequisite warning in the finish summary.
 
 ## 6. Finish
 

@@ -1,13 +1,13 @@
 ---
 name: write-a-skill
-description: Convert settled requirements into a well-structured agent skill with clear vocabulary and behaviour. Use when the user wants to create, update, refactor, or iterate on a skill after its scope is settled.
+description: Convert settled requirements into a well-structured agent skill with clear steps and reference. Use when the user wants to create, update, refactor, or iterate on a skill after its scope is settled.
 ---
 
 # Writing Skills
 
 This skill does one thing: transform **settled requirements** into a clean, well-structured skill. It does not gather requirements itself — a shallow self-grill produces low-quality drafts and rework is needed later.
 
-See `CONTEXT.md` for the canonical definitions of **Vocabulary**, **Behaviour**, and **Progressive disclosure**. Work the numbered steps below in order; templates to use are in `FORMAT.md`.
+Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **completion criterion**, **leading word**) are defined in [`../writing-great-skills/GLOSSARY.md`](../writing-great-skills/GLOSSARY.md); the principles behind the rules below are in [`../writing-great-skills/SKILL.md`](../writing-great-skills/SKILL.md). Work the numbered steps below in order; templates to use are in `FORMAT.md`.
 
 ## Workflow
 
@@ -24,7 +24,7 @@ Before writing, confirm requirements are settled. There are three cases:
 
 1. **Grilled in this conversation** — a grilling session earlier in the current context already settled scope. Write from that.
 2. **Handoff doc** — the user has (or points you to) a handoff document capturing the settled design. Read it, then write.
-3. **Cold start** — neither of the above. Do **not** improvise a requirements interview. Recommend the user run `/grill-me` (general design) or `/grill-with-context` (when the skill introduces or depends on canonical domain terms), then re-run this skill.
+3. **Cold start** — neither of the above. Do **not** improvise a requirements interview. Recommend the user run `/grilling` (general design) or `/grill-with-context` (when the skill introduces or depends on canonical domain terms), then re-run this skill.
 
 If the user declines grilling and wants a draft anyway, collect only the **irreducible inputs** — the minimum needed to emit a valid skill:
 
@@ -43,23 +43,23 @@ Read the existing skill files in full before editing. Then post a **checkpoint**
 
 Only edit after the user confirms.
 
-**Preservation rule.** Preserve the existing skill's structural decisions — file split, vocabulary location, scope guards, section ordering — unless the checkpoint explicitly overrides them. Moving inline what was in a separate file (or vice versa) is an override, not a stylistic edit, and must appear in the conflicts list.
+**Preservation rule.** Preserve the existing skill's structural decisions — file split, reference location, scope guards, section ordering — unless the checkpoint explicitly overrides them. Moving inline what was in a separate file (or vice versa) is an override, not a stylistic edit, and must appear in the conflicts list.
 
 ### 2. Check duplication & collision
 
 Scan the existing skills first:
 
 - **Overlap** — does a skill already cover this? ("`triage` already classifies issues — is this new skill actually distinct?") If it overlaps, raise it before creating a redundant skill.
-- **Vocabulary collision** — does the new skill reuse a term that `CONTEXT.md` already defines differently? Reconcile the term before writing.
+- **Vocabulary collision** — does the new skill reuse a term that the repo's `CONTEXT.md` already defines differently? Reconcile the term before writing.
 
 ### 3. Draft
 
-#### Separate vocabulary from behaviour
+#### Separate steps from reference
 
-Keep the nouns and the verbs apart — the **progressive disclosure** the skill should embody.
+Keep the doing and the knowing apart — the **progressive disclosure** the skill should embody.
 
-- **Behaviour** always lives in `SKILL.md` — process, decision rules, steps.
-- **Vocabulary** — a few terms or a small mapping go in a `## Vocabulary` section near the top of `SKILL.md`. Extract a separate file (`VOCABULARY.md`, `FORMAT.md`, or a focused reference) when the content is shared, independently reusable, or needed only on some workflow branches. Never split based on line count alone. Keep references one level deep.
+- **Steps** always live in `SKILL.md` — ordered actions, process, decision rules. Each step ends on a checkable **completion criterion**.
+- **Reference** — definitions, templates, formats, mappings — goes in a section of `SKILL.md` when small, or in a separate disclosed file (`REFERENCE.md`, `FORMAT.md`, or a focused file) when shared, independently reusable, or needed only on some **branches**. Never split based on line count alone. Keep references one level deep.
 
 Never interleave "here's the format of X" with "here's when you do Y" — that smear makes drafts noisy to edit.
 
@@ -69,6 +69,7 @@ The produced skill is for whoever runs it later, not a record of the grilling co
 
 - **Cut** all process archaeology: "we considered X but decided against it", "this skill does not build Y", rationale for rejected alternatives. None of it helps a future reader of the finished skill.
 - **Keep only** a terse, present-tense **scope guard** when the agent would plausibly overstep without it ("Only triages; never edits code"). The test: does the line stop the agent from doing the wrong thing _right now_? If it just explains a past decision, cut it.
+- Prune everything else per `writing-great-skills` — run the **no-op** test sentence by sentence, state the **positive** rather than steering by **negation**, and prefer a strong **leading word** over a restated triad.
 
 Whether a cut decision deserves an ADR is the grilling skill's call at runtime — this skill doesn't record rejected decisions anywhere.
 
@@ -78,7 +79,7 @@ Add utility scripts when the operation is deterministic (validation, formatting)
 
 #### Write a concise description
 
-The description is **the only thing the agent sees** when deciding which skill to load, surfaced in the system prompt alongside all other installed skills. Keep it tight and concrete, following the **Description format** in `FORMAT.md`.
+The description is **the only thing the agent sees** when deciding which skill to load, surfaced in the system prompt alongside all other installed skills. Follow the **Description format** in `FORMAT.md`, and the description principles in `writing-great-skills` — front-load the skill's **leading word**, one trigger per **branch**, cut identity already in the body.
 
 ### 4. Review checklist
 
@@ -86,7 +87,8 @@ After drafting, verify:
 
 - [ ] **Create:** requirements were settled (grilled, handoff, or irreducible-inputs override). **Update:** checkpoint approved by user before editing.
 - [ ] Description matches the Description format in `FORMAT.md`
-- [ ] Vocabulary and behaviour are separated (section or file)
+- [ ] Steps and reference are separated (section or file)
+- [ ] Each step ends on a checkable completion criterion
 - [ ] No non-features documented (scope guards only if they change behaviour)
 - [ ] Deterministic operations use scripts where appropriate
 - [ ] No duplication/collision with existing skills

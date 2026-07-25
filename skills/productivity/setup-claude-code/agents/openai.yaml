@@ -1,0 +1,3 @@
+interface:
+  display_name: "Setup Claude Code"
+  short_description: "Bootstrap global Claude Code configuration"

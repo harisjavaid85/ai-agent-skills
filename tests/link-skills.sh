@@ -42,37 +42,35 @@ test_argument_validation() {
   local home
   home="$(new_home validation)"
 
-  assert_fails env HOME="$home" "$INSTALLER"
-  assert_fails env HOME="$home" "$INSTALLER" --claude --codex
-  assert_fails env HOME="$home" "$INSTALLER" --other
+  assert_fails env HOME="$home" "$INSTALLER" --claude
   grep -q 'Usage:' "$TMP_ROOT/output" || fail "usage was not printed"
-  pass "requires exactly one known target"
+  pass "rejects arguments (dual-destination, no flags)"
 }
 
-test_target_isolation_and_exclusions() {
+test_links_both_destinations_and_exclusions() {
   local home
-  home="$(new_home isolation)"
+  home="$(new_home both)"
 
-  HOME="$home" "$INSTALLER" --claude >"$TMP_ROOT/output"
+  HOME="$home" "$INSTALLER" >"$TMP_ROOT/output"
   assert_link_to "$home/.claude/skills/commit" "$REPO/skills/engineering/commit"
-  [ ! -e "$home/.agents/skills/commit" ] || fail "codex target changed during claude install"
-  [ ! -e "$home/.claude/skills/qa" ] || fail "deprecated skill was installed"
-
-  HOME="$home" "$INSTALLER" --codex >"$TMP_ROOT/output"
   assert_link_to "$home/.agents/skills/commit" "$REPO/skills/engineering/commit"
   assert_link_to "$home/.agents/skills/setup-claude-code" "$REPO/skills/productivity/setup-claude-code"
-  assert_link_to "$home/.claude/skills/commit" "$REPO/skills/engineering/commit"
-  grep -q '^\[codex\] linked:' "$TMP_ROOT/output" || fail "codex output was not labelled"
-  pass "isolates targets and excludes deprecated skills"
+  [ ! -e "$home/.claude/skills/qa" ] || fail "deprecated skill was installed"
+  [ ! -e "$home/.agents/skills/qa" ] || fail "deprecated skill was installed"
+  grep -q "^\[$home/.claude/skills\] linked:" "$TMP_ROOT/output" ||
+    fail "claude destination output was not labelled"
+  grep -q "^\[$home/.agents/skills\] linked:" "$TMP_ROOT/output" ||
+    fail "agents destination output was not labelled"
+  pass "links both destinations and excludes deprecated skills"
 }
 
 test_idempotency() {
   local home before after
   home="$(new_home idempotency)"
 
-  HOME="$home" "$INSTALLER" --codex >/dev/null
+  HOME="$home" "$INSTALLER" >/dev/null
   before="$(readlink "$home/.agents/skills/commit")"
-  HOME="$home" "$INSTALLER" --codex >/dev/null
+  HOME="$home" "$INSTALLER" >/dev/null
   after="$(readlink "$home/.agents/skills/commit")"
   [ "$before" = "$after" ] || fail "link target changed on second install"
   pass "is idempotent"
@@ -85,12 +83,12 @@ test_noninteractive_collision() {
   mkdir -p "$collision"
   printf 'keep\n' >"$collision/marker"
 
-  assert_fails env HOME="$home" "$INSTALLER" --codex
+  assert_fails env HOME="$home" "$INSTALLER"
   [ "$(cat "$collision/marker")" = "keep" ] || fail "collision was modified"
-  [ ! -e "$home/.agents/skills/tdd" ] || fail "installer linked before collision abort"
-  grep -q '^\[codex\] collision: leaving' "$TMP_ROOT/output" ||
+  [ ! -e "$home/.agents/skills/tdd" ] || fail "installer linked into colliding destination before abort"
+  grep -q "^\[$home/.agents/skills\] collision: leaving" "$TMP_ROOT/output" ||
     fail "collision was not reported"
-  pass "preserves non-interactive collisions and aborts before linking"
+  pass "preserves non-interactive collisions and aborts that destination before linking"
 }
 
 test_interactive_collisions() {
@@ -101,15 +99,15 @@ test_interactive_collisions() {
   printf 'keep\n' >"$leave_home/.agents/skills/commit/marker"
 
   printf '\n' |
-    script -qec "HOME='$leave_home' '$INSTALLER' --codex" /dev/null >"$TMP_ROOT/output"
+    script -qec "HOME='$leave_home' '$INSTALLER'" /dev/null >"$TMP_ROOT/output"
   [ -f "$leave_home/.agents/skills/commit/marker" ] ||
     fail "interactive default did not leave collision"
   assert_link_to "$leave_home/.agents/skills/tdd" "$REPO/skills/engineering/tdd"
 
   printf 'y\n' |
-    script -qec "HOME='$replace_home' '$INSTALLER' --codex" /dev/null >"$TMP_ROOT/output"
+    script -qec "HOME='$replace_home' '$INSTALLER'" /dev/null >"$TMP_ROOT/output"
   assert_link_to "$replace_home/.agents/skills/commit" "$REPO/skills/engineering/commit"
-  grep -q '\[codex\] replaced collision:' "$TMP_ROOT/output" ||
+  grep -q "\[$replace_home/.agents/skills\] replaced collision:" "$TMP_ROOT/output" ||
     fail "interactive replacement was not reported"
   pass "leaves or replaces interactive collisions as selected"
 }
@@ -124,11 +122,11 @@ test_stale_link_pruning() {
   ln -s "$REPO/skills/deprecated/removed-skill" "$dest/removed-skill"
   ln -s "$external" "$dest/external"
 
-  HOME="$home" "$INSTALLER" --claude >"$TMP_ROOT/output"
-  [ ! -L "$dest/old-qa" ] || fail "stale repository link was not pruned"
+  HOME="$home" "$INSTALLER" >"$TMP_ROOT/output"
+  [ ! -L "$dest/old-qa" ] || fail "deprecated repository link was not pruned"
   [ ! -L "$dest/removed-skill" ] || fail "dangling repository link was not pruned"
   assert_link_to "$dest/external" "$external"
-  grep -q '^\[claude\] pruned stale link:' "$TMP_ROOT/output" ||
+  grep -q "^\[$dest\] pruned stale link:" "$TMP_ROOT/output" ||
     fail "prune action was not labelled"
   pass "prunes only stale links into this repository"
 }
@@ -139,14 +137,14 @@ test_destination_symlink_protection() {
   mkdir -p "$home/.claude"
   ln -s "$REPO/skills" "$home/.claude/skills"
 
-  assert_fails env HOME="$home" "$INSTALLER" --claude
+  assert_fails env HOME="$home" "$INSTALLER"
   grep -q 'symlink into this repo' "$TMP_ROOT/output" ||
     fail "destination symlink error was not reported"
   pass "rejects a destination symlink into this repository"
 }
 
 test_argument_validation
-test_target_isolation_and_exclusions
+test_links_both_destinations_and_exclusions
 test_idempotency
 test_noninteractive_collision
 test_interactive_collisions

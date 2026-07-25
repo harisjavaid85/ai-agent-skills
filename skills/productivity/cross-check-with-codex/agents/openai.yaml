@@ -1,0 +1,3 @@
+interface:
+  display_name: "Cross-Check with Codex"
+  short_description: "Independent Codex review loop with audit record"

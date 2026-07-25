@@ -6,8 +6,8 @@ The formats a skill draft reproduces.
 
 ```
 skill-name/
-├── SKILL.md           # Behaviour: instructions, process, decision rules (required)
-├── VOCABULARY.md      # Vocabulary: templates/formats/specs (only if needed)
+├── SKILL.md           # Steps: instructions, process, decision rules (required)
+├── REFERENCE.md       # Reference: definitions, templates, formats (only if needed)
 └── scripts/           # Utility scripts (only if needed)
     └── helper.js
 ```
@@ -22,9 +22,9 @@ description: Brief description of capability. Use when [specific triggers].
 
 # Skill Name
 
-## Vocabulary
+## Reference
 
-[Only if a few terms/mappings; otherwise link to VOCABULARY.md]
+[Only if a few terms/mappings; otherwise link to REFERENCE.md]
 
 ## Quick start
 

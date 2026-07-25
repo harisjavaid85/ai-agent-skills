@@ -1,0 +1,3 @@
+interface:
+  display_name: "Git Guardrails (deprecated)"
+  short_description: "Folded into setup-claude-code"

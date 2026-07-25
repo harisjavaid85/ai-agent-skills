@@ -1,19 +1,13 @@
 ---
 name: bootstrap-context
-description: Create or update a repository's domain-language glossary and context map for humans and agents. Use when the user wants to establish, reconcile, or refresh the project's canonical terminology.
+description: Create or refresh a repository's domain-language glossary and context map in a single batched pass. Use when establishing the project's canonical terminology for the first time, or auditing it for drift — not for inline term-sharpening during design work.
 ---
 
 ## Guiding principle
 
-The audience is a human onboarding _and_ an agent loading context - both should use the same domain language. Keep it a glossary, not a spec or operational handbook.
+The audience is a human onboarding _and_ an agent loading context — both should use the same domain language. Keep it a glossary, not a spec or operational handbook.
 
-### What to capture
-
-- **Shared terminology** - domain terms this repo gives a specific meaning that differs from common usage, plus aliases to avoid. E.g. "Order" means a placed customer order, not a sort order.
-- **Relationships** - how domain concepts and contexts relate, especially distinctions that prevent ambiguous language.
-- **Flagged ambiguities** - overloaded or conflicting terms with an explicit canonical resolution.
-
-Do not capture implementation details, operational rules, coding conventions, agreements, or recurring gotchas in `CONTEXT.md` — these belong in other documentation and `CONTEXT.md` holds domain vocabulary only.
+This is the **batched** mode of domain modeling: run once to establish `CONTEXT.md`, then occasionally to audit drift. The **inline** mode — challenging terms as they come up mid-session, updating the glossary the moment a term resolves — is the `/domain-modeling` skill, which other skills (`/grill-with-context`, `/triage`) use while they work. Formats are canonical there: [CONTEXT-FORMAT.md](../domain-modeling/CONTEXT-FORMAT.md) and [ADR-FORMAT.md](../domain-modeling/ADR-FORMAT.md).
 
 ## Terminology used in this skill
 
@@ -26,21 +20,21 @@ Do not capture implementation details, operational rules, coding conventions, ag
 
 Read enough to know what already exists:
 
-- Top-level tree (1-2 levels deep).
+- Top-level tree (1–2 levels deep).
 - Root `README*` and any subfolder `README*` files.
-- Manifests - only to spot monorepo workspace boundaries.
+- Manifests — only to spot monorepo workspace boundaries.
 - `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`.
 - Any existing `CONTEXT.md` / `CONTEXT-MAP.md` / per-folder `CONTEXT.md`.
 
-If no context files exist -> **bootstrap mode**.
-If any exist -> **update mode**: diff against current repo state and list:
+If no context files exist → **bootstrap mode**.
+If any exist → **update mode**: diff against current repo state and list:
 
 - **Missing**: modules with their own terminology but no per-folder `CONTEXT.md`; terms used in recent code/README files but absent from the glossary.
 - **Stale**: terms whose referenced code is gone or renamed; cross-links that no longer resolve.
 - **Drifted**: definitions that no longer match how the code uses the term.
 - **Out of contract**: implementation details, operational rules, conventions, or gotchas that are not domain language.
 
-Surface this list to the user before touching anything. Preserve out-of-contract content until the user chooses where it should move; never relocate or delete it automatically.
+Surface this list to the user before touching anything. Preserve out-of-contract content; classify each item per the taxonomy in [domain.md](../setup-repo-skills/domain.md) (ADR, `KNOWLEDGE.md`, operational policy, code comment) and always ask the user where each belongs — never relocate or delete it automatically.
 
 ### 2. Choose layout
 
@@ -50,11 +44,11 @@ In update mode, default to the on-disk layout but offer to restructure it; if sw
 
 ### 3. Interview
 
-Ask <5 questions covering [What to capture](#what-to-capture), prioritizing categories the Survey flagged as thin. In update mode, scope to those gaps. Prefer iterative follow-ups.
+Ask <5 questions covering what belongs in the glossary, prioritizing categories the Survey flagged as thin. In update mode, scope to those gaps. Prefer iterative follow-ups.
 
 ### 4. Write or update
 
-Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md). Omit empty sections.
+Use [CONTEXT-FORMAT.md](../domain-modeling/CONTEXT-FORMAT.md). Omit empty sections.
 
 **In update mode, edit in place**: only patch the missing / stale / drifted entries; leave the rest alone.
 
@@ -64,15 +58,5 @@ In **multi-context**:
 
 **Each term has exactly one home: the lowest common ancestor folder's `CONTEXT.md`.**
 
-- Used in one folder -> that folder's `CONTEXT.md`.
-- Used in multiple folders -> the nearest shared parent's `CONTEXT.md` (root if no closer ancestor).
-- If a per-folder file needs a term defined elsewhere, link to it (e.g. `see [Order](../CONTEXT.md#order)`) rather than redefining.
-
-1. **Propose per-folder candidates.** A folder qualifies if it owns its own terminology - typically a distinct module (own manifest/README) with non-trivial activity. In update mode, only propose folders not already covered.
-2. **Confirm the candidate list with the user.**
-3. **Write or patch the files**:
-   - `CONTEXT-MAP.md` at root - index + relationships only, no definitions.
-   - root `CONTEXT.md` - repo-wide terminology.
-   - per-folder `CONTEXT.md` - terminology used only in that folder.
-4. **Deduplicate.** Scan all `CONTEXT.md` files for any term defined in two places. For each duplicate, promote to the lowest common ancestor `CONTEXT.md` and link from the others. If the ancestor file doesn't exist, ask the user: create one, or promote to root instead.
-5. **Cross-link**: every per-folder `CONTEXT.md` links up to `CONTEXT-MAP.md`; `CONTEXT-MAP.md` links down to every per-folder `CONTEXT.md`.
+- Used in one folder → that folder's `CONTEXT.md`.
+- Used in multiple folders → the nearest shared parent's `CONTEXT.md` (root if no closer ancestor).
