@@ -126,6 +126,45 @@ Bash(gh label:*)
 
 Adds the PreToolUse hook entry to `settings.json` only. No deny/ask or other entries written.
 
+## Tool surface (`host`/`sandbox`)
+
+Three levels. `standard` is the default and writes nothing.
+
+`lean` denies these tools — tracked as `managedToolSurfaceDeny`, kept out of the safety deny list above so `GUARDRAILS.md` stays a safety surface:
+
+```
+DesignSync
+NotebookEdit
+RemoteTrigger
+ReportFindings
+ScheduleWakeup
+CronCreate
+CronDelete
+CronList
+```
+
+and writes:
+
+```json
+{
+  "disableBundledSkills": true,
+  "disableWorkflows": true,
+  "disableRemoteControl": true,
+  "disableClaudeAiConnectors": true
+}
+```
+
+`leanest` is `lean` plus `"disableArtifact": true`.
+
+What each level costs the operator:
+
+- `lean` — `/loop` and `/schedule` stop working (consistent with the cron denies), Jupyter notebook editing goes, the bundled `/security-review`, `/review`, `/run`, `/simplify` and `/init` disappear, and code-review findings render as prose instead of the findings UI.
+- `leanest` — also gives up publishing Artifacts.
+
+Keep enabled at every level: `EnterPlanMode` / `ExitPlanMode`, `AskUserQuestion`, `PushNotification`, `SendMessage`, `EnterWorktree` / `ExitWorktree`.
+
+Never deny `EnterPlanMode` / `ExitPlanMode`. Their schemas ship whether or not they are denied, so denying them saves nothing and removes the enforced read-only guardrail that plan mode provides when `defaultMode` is `auto`.
+
 ## Hook patterns (all modes)
 
 See [`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) — covers `rm -rf` variants, `find . -delete`, dangerous git operations, and destructive/identity-mutating `gh` operations.
@@ -149,6 +188,10 @@ Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regene
 
 - Bash(npm publish:_), Bash(docker push:_), Bash(kubectl delete:\*) …
 
+### Tool surface
+
+- Level {{toolSurface}} — denied tools: {{toolSurfaceDenies}}
+
 ## Hook-enforced (~/.claude/hooks/block-dangerous-bash.sh)
 
 - rm -rf: targets must stay inside cwd (allowed relative paths only; blocked /…, ~…, .., ., \*)
@@ -167,6 +210,8 @@ Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regene
 | `permissions.additionalDirectories`                          | Union by value.                                                                                                                         |
 | `permissions.deny` / `permissions.ask` / `permissions.allow` | Replace previously-managed entries (tracked in `_setupClaudeCode.managedDeny`/`managedAsk`/`managedAllow`); preserve user-added entries |
 | `hooks.PreToolUse[]`                                         | Append if no entry matches the command string                                                                                           |
+| Tool-surface entries in `permissions.deny`                   | Replace previously-managed entries (tracked in `_setupClaudeCode.managedToolSurfaceDeny`); drop them all at `standard`                   |
+| The `disable*` keys in [Tool surface](#tool-surface-hostsandbox)   | Write only at the level that includes the key; remove keys a previous run wrote when the level drops                                     |
 | `statusLine`                                                 | Write only if user chose `yes` (opt-in); skip if user chose `skip`                                                                      |
 | `model`                                                      | Write only if user chose a value (opt-in); skip if user chose `skip`                                                                    |
 | `_setupClaudeCode`                                           | Overwrite with current run's state                                                                                                      |
@@ -181,6 +226,8 @@ Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regene
     "managedDeny": ["Read(./.env)", "..."],
     "managedAsk": ["Bash(npm publish:*)", "..."],
     "managedAllow": ["Bash(gh pr create:*)", "..."],
+    "toolSurface": "standard",
+    "managedToolSurfaceDeny": [],
     "hookInstalled": true,
     "statuslineInstalled": false,
     "modelSet": false,

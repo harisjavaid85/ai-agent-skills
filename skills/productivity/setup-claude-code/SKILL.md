@@ -56,8 +56,9 @@ Start from existing `settings.json`. Apply changes per mode:
 - **Default mode**: `plan` (requires approval before acting — safest) / `auto` (handles permissions automatically — middle ground) / `bypassPermissions` (skips all permission checks) / `skip` (don't set it)?
 - **Model**: `opus` / `sonnet` / `haiku` / `skip` (don't set it)?
 - **Statusline**: install `scripts/statusline.sh` → `~/.claude/statusline.sh` and set `statusLine.type = "command"`, `statusLine.command = "~/.claude/statusline.sh"`? (`yes` / `skip`)
+- **Tool surface**: `standard` (default) / `lean` / `leanest`? Read the levels out of [REFERENCE.md](REFERENCE.md#tool-surface-hostsandbox) and present what each one costs. Before recommending a lean level, grep the user's installed skills for the tools it denies — a skill that calls a denied tool fails at the point of use.
 
-If the user chooses `skip` for any opt-in, do not write that key to `settings.json` at all.
+If the user chooses `skip` for any opt-in, do not write that key to `settings.json` at all. `standard` is the same: write no tool-surface keys.
 
 Skip all opt-ins in non-interactive (scripted) invocations — e.g. `RUN claude -p "/setup-claude-code sandbox"` in a Dockerfile.
 

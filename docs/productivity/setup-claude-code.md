@@ -18,13 +18,17 @@ The defining constraint is **safe re-runs**: everything the skill manages is tra
 
 ## When to reach for it
 
-Type `/setup-claude-code`, or the agent reaches for it automatically when a task fits.
+You invoke this by typing `/setup-claude-code` — the agent won't reach for it on its own.
 
 Reach for it on a new machine, a fresh sandbox, or any host where Claude Code has no guardrails yet. Run it once per machine — its repo-level counterpart [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md) runs once per repo, and will nudge you toward this one when the global setup is missing.
 
 ## The two guardrail layers
 
 The skill installs belt and braces: a **permissions baseline** in `~/.claude/settings.json` (deny and ask lists for dangerous operations) and a **PreToolUse hook** that blocks destructive shell commands outright. Both layers report to one audit surface, `~/.claude/GUARDRAILS.md`, so you can see exactly what protection is in place.
+
+## Choosing a tool surface
+
+On `host` and `sandbox` the skill also asks how much of Claude Code's tool surface you want loaded: `standard` keeps everything and is the default, `lean` strips the tools and bundled features most setups never call, and `leanest` goes one step further. It tells you exactly what each level costs before writing anything — pick a lean level only once you've checked that none of your own skills call a tool it denies.
 
 ## Where it fits
 

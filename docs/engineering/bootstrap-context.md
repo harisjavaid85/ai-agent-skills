@@ -18,7 +18,7 @@ Its defining constraint is the mode: this is the **batched** counterpart to inli
 
 ## When to reach for it
 
-Type `/bootstrap-context`, or the agent reaches for it automatically when a task fits.
+You invoke this by typing `/bootstrap-context` — the agent won't reach for it on its own.
 
 Reach for it when a repo has no `CONTEXT.md` yet, or when an existing one has drifted — terms referencing dead code, modules with their own jargon and no glossary entry. For sharpening a single term mid-conversation, that's [domain-modeling](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/domain-modeling.md) — usually driven for you by [grill-with-context](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/grill-with-context.md).
 
