@@ -58,7 +58,7 @@ That matters for agentic development: a good interface gives tests something dur
 `to-spec` is a step in the main build chain:
 
 ```txt
-grill-with-context → to-spec → to-tickets → implement → code-review
+grill-with-context → to-spec → to-tickets → implement → commit → open-pr
 ```
 
 Reach for it after the plan and domain language are resolved, and before you break the work into implementation tickets. Its key neighbours are [grill-with-context](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/grill-with-context.md), which sharpens the context so the spec is precise, and [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md), which turns the spec into a set of tickets for [implement](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/implement.md) to build. When you're unsure which skill or flow fits, [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes you.

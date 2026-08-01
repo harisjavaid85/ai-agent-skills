@@ -12,28 +12,48 @@ npx skills update implement
 
 ## What it does
 
-`implement` builds the work described in a spec or a set of tickets — driving it through test-driven development, typechecking, and the full test suite, then handing off to review and committing to the current branch.
+`implement` turns one concrete work item into reviewed, verified code and leaves the result uncommitted for a separate commit step. Its source is the exact issue or path you name, or the settled current conversation when you supply no argument; it never selects work from a lifecycle or ticket collection.
 
-It does **not** decide what to build. The spec is already settled and the seams are already agreed; `implement` executes that plan rather than reopening it. It is the hands, not the head — the thinking happened upstream.
+It executes autonomously once invoked. Ordinary gaps receive the smallest conservative interpretation, while genuine hard blockers produce a structured `BLOCKED` result instead of an open-ended planning exchange.
 
 ## When to reach for it
 
 You invoke this by typing `/implement` — the agent won't reach for it on its own.
 
-Reach for it once the work is written down as a spec or split into tickets and you're ready to turn that into code. If the spec doesn't exist yet, write it first — for that, use [to-spec](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-spec.md), or [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md) to break a spec into tickets. If you just want to build something test-first without a full spec, drop to [tdd](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/tdd.md) directly.
+Reach for it when one issue, local plan, or settled conversation is ready to become code. Name multiple sources only when you want them combined explicitly. For a multi-ticket spec, choose one ready ticket before invoking `implement`; [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md) handles the decomposition and ordering.
 
-## Pre-agreed seams
+## Prerequisites
 
-The idea `implement` runs on is the **seam** — the stable interface a feature is tested at, chosen before any code is written. It doesn't invent seams mid-build; it uses the ones already picked (during [to-spec](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-spec.md)) and writes tests against them via [tdd](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/tdd.md). Working at pre-agreed seams is what keeps the implementation honest: the tests target something durable, so the code underneath can move without the tests moving.
+A GitHub issue source requires the issue-tracker wiring created by [setup-repo-skills](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/setup-repo-skills.md). Repository agent instructions remain authoritative for implementation and verification commands.
 
-Around that core it keeps the loop tight — typecheck often, run single test files as it goes, run the whole suite once at the end — then closes out with a review pass and a commit to the current branch.
+`implement` starts from a clean working tree when possible. If work is already present, it asks whether those changes belong to the work item or should remain outside the implementation and review.
+
+## Autonomous red-green
+
+The build advances through **red-green slices** at public **seams**. Seams named by the work source are already agreed; for any behaviour without one, the agent chooses the narrowest existing public interface and records the choice. Each behavioural slice starts red and becomes green before the next one begins. Changes without meaningful observable behaviour do not acquire artificial tests.
+
+The source remains the authority throughout. Existing patterns and compatibility resolve ordinary ambiguity without reopening the plan, keeping the command suitable for unattended loops as well as interactive use.
+
+## One review, clean handoff
+
+After implementation, `implement` runs [code-review](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/code-review.md) once over the complete included working tree. It fixes findings it judges valid, records why it declines any others, and runs the repository's prescribed verification after remediation. The review is intentionally bounded to one pass.
+
+The terminal report ends in `COMPLETE` or `BLOCKED` and leaves issue state, PR state, and Git history untouched. Use [commit](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/commit.md) when you are ready to turn the working tree into history; use [cross-check-with-codex](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/productivity/cross-check-with-codex.md) separately when the implementation warrants an independent second-model review.
+
+## It's working if
+
+- Exactly one explicit work item defines the scope.
+- Behaviour is built in red-green slices through public seams.
+- One Standards + Spec review is remediated before final verification.
+- The terminal reports `COMPLETE` or a concrete `BLOCKED` reason.
+- The completed working tree remains uncommitted.
 
 ## Where it fits
 
-`implement` is the build step near the end of the main chain, just before the review:
+`implement` is the autonomous build-and-review step in the main chain:
 
 ```txt
-grill-with-context → to-spec → to-tickets → implement → code-review
+grill-with-context → to-spec → to-tickets → implement → commit → open-pr
 ```
 
-Reach for it after the work has been specced and sequenced, not before. Its key neighbours are [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md), which produces the tickets — each declaring its blocking edges — that it works through, and [tdd](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/tdd.md), which it drives internally to write the tests at each seam before running its own [code-review](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/code-review.md) pass and committing. When you're unsure which skill or flow fits, [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes you.
+Its upstream neighbour is [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md), which produces one tracer-bullet ticket per invocation; internally it drives [tdd](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/tdd.md) and [code-review](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/code-review.md). [Ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes the wider system.

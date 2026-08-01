@@ -12,6 +12,9 @@ This fork (`harisjavaid85/ai-agent-skills`) tracks `mattpocock/skills` as `upstr
 - **`setup-repo-skills`** supersedes upstream's `setup-matt-pocock-skills` (deleted from this fork). Ported from upstream: PRs-as-triage-surface + wayfinding operations in `issue-tracker-*.md`, the tracker-choice section (GitHub/GitLab/local/other), the interactive "one section, one answer" flow, triage-installed gating of the triage-labels section, tracker-neutral `triage-labels.md`. **Not** ported: upstream's section that *decides* single- vs multi-context layout — ADR-0004 (`bootstrap-context` is the semantic authority for that decision).
 - **`write-a-skill`** (fork-only workflow skill) complements upstream's `writing-great-skills` (reference). Fork version uses upstream's terms (**steps**/**reference**, not Behaviour/Vocabulary) and defers principles to `writing-great-skills/GLOSSARY.md`.
 - **`bootstrap-context`** (fork-only) is the **batched** domain-modeling mode (survey → bootstrap/update → drift audit); upstream's `domain-modeling` is the **inline** mode. Formats live canonically in `domain-modeling/`; `bootstrap-context` links to them.
+- **`implement`** owns exactly one explicit issue, path, or settled conversation. It executes autonomously through `tdd`, runs and remediates one `code-review`, then leaves the working tree uncommitted for the separate `commit` skill. It does not resolve lifecycle slugs or mutate issue/PR state.
+- **`code-review`** reviews the complete included working tree since a fixed point: committed, staged, unstaged, and untracked work. The caller owns remediation.
+- **`tdd`** treats a seam named by the work source or supplied by its caller as agreed; otherwise it proposes the narrowest existing public seam and confirms it with the user. `implement` selects and supplies missing seams before invoking `tdd`, preserving autonomous execution.
 
 ## Fork-only skills (additive, no upstream counterpart)
 

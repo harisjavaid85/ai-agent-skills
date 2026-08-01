@@ -57,7 +57,7 @@ Optional. A short, checkable list of the observable signals that tell the reader
 
 Always present. Situate the skill in the system in a sentence or two:
 
-- **Role.** Name it: a **chain step** (`grill-with-context → to-spec → to-tickets → implement → code-review`), a **run-once setup** (`setup-repo-skills`), **periodic maintenance** (`improve-codebase-architecture`, "every few days"), or a **reach-for-it-anytime standalone** (`diagnosing-bugs`, `prototype`, `handoff`). A standalone's map is one honest sentence — far better than omitting the section.
+- **Role.** Name it: a **chain step** (`grill-with-context → to-spec → to-tickets → implement → commit → open-pr`), a **run-once setup** (`setup-repo-skills`), **periodic maintenance** (`improve-codebase-architecture`, "every few days"), or a **reach-for-it-anytime standalone** (`diagnosing-bugs`, `prototype`, `handoff`). A standalone's map is one honest sentence — far better than omitting the section.
 - **Neighbours.** The one or two siblings that matter, each with a because-clause, linked absolutely.
 - **The map.** Point to [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md), the router over the whole set, so this page stays a node and never has to redraw the graph.
 

@@ -44,7 +44,7 @@ What makes this variant its own skill is where the answers go. As the grill runs
 `grill-with-context` is the opening step of the main build chain:
 
 ```txt
-grill-with-context → to-spec → to-tickets → implement → code-review
+grill-with-context → to-spec → to-tickets → implement → commit → open-pr
 ```
 
 It comes first, before anything is written down as a spec: it produces the shared understanding and settled vocabulary that [to-spec](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-spec.md) then synthesises into a spec without re-interviewing you. Its close neighbours are [grilling](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/productivity/grilling.md), the same interview without the docs, and [domain-modeling](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/domain-modeling.md), the glossary-and-ADR discipline it drives. When you're unsure which skill or flow fits, [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes you.

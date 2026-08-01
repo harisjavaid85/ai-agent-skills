@@ -50,7 +50,7 @@ One shape breaks the tracer-bullet rule: a **wide refactor** — a single mechan
 `to-tickets` is a step in the main build chain:
 
 ```txt
-grill-with-context → to-spec → to-tickets → implement → code-review
+grill-with-context → to-spec → to-tickets → implement → commit → open-pr
 ```
 
 It sits between [to-spec](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-spec.md), which hands it a settled spec with user stories to slice against, and [implement](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/implement.md), which builds each ticket, driving [tdd](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/tdd.md) internally to write the tests test-first, before its [code-review](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/code-review.md) pass. Work the frontier one ticket per fresh context, clearing between them. When you're unsure which skill or flow fits, [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes you.

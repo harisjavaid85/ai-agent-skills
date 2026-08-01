@@ -28,6 +28,8 @@ The leading idea is the **red-green loop**: write one failing test (red), add ju
 
 Two rules keep the tests honest. A good test reads like a specification ("user can checkout with valid cart") and exercises real code paths through the public API, so renaming an internal function never breaks it. And expected values come from an independent source of truth — a known-good literal, a worked example, the spec — never recomputed the way the code computes them, which is how a **tautological** test passes by construction and tells you nothing.
 
+Every test begins at an explicit **seam**. A public seam named by the work source or supplied by a caller such as `implement` is already agreed. In a standalone `tdd` run, the agent proposes the narrowest existing public interface that can observe the behaviour and confirms it with you before writing the first test. This keeps autonomous implementation moving while standalone TDD remains collaborative.
+
 Refactoring only happens once the suite is green; never while red.
 
 ## It's working if
@@ -41,7 +43,7 @@ Refactoring only happens once the suite is green; never while red.
 `tdd` is the red-green loop the main build chain runs to write code:
 
 ```txt
-grill-with-context → to-spec → to-tickets → implement → code-review
+grill-with-context → to-spec → to-tickets → implement → commit → open-pr
 ```
 
-[implement](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/implement.md) is the chain's build step, and it drives `tdd` internally to build each ticket test-first before handing off to [code-review](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/code-review.md) — so `tdd` is the engine inside that step rather than a step of its own. You can also reach for it directly, whenever there's a concrete behaviour to build without a full spec. Its other neighbour is [codebase-design](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/codebase-design.md), which it leans on to find deep-module seams worth testing at. When you're unsure which skill or flow fits, [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes you.
+[implement](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/implement.md) is the chain's build step, and it drives `tdd` internally to build each ticket test-first before running [code-review](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/code-review.md) — so `tdd` is the engine inside that step rather than a step of its own. You can also reach for it directly, whenever there's a concrete behaviour to build without a full spec. Its other neighbour is [codebase-design](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/codebase-design.md), which it leans on to find deep-module seams worth testing at. When you're unsure which skill or flow fits, [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) routes you.
