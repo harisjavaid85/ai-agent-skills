@@ -14,7 +14,7 @@ npx skills update commit
 
 `commit` stages and commits your working-tree changes: it groups them into a sensible commit plan and writes a concise, tagged message for each, following the repo's convention. It only commits — no pushing, no branch operations.
 
-The defining constraint is **grouping by logical change, not by file category**: everything that makes up one coherent change lands in one commit even when it spans docs, code, and config — and genuinely independent changes always split, even when staged together.
+The defining constraint is **work-item atomicity**: everything required to deliver one logical work item lands in one commit, including its implementation, schema or migrations, tests, fixtures, generated outputs, and documentation. Tags and file categories never determine the split; genuinely independent work items still split even when staged together.
 
 ## When to reach for it
 
@@ -29,7 +29,8 @@ Each commit gets a **commit tag** — `Feature`, `Fix`, `Doc`, `Refactor`, and f
 ## It's working if
 
 - You see a plan — commit groups with files and messages — before anything is committed (review mode)
-- Each commit is one logical change; mixed trees come out as several focused commits, not one lump
+- Each commit is one logical work item; its supporting implementation, tests, migrations, and docs stay in the same group
+- A multi-commit plan names the independent work item in each group instead of splitting by tag, directory, or artifact type
 - Subjects read `[Tag] Imperative summary` in the repo's own tag vocabulary
 
 ## Where it fits
