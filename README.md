@@ -187,7 +187,6 @@ Skills I use daily for code work.
 - **[ask-author](./skills/engineering/ask-author/SKILL.md)** — Ask which skill or flow fits your situation. A router over the user-invoked skills in this repo.
 - **[bootstrap-context](./skills/engineering/bootstrap-context/SKILL.md)** — Create or refresh the repo's domain-language glossary and context map in a single batched pass; the audit counterpart to `/domain-modeling`'s inline mode.
 - **[grill-with-context](./skills/engineering/grill-with-context/SKILL.md)** — Grilling session that also builds your project's domain model, sharpening terminology and updating `CONTEXT.md` and ADRs inline.
-- **[implement](./skills/engineering/implement/SKILL.md)** — Build one explicit issue, plan, or settled conversation autonomously through `/tdd` and one remediated `/code-review`, leaving the result uncommitted.
 - **[improve-codebase-architecture](./skills/engineering/improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
 - **[to-spec](./skills/engineering/to-spec/SKILL.md)** — Turn the current conversation into a spec and publish it to the issue tracker. No interview — just synthesizes what you've already discussed.
 - **[to-tickets](./skills/engineering/to-tickets/SKILL.md)** — Break any plan, spec, or conversation into a set of tracer-bullet tickets, each declaring its blocking edges — written as text in a local file, or as native blocking links on a real tracker.
@@ -201,6 +200,7 @@ Skills I use daily for code work.
 - **[commit](./skills/engineering/commit/SKILL.md)** — Stage and commit working-tree changes: group them into a sensible commit plan, write concise tagged messages following the repo's convention, and commit only after approval.
 - **[diagnosing-bugs](./skills/engineering/diagnosing-bugs/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[domain-modeling](./skills/engineering/domain-modeling/SKILL.md)** — Actively build and sharpen a project's domain model — challenge terms against the glossary, stress-test with edge-case scenarios, and update `CONTEXT.md` and ADRs inline.
+- **[implement](./skills/engineering/implement/SKILL.md)** — Build one explicit issue, plan, or settled conversation autonomously through `/tdd` and one remediated `/code-review`, leaving the result uncommitted.
 - **[open-pr](./skills/engineering/open-pr/SKILL.md)** — Push the current branch and open or update its GitHub PR in a standard format: a tagged title, a summary, and a curated change list, with optional spec-slug enrichment.
 - **[prototype](./skills/engineering/prototype/SKILL.md)** — Build a throwaway prototype to answer a design question — a runnable terminal app for state/logic questions, or several radically different UI variations toggleable from one route.
 - **[research](./skills/engineering/research/SKILL.md)** — Investigate a question against high-trust primary sources and capture the findings as a cited Markdown file in the repo, run as a background agent.

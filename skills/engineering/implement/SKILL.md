@@ -1,7 +1,6 @@
 ---
 name: implement
-description: "Implement one concrete work item autonomously, test-first, and leave the reviewed changes uncommitted."
-disable-model-invocation: true
+description: "Implement one concrete work item autonomously, test-first, and leave the reviewed changes uncommitted. Use when the user wants a named issue, ticket, plan, or settled conversation built end to end, mentions implementing or building a specific work item."
 ---
 
 # Implement

@@ -18,7 +18,7 @@ It executes autonomously once invoked. Ordinary gaps receive the smallest conser
 
 ## When to reach for it
 
-You invoke this by typing `/implement` — the agent won't reach for it on its own.
+Type `/implement` to invoke it directly. The agent may also reach for it on its own once a work item is settled and named, which is what lets an orchestrating skill dispatch it one ticket at a time.
 
 Reach for it when one issue, local plan, or settled conversation is ready to become code. Name multiple sources only when you want them combined explicitly. For a multi-ticket spec, choose one ready ticket before invoking `implement`; [to-tickets](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/to-tickets.md) handles the decomposition and ordering.
 
