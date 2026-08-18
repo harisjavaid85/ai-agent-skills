@@ -35,7 +35,7 @@ Callers may also supply an **extra markdown block** (see **Caller extra block**)
 5. **Build the plan:** title, base, draft/ready, body preview, and any warnings (dirty tree, ambiguous tag, suspected non-default base). In Review, wait for approval; in Auto, print it as a trail and proceed.
 6. **Push:** `git push -u origin <branch>` (idempotent; sets upstream if unset). Pushing new commits refreshes the PR's diff on its own.
 7. **Create or update:**
-   - **No PR exists:** `gh pr create --base <base> --head <branch> --title "<title>" --body-file <body>` (add `--draft` when `draft` is set). Write the body with the `Write` tool to a scratchpad file and pass it via `--body-file`.
+   - **No PR exists:** `gh pr create --base <base> --head <branch> --title "<title>" --body-file <body>` (add `--draft` when `draft` is set). Write the body with the `Write` tool to `<tmpdir>/pr-body-<branch-slug>.md` — resolve `<tmpdir>` from `$TMPDIR`, falling back to `/tmp` — and pass it via `--body-file`. It lives outside the repo, so the working tree stays clean.
    - **PR exists:** `gh pr edit <number> --body-file <body>` (and `--title` if it changed). See **Re-run** for body handling. **Never** change the existing PR's draft/ready state.
 
 ## Re-run (existing PR)
