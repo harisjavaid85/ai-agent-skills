@@ -24,7 +24,7 @@ Reach for it when a branch is ready for review. Plain `/open-pr` composes title 
 
 ## Slug enrichment
 
-Passed a `<slug>`, the skill finds the GitHub parent carrying `kind:spec` and `spec:<slug>`, then adds the parent spec and completed tickets to the PR — keeping the lifecycle traceable from ticket to merge. Without a slug, the PR stands on its own: tagged title, summary, change list.
+Passed a `<slug>`, the skill adds the parent spec and its completed tickets to the PR, keeping the lifecycle traceable from ticket to merge. It probes the slug rather than the repo's configuration: a `kind:spec` issue carrying `spec:<slug>` on GitHub, or a `.scratch/<slug>/spec.md` committed on the branch. The tracker is a property of the spec, so a repo wired to GitHub can still carry a local queue for one feature — and a local spec is linked by commit permalink, since those files exist only on the branch until the PR merges. Without a slug, the PR stands on its own: tagged title, summary, change list.
 
 ## Where it fits
 

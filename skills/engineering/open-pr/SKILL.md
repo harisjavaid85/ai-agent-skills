@@ -53,12 +53,19 @@ Default to GitHub's default branch: `gh repo view --json defaultBranchRef -q .de
 
 ## Slug enrichment
 
-With a `<slug>`, read the `spec:<slug>` parent and add the **Spec** and **Tickets completed** sections (see **Format**):
+With a `<slug>`, add the **Spec** and **Tickets completed** sections (see **Format**). The spec lives either on the issue tracker or as files in the branch. Resolve which with two slug-scoped probes, first answer wins:
 
-- Parent number: `gh issue list --label "spec:<slug>" --label "kind:spec" --state open --json number --limit 1`.
-- Completed tickets: `gh issue list --state closed --label "spec:<slug>" --json number,title,labels --jq '[.[] | select([.labels[].name] | index("kind:spec") | not)]'`.
+1. **GitHub** — `gh issue list --label "spec:<slug>" --label "kind:spec" --state open --json number --limit 1`
+2. **Local** — `git cat-file -e HEAD:.scratch/<slug>/spec.md`
 
-If no `spec:<slug>` parent exists, do **not** fail — warn, skip enrichment, and open the standalone PR. Review notes it in the plan; Auto proceeds and reports.
+Probe the branch, not the repo's tracker configuration: the tracker is a property of the spec, so a repo configured for GitHub can still carry a local queue for one feature. When both answer, GitHub wins — `Implements #n` and `Closes #n` carry linking and auto-close semantics that files cannot.
+
+Then list the completed tickets for whichever answered:
+
+- **GitHub** — `gh issue list --state closed --label "spec:<slug>" --json number,title,labels --jq '[.[] | select([.labels[].name] | index("kind:spec") | not)]'`.
+- **Local** — `git ls-tree --name-only HEAD .scratch/<slug>/issues/`, then `git show HEAD:<path>` for each. A ticket counts as completed when its `Status:` line reads `closed`, bolding optional (`**Status:** closed`); its title is the file's first heading.
+
+If neither probe answers, do **not** fail — warn, skip enrichment, and open the standalone PR. Review notes it in the plan; Auto proceeds and reports.
 
 ## Caller extra block
 
@@ -71,7 +78,7 @@ A caller may provide an extra markdown block — its own sections such as remain
 
 ## Format
 
-The body is read by people who have only the repository and this PR — the branch diff, the commit history, and any linked GitHub issues. Every term and reference must resolve from those. Do not name local-only artifacts: gitignored plan or scratchpad files, internal work-block or task slugs, conversation-only codenames, or any "the plan"/"the doc" a reader can't open. When such a concept is load-bearing, restate its substance in plain terms or link a public artifact (a GitHub issue, a checked-in doc) instead of naming the private one.
+The body is read by people who have only the repository and this PR — the branch diff, the commit history, and any linked GitHub issues. Every term and reference must resolve from those. Name only what such a reader can open: a file committed on the branch, a GitHub issue, a checked-in doc. Uncommitted and gitignored files, internal work-block or task slugs, conversation-only codenames, and any "the plan"/"the doc" resolve for nobody else — when one is load-bearing, restate its substance in plain terms or link something public instead.
 
 ### Title
 
@@ -94,6 +101,15 @@ Compose the sections in the following order, with these conditions:
 - **Testing** appears only when real verification was performed — state what was run, never an aspirational plan; omit otherwise.
 - **Notes** appears only when there's a genuine callout — out-of-scope / follow-ups, a known limitation or risk, a deliberate deviation from a reader-visible plan/spec (describe the deviation itself; never name a local plan file), a migration/deploy caveat, a pointer to where a reviewer should start or the riskiest part to scrutinize, or — for UI changes — a reminder to attach before/after screenshots. Terse bullets; omit the section otherwise.
 
+Those two sections reference their tickets in the form the answering probe resolves:
+
+| Probe | `<spec ref>` | `<ticket ref>` |
+| --- | --- | --- |
+| **GitHub** | `Implements #<parent>.` | `Closes #<n>` |
+| **Local** | `[Spec: <slug>](<permalink>)` | `[<NN>](<permalink>)` |
+
+A local permalink pins the commit — `<repo-url>/blob/<sha>/<path>` for the file the probe found, from `gh repo view --json url -q .url` and `git rev-parse HEAD` — so it resolves during review, while those files exist only on the branch, and stays good after the branch is deleted. A bare `#<NN>` there would auto-link to whichever issue holds that number.
+
 ```markdown
 <AI disclosure>
 
@@ -103,7 +119,7 @@ Compose the sections in the following order, with these conditions:
 
 ## Spec
 
-Implements #<parent>.
+<spec ref>
 
 ## Changes
 
@@ -121,7 +137,7 @@ Implements #<parent>.
 
 ## Tickets completed (<N>)
 
-- Closes #<n>: <title>
+- <ticket ref>: <title>
 - ...
 
 ## Notes
