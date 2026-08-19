@@ -10,7 +10,7 @@ Reachable only when you type them (Claude Code: `disable-model-invocation: true`
 - **[bootstrap-context](./bootstrap-context/SKILL.md)** — Create or refresh the repo's domain-language glossary and context map in a single batched pass; the audit counterpart to `/domain-modeling`'s inline mode.
 - **[grill-with-context](./grill-with-context/SKILL.md)** — Grilling session that also builds your project's domain model, sharpening terminology and updating `CONTEXT.md` and ADRs inline.
 - **[improve-codebase-architecture](./improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
-- **[setup-repo-skills](./setup-repo-skills/SKILL.md)** — Configure the current repo for the engineering skills: working directories, issue-tracker conventions, repo mode, triage/commit-tag vocabularies, per-language coding standards, and agent guidance. Run once per repo.
+- **[setup-repo-skills](./setup-repo-skills/SKILL.md)** — Configure the current repo for the engineering skills: issue-tracker conventions, repo mode, triage/commit-tag vocabularies, verify tiers, per-language coding standards, and agent guidance. Run once per repo.
 - **[to-spec](./to-spec/SKILL.md)** — Turn the current conversation into a spec and publish it to the issue tracker.
 - **[to-tickets](./to-tickets/SKILL.md)** — Break any plan, spec, or conversation into a set of tracer-bullet tickets, each declaring its blocking edges — text in a local file, or native blocking links on a real tracker.
 - **[triage](./triage/SKILL.md)** — Move issues and external PRs through a state machine of triage roles.

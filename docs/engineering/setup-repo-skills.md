@@ -12,7 +12,7 @@ npx skills update setup-repo-skills
 
 ## What it does
 
-`setup-repo-skills` wires a repo for the engineering skills: harness working directories, the `AGENTS.md`/`CLAUDE.md` agent guide, and the `docs/agents/` config that the other skills read — issue-tracker conventions, triage-label and commit-tag vocabularies, coding standards, and domain-doc rules.
+`setup-repo-skills` wires a repo for the engineering skills: `.gitignore` and Claude Code settings, the `AGENTS.md`/`CLAUDE.md` agent guide, and the `docs/agents/` config that the other skills read — issue-tracker conventions, triage-label and commit-tag vocabularies, coding standards, and domain-doc rules.
 
 The defining constraint is the authority split: this skill owns only **structural** setup — what's derivable from disk and convention. It never decides the repo's domain layout (single- vs multi-context); that judgment belongs to [bootstrap-context](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/bootstrap-context.md).
 

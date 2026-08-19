@@ -1,10 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Edit(./.claude/plans/**)",
-      "Edit(./.claude/handoffs/**)",
-      "Edit(./.claude/overviews/**)"
+      "Read(./.claude/skills/**)"
     ]
   },
-  "plansDirectory": ".claude/plans"
+  "plansDirectory": ".plans"
 }

@@ -8,6 +8,16 @@ Across every language: reach for an existing helper before writing a near-duplic
 
 **Writing a language with no section below?** Add one first, using the matching row from the _Catalog defaults_ table. If the language isn't in that table either, pick its best-adopted style guide, add the section, and add a table row.
 
+## Comments
+
+Binds every language; the sections below add the per-language docstring form.
+
+- **Earn it.** Write a comment only when the code can't say it: a non-obvious invariant, a constraint on a future change, a reason the obvious alternative fails. When the name, type, or signature already says it, let them.
+- **In a body, at a use site, beside a branch: one line by default, three the ceiling.** Consecutive comment lines on one subject count as one block.
+- **A comment that outgrows the ceiling isn't local.** It's carrying a fact about the whole file or module — move it to its arrival site (`docs/agents/domain.md`) and leave behind only what is true at this line and nowhere else.
+- **At a declaration, length is set by the design, not the ceiling.** This is where an invariant or a constraint on a future change gets written down. Structured docstrings follow the bound style guide, which owns their form and length.
+- **The same bar applies in every file**, whatever its neighbours already carry.
+
 ## Python
 
 - **Follow:** Google Python Style Guide

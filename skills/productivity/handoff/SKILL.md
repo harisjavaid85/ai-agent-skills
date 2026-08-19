@@ -17,12 +17,7 @@ If the user passed arguments, treat them as a description of what the next sessi
 
 ## Output
 
-Select the working directory for the active harness:
-
-- Claude Code: `.claude/handoffs/`
-- Codex and other agents: `.agents/handoffs/`
-
-Save the output in that directory in this repo (create the directory if it does not exist).
+Save the output in `.handoffs/` at the repo root (create the directory if it does not exist).
 
 Filename: kebab-case, topical, no date in it (e.g. `build-claude-skill.md`).
 

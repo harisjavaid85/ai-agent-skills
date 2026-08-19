@@ -19,7 +19,7 @@ npx skills@latest add harisjavaid85/ai-agent-skills
 2. Pick the skills you want, and which coding agents you want to install them on. Select `/setup-repo-skills` when using the issue-lifecycle skills.
 
 3. Run `/setup-repo-skills` in your agent. It will:
-   - Set up harness-specific working directories (`.claude` for Claude, `.agents` for Codex and other agents)
+   - Wire up `.gitignore` for the agent working directories (`.plans/`, `.handoffs/`), plus Claude Code settings when that harness is active
    - Ask whether this repo is `prototype`, `standard`, or `production` (tunes how aggressively skills push for tests, error handling, and refactoring)
    - Propose a per-language coding standard (a style-guide binding, e.g. Google Python) so agents write high-quality code by default
    - Record your issue-tracker choice (GitHub, GitLab, or local markdown) — the workflow `/to-spec`, `/to-tickets`, and `/triage` read

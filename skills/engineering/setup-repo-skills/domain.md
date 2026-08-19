@@ -8,16 +8,18 @@ When you learn or decide something durable, route it — don't leave it in a ses
 
 - a **term** or domain concept → the glossary (`CONTEXT.md`). Write it directly or via `/grill-with-context`, in that skill's format.
 - a **decision and its tradeoffs** → an ADR (`docs/adr/`). Write it directly or via `/grill-with-context`, in that skill's format.
-- **how the system behaves** — a gotcha or non-obvious invariant → the knowledge base (`KNOWLEDGE.md`); you write it (detailed below).
+- **how the system behaves across module boundaries** — a gotcha or non-obvious invariant → the knowledge base (`KNOWLEDGE.md`); you write it (detailed below).
 - a **rule for how the agent should work** → operational policy (`AGENTS.md` / `CLAUDE.md`); you write it, sparingly — it loads every session.
-- a **purely local invariant** → a comment at the code.
+- a fact **scoped to one file or module** → a comment at its arrival site (below).
 
 **The boundaries are where classification goes wrong.** Each pair sits on one topic:
 
 - _Term vs fact._ "An **Invoice** is a request for payment sent to a customer after delivery" defines vocabulary → glossary. "An invoice renders its VAT line only if the customer's country is set before the PDF job runs; set it after and the total is silently wrong" → knowledge.
 - _Decision vs fact._ "Postgres backs the write model" records a choice and its tradeoffs → ADR. "The unique index on `(customer_id, idempotency_key)` is what stops a retried checkout double-charging; dropping it looks safe and isn't" → knowledge.
 - _Rule vs fact._ "Deploy only from a green `main`" prescribes how to work → operational policy. "The deploy loads secrets at boot, so a rotated secret needs a pod restart — updating the secret store alone does nothing" → knowledge.
-- _Local invariant vs fact._ "This loop assumes a non-empty batch" concerns one function → a comment at the code. "Fulfillment retries webhooks for 24h with backoff, so a handler that isn't idempotent double-ships" → knowledge.
+- _Module-scoped vs cross-module._ "Construct this client before the event loop starts; a late bind attaches the socket to the wrong worker" concerns one module → a comment at the code. "Fulfillment retries webhooks for 24h with backoff, so a handler that isn't idempotent double-ships" crosses fulfillment and every handler → knowledge.
+
+**Arrival site.** When a fact goes to the code, comment it on the exported declaration a caller reaches — not the line where you discovered it. That declaration carries everything a caller must know to use the module correctly: signature, invariants, ordering, error modes. A fact found deep in an implementation file and commented there is accurate and unread, because the caller never opens that file. Move it to the symbol they land on.
 
 The cut most easily missed is knowledge vs operational policy, and it is **register**: `KNOWLEDGE.md` _describes_ how the system behaves; operational policy _prescribes_ how the agent acts. One reality can throw off both — "webhooks retry for 24h with backoff" is a fact (knowledge); "make handlers idempotent" is a rule (policy) — but they are not duplicates, and a fact that also warrants a rule lives once in knowledge, and is referenced instead of being copied.
 
@@ -65,12 +67,13 @@ When your output names a domain concept (an issue title, a refactor proposal, a 
 
 A `KNOWLEDGE.md` holds durable, learned facts about how the system behaves — the gotchas and non-obvious invariants a future agent would otherwise waste time rediscovering. Each file is the behavioral companion to a `CONTEXT.md`, created lazily: the first fact makes the file. Facts are pruned when they stop being true.
 
-**Where it goes — by scope.**
+**Where it goes — the nearest common home.**
 
-- system-wide → the root `KNOWLEDGE.md`, beside the root `CONTEXT.md`;
-- specific to one context → that context's `KNOWLEDGE.md`, beside its `CONTEXT.md`.
+A fact that crosses module boundaries goes in the `KNOWLEDGE.md` beside the nearest ancestor `CONTEXT.md` covering every module it touches: that context's own when the modules sit within one context, the root's when it spans contexts.
 
-If a fact spans contexts, file it under the one where you hit the symptom and cross-link the other. `CONTEXT-MAP.md` already routes to every context, so no separate index is needed.
+A context whose code is a single module has no boundary to cross — those facts belong at the code. Don't create its `KNOWLEDGE.md`.
+
+`CONTEXT-MAP.md` already routes to every context, so no separate index is needed.
 
 **Format.** Mirror `CONTEXT.md`: a headed file whose entries are the facts. No frontmatter.
 

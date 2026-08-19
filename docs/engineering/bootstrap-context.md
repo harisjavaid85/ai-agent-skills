@@ -24,7 +24,7 @@ Reach for it when a repo has no `CONTEXT.md` yet, or when an existing one has dr
 
 ## The audit
 
-In **update mode** the skill diffs the glossary against the current repo and surfaces four lists before touching anything: **missing** terms, **stale** references, **drifted** definitions, and **out-of-contract** content (implementation details and gotchas that were never glossary material). Out-of-contract items are preserved and classified with you — a decision becomes an ADR, a learned gotcha goes to `KNOWLEDGE.md` — never silently relocated or deleted.
+In **update mode** the skill diffs the glossary against the current repo and surfaces four lists before touching anything: **missing** terms, **stale** references, **drifted** definitions, and **out-of-contract** content (implementation details and gotchas that were never glossary material). Out-of-contract items are preserved and classified with you — a decision becomes an ADR, a learned gotcha goes to the code or to `KNOWLEDGE.md` — never silently relocated or deleted.
 
 In multi-context repos it enforces one placement rule: **each term has exactly one home — the lowest common ancestor folder's `CONTEXT.md`.**
 

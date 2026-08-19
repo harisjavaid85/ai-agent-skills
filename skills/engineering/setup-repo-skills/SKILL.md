@@ -1,6 +1,6 @@
 ---
 name: setup-repo-skills
-description: Configure the current repo for the engineering skills with working directories, issue-tracker conventions, per-language coding standards, and agent guidance. Use when the user wants to set up, wire, or reconfigure a repo for these skills.
+description: Configure the current repo for the engineering skills with issue-tracker conventions, per-language coding standards, verify tiers, and agent guidance. Use when the user wants to set up, wire, or reconfigure a repo for these skills.
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,7 @@ Wire a repo for the engineering skills. This skill owns the **structural** setup
 
 It sets up three things:
 
-- **Harness-specific working state** — `.claude` for Claude Code, `.agents` for Codex and other agents, plus Claude settings when applicable (details in step 2).
+- **Repo scaffolding** — `.gitignore` entries for the agent working directories, plus Claude Code settings when that harness is active (details in step 2).
 - **The agent guide** — the repo's `AGENTS.md` or `CLAUDE.md`: repo mode, output discipline, and pointers to everything below.
 - **`docs/agents/` config** — issue-tracker conventions, skill vocabularies, and domain-doc rules the agent guide points to.
 
@@ -20,16 +20,15 @@ This is a prompt-driven skill, not a deterministic script. Explore, present what
 
 Read the current repo to understand its starting state. Don't assume:
 
-- Which harness is active? Use `.claude` for Claude Code and `.agents` for Codex or any other agent.
-- When running in Claude Code, is `~/.claude/settings.json` present, and does it contain a `_setupClaudeCode` marker? (For the setup-claude-code nudge — detection only, never to change global settings.)
+- Which harness is active — Claude Code or Codex or another agent? For Claude Code, does the repo-local `.claude/settings.json` already exist?
+- When running in Claude Code, is the **global** `~/.claude/settings.json` present, and does it contain a `_setupClaudeCode` marker? (For the setup-claude-code nudge — detection only, never to change global settings.)
 - `git remote -v` — which host, if any (GitHub, GitLab, other)?
 - `gh auth status` — is the GitHub CLI available and authenticated? (Detection only until label provisioning.)
 - Is the `triage` skill installed? (Gates Section C — an uninstalled skill needs no labels.)
 - `.scratch/` — is a local-markdown issue-tracker convention already in use?
 - Monorepo signals — a `pnpm-workspace.yaml`, a `workspaces` field in `package.json`, or a populated `packages/*` with its own `src/` (feeds the bootstrap-context nudge only — never a layout decision here).
 - `AGENTS.md` and `CLAUDE.md` at the root — does either exist? Do the agent-guide sections already exist — e.g. a `### Repo mode: <mode>` subsection under `## Operating mode`?
-- The active harness directory — which of `plans/`, `handoffs/`, and `overviews/` already exist? For Claude Code, also check `.claude/settings.json`.
-- `.gitignore` — does it already ignore the active harness's working dirs?
+- `.gitignore` — does it already ignore `.plans/` and `.handoffs/`?
 - `CONTEXT.md` / `CONTEXT-MAP.md` at the root — present or absent? (For the bootstrap-context nudge, never to decide domain layout.)
 - `docs/agents/` — does this skill's prior output already exist?
 - `package.json` — is this a JS/TS repo? (For the pre-commit nudge.)
@@ -38,17 +37,20 @@ Summarise what's present and what's missing before changing anything.
 
 ## 2. Structural scaffolding
 
-Set `agent-dir` to `.claude` for Claude Code or `.agents` for Codex and other agents. Create these working directories if absent:
-
-- `<agent-dir>/plans/`
-- `<agent-dir>/handoffs/`
-- `<agent-dir>/overviews/`
+Agent working directories live at the repo root, at the same paths whatever harness is running: `.plans/` for plan and design docs, `.handoffs/` for handoff documents. Don't create them — the skill that writes one creates it.
 
 ### `.gitignore`
 
-Update `.gitignore` for the selected harness. If `.gitignore` is absent, create it. If it already exists, merge the relevant entries into the existing file: preserve unrelated entries, do not clobber comments or project-specific rules, and dedupe entries that are already present.
+Update `.gitignore`. If it is absent, create it. If it already exists, merge the relevant entries into the existing file: preserve unrelated entries, do not clobber comments or project-specific rules, and dedupe entries that are already present.
 
-For Claude Code, ignore `.claude/*` by default, then explicitly allow the checked-in Claude config and repo-local skills:
+Ignore the working directories in every repo:
+
+```
+.plans/
+.handoffs/
+```
+
+For Claude Code, also ignore `.claude/*`, then explicitly allow the checked-in Claude config and repo-local skills:
 
 ```
 .claude/*
@@ -57,17 +59,7 @@ For Claude Code, ignore `.claude/*` by default, then explicitly allow the checke
 !.claude/skills/**
 ```
 
-This allowlist keeps `.claude/settings.json` and `.claude/skills/**` trackable while ignoring ephemeral Claude working state such as `.claude/plans/`, `.claude/handoffs/`, and `.claude/overviews/`.
-
-If the repo already has older narrow Claude entries such as `.claude/plans/`, `.claude/handoffs/`, and `.claude/overviews/`, replace those entries with the allowlist block above when practical. If replacing them would risk disturbing nearby hand-written rules, leave the old entries and add the allowlist block; correctness matters more than perfect tidiness.
-
-For Codex and other agents, ignore only the ephemeral working-memory directories:
-
-```
-.agents/plans/
-.agents/handoffs/
-.agents/overviews/
-```
+This allowlist keeps `.claude/settings.json` and `.claude/skills/**` trackable while ignoring ephemeral Claude working state such as caches and `settings.local.json`.
 
 ### Claude Code settings
 
@@ -77,23 +69,20 @@ For Claude Code only, `.claude/settings.json` is checked in. Write it if it does
 {
   "permissions": {
     "allow": [
-      "Read(./.claude/skills/**)",
-      "Edit(./.claude/plans/**)",
-      "Edit(./.claude/handoffs/**)",
-      "Edit(./.claude/overviews/**)"
+      "Read(./.claude/skills/**)"
     ]
   },
-  "plansDirectory": ".claude/plans"
+  "plansDirectory": ".plans"
 }
 ```
 
-Do not use a blanket `Edit(./.claude/**)` rule. That would let the agent change `.claude/settings.json`, which must stay reviewable. Repo-local Claude skills are read-only by default: agents can load `.claude/skills/**` without a prompt, but changing those skills still requires review.
+The one rule is `Read`: agents load repo-local skills from `.claude/skills/**` without a prompt, but changing those skills still requires review. Don't widen it to an `Edit` or `Write` rule over `.claude/**` — that would let the agent change `.claude/settings.json`, which must stay reviewable.
 
 For Codex and other agents, do not create a harness settings file.
 
 ## 3. Agent-skills wiring
 
-Walk the user through the following sections **one at a time** — one section, one answer, then the next. Lead each section with the recommended answer so the user can accept it in a word. Assume the user doesn't know these terms; give a one-line explainer only when the choice genuinely branches, and skip a section entirely when exploration already settled it (Section C when `triage` isn't installed).
+Walk the user through the following sections **one at a time** — one section, one answer, then the next. Lead each section with the recommended answer so the user can accept it in a word; where step 1 found this skill's prior output, the repo's current value *is* the recommended answer, not the canonical default. Assume the user doesn't know these terms; give a one-line explainer only when the choice genuinely branches, and skip a section entirely when exploration already settled it.
 
 **Section A — Repo mode.**
 
@@ -142,14 +131,16 @@ The eight canonical tags: `Feature`, `Fix`, `Doc`, `Refactor`, `Test`, `Chore`, 
 
 **Section E — Verify tiers.**
 
-> The `## Verify` block in `AGENTS.md` or `CLAUDE.md` tells agents how to confirm their work. Agents run the **Fast** tier after each coherent implementation step and after fixing a failure. They run the **Full** tier before declaring substantial work complete, handing it off, or requesting human review. If a command cannot run, they report the blocker and what remains unverified.
+> The `## Verify` block in `AGENTS.md` or `CLAUDE.md` is a table of workflow moments and what to run at each. Agents run the step tier after each coherent implementation step and after fixing a failure, and the completion tier before the work is called complete, handed off, or sent for human review. If a command cannot run, they report the blocker and what remains unverified.
 
-Verify setups vary too much to guess well, so don't auto-classify or web-search for commands. Note the build manifests at the repo root (`package.json`, `pyproject.toml`, `Makefile`, …) and ask the user for their **Fast** and **Full** commands:
+Verify setups vary too much to guess well, so don't auto-classify or web-search for commands. Note the build manifests at the repo root (`package.json`, `pyproject.toml`, `Makefile`, …) and ask the user for two command sets:
 
-- **Fast** — checks that scale with code, don't bundle or package, and don't touch external services: lint, typecheck, unit tests.
-- **Full** — everything heavier: production build, integration, e2e.
+- **After a coherent implementation step** — checks that scale with code, don't bundle or package, and don't touch external services: lint, typecheck, unit tests.
+- **Before the work is called complete** — everything heavier: production build, integration, e2e.
 
-If the user hasn't settled these yet, write the block with the cadence prose and empty tiers for them to fill. If a `## Verify` block already exists, show its contents and ask: keep / edit / regenerate.
+The table ships with these two rows plus a fixed one for review-round fixups. Growing it — a third tier for checks needing infrastructure the others don't, a scope split for a multi-stack repo — is the repo's own call, made outside this skill.
+
+If the user hasn't settled these yet, write the block with the cadence prose and empty cells for them to fill. If a `## Verify` block already exists, show its contents and ask: keep / edit / regenerate.
 
 **Section F — Coding standards.**
 
@@ -163,6 +154,8 @@ Standards are **referenced, never installed**. If a language's canonical linter 
 
 Show the user a draft of everything before writing; let them edit.
 
+**On a re-run, merge rather than regenerate** — the agent guide and every `docs/agents/` file alike. Prose stating a rule comes from the seed; values stating a decision come from the repo's copy.
+
 **Pick the file to edit:**
 
 - If `AGENTS.md` exists, edit it.
@@ -171,7 +164,7 @@ Show the user a draft of everything before writing; let them edit.
 
 If the file already exists and carries its own section structure, **do not restructure it silently.** Show the user how its sections map onto the shape below and ask whether to keep their structure (adding only missing pieces), adopt this shape, or merge. Default to keeping their structure. The shape below is for a fresh file.
 
-Write the file as these top-level sections, in order. Replace `<agent-dir>` with the selected harness directory. Include the `## Operating mode` _Memory_ paragraph and the _Plan mode artifacts_ item **only for Claude Code** — they have no meaning for Codex or other agents. If a section already exists, update it in place rather than appending a duplicate.
+Write the file as these top-level sections, in order. Include the `## Operating mode` _Memory_ paragraph **only for Claude Code** — it has no meaning for Codex or other agents. If a section already exists, update it in place rather than appending a duplicate.
 
 ```markdown
 # <AGENTS.md or CLAUDE.md>
@@ -196,11 +189,12 @@ _(Claude Code only)_ **Memory** — the harness surfaces this project's memory i
 - Keep rationale only when it constrains a future choice — a tradeoff, a "don't do X, it breaks Y". Historical "why we picked this" is noise.
 - Single source of truth — define once at the declaration; elsewhere name it, don't re-describe it. _What_ a thing is belongs to the type, field, function, or glossary entry that declares it; every use site leans on that name and adds, if needed, only what's true there and nowhere else (why it's used here, an ordering or coupling the name can't carry).
   - _Portability test:_ a comment that would read as equally true at another use site is a misplaced definition — move it to the declaration and delete the copies. Classic trap: re-explaining a param or field at each site that touches it when its type name already says what it is.
-- Match the surrounding density. Don't add comments, summaries, or prose the existing code or docs wouldn't already carry.
+- Plain declarative register. State the fact and stop: one fact per sentence, stated once, in the words the code uses. Binds at every length.
+  - _Register test:_ a line true of any codebase is a maxim; a line re-framing the point just made is the same fact twice. Cut both.
 
-**Coding standards** — per-language style-guide bindings agents follow when writing code, orthogonal to Repo mode. See `docs/agents/coding-standards.md`.
+**Coding standards** — per-language style-guide bindings, orthogonal to Repo mode. Read the relevant section of `docs/agents/coding-standards.md` before writing code in that language; it carries the comment budget and the per-language docstring form.
 
-_(Claude Code only)_ **Plan mode artifacts** — plan and design docs produced in plan mode go in `<agent-dir>/plans/<slug>.md` (kebab-case, topical, no date in the slug). Don't invent other locations (`docs/design/`, etc.).
+**Plan & design docs** go in `.plans/<slug>.md` (kebab-case, topical, no date in the slug). Don't invent other locations (`docs/design/`, etc.).
 
 ## Issues, triage & commits
 
@@ -216,9 +210,9 @@ _(Claude Code only)_ **Plan mode artifacts** — plan and design docs produced i
 | --- | --- |
 | a term / domain concept | glossary — `CONTEXT.md` |
 | a decision + its tradeoffs | an ADR — `docs/adr/` |
-| how the system behaves (gotcha, non-obvious invariant) | knowledge — `KNOWLEDGE.md` |
+| how the system behaves across module boundaries (gotcha, non-obvious invariant) | knowledge — `KNOWLEDGE.md` |
 | a rule for how the agent should work | operational policy — this file |
-| a purely local invariant | a comment at the code |
+| a fact scoped to one file or module | a comment at its arrival site in the code |
 
 Agent memory is **not** on this list — it holds cross-project working style, not facts about this repo. Full routing rules (register, scope, the high bar): `docs/agents/domain.md`. Note anything you add in your summary.
 
@@ -230,15 +224,13 @@ _Repo-specific — record durable local rules agents must follow (secrets handli
 
 ## Verify
 
-Run Fast checks after each coherent implementation step and after fixing a failure. Run Full checks before declaring substantial work complete, handing off, or requesting human review. If a command cannot run, report the blocker and what remains unverified.
+| Moment | Run |
+| --- | --- |
+| A fixup during a review round — not a coherent implementation step | the one test covering what you touched |
+| After a coherent implementation step, and after fixing a failure | <step commands from Section E> |
+| Before the work is called complete, handed off, or sent for human review | <completion commands from Section E> |
 
-### Fast
-
-- <Fast commands from Section E, or leave empty for the user to fill>
-
-### Full
-
-- <Full commands from Section E, or leave empty for the user to fill>
+If a command cannot run, report the blocker and what remains unverified. Report what you verified, not that the work is verified — a green tier is evidence for what it covers and says nothing about what it doesn't.
 ```
 
 The `### Repo mode` prose and bullets come from the mode table below. Everything not marked for substitution — settled-state, the Navigating routing, Repo conventions — is written verbatim.
@@ -312,7 +304,7 @@ If any label cannot be listed or created, continue writing the local setup, then
 
 ## 6. Finish
 
-Tell the user setup is done and that `docs/agents/*.md` are theirs to edit. Then suggest the applicable next steps from the rubric below in your own prose.
+Tell the user setup is done, that `docs/agents/*.md` are theirs to edit, and that the `## Verify` table is theirs to grow as the repo does. Then suggest the applicable next steps from the rubric below in your own prose.
 
 ### Rubric (internal)
 
