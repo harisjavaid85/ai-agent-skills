@@ -1,5 +1,5 @@
 ---
-"mattpocock-skills": patch
+"ai-agent-skills": patch
 ---
 
 Make `/setup-matt-pocock-skills` friendlier and align the local-markdown tracker with the current spec.

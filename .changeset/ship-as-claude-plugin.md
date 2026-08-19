@@ -1,5 +1,5 @@
 ---
-"mattpocock-skills": minor
+"ai-agent-skills": minor
 ---
 
 Ship the skill set as a native **Claude Code plugin**. The repo is now its own single-plugin marketplace, so you can subscribe to the promoted skills as a managed, read-only bundle instead of copying editable files:
