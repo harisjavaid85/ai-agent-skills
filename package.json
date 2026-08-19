@@ -14,7 +14,12 @@
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.7.0",
-    "@changesets/cli": "^2.30.0"
+    "@changesets/cli": "^2.30.0",
+    "@types/node": "^26.2.0"
   },
-  "packageManager": "npm@10.9.4"
+  "packageManager": "npm@10.9.4",
+  "dependencies": {
+    "@ai-hero/sandcastle": "^0.12.0",
+    "zod": "^4.4.3"
+  }
 }

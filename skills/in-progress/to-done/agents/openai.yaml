@@ -1,0 +1,5 @@
+interface:
+  display_name: "To Done"
+  short_description: "Drain a spec's tickets to a reviewed draft PR"
+policy:
+  allow_implicit_invocation: false
