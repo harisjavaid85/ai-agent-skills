@@ -23,6 +23,7 @@ This fork (`harisjavaid85/ai-agent-skills`) tracks `mattpocock/skills` as `upstr
 ## Spec lifecycle (fork-only)
 
 - A GitHub parent spec carries `kind:spec` and no triage-state label. An optional kebab-case slug adds the repository-wide lifecycle label `spec:<slug>`; one slug identifies one parent across open and closed states.
+- `to-tickets` writes the issue body's **Blocked by** section only when the tracker has no native blocking relationship; upstream writes it unconditionally. Where native links exist they are the sole record — a body copy is somewhere for the two to disagree, and a reader trusts whichever they see first.
 - `to-tickets` resolves or inherits the lifecycle slug and applies `spec:<slug>` plus `ready-for-agent` to every implementation ticket. Numbered source stories are mapped across the tickets and checked for complete coverage before publication. Acceptance criteria use imperative voice and independently verifiable success conditions.
 - `open-pr <slug>` resolves the spec by two slug-scoped probes — a `kind:spec` + `spec:<slug>` issue, else a `.scratch/<slug>/spec.md` committed on the branch — and links the parent and completed tickets from whichever answers, GitHub winning when both do.
 - `setup-repo-skills` provisions the fixed `kind:spec` marker. `to-spec` creates each dynamic `spec:<slug>` label.
