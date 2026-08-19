@@ -5,17 +5,18 @@ A collection of composable skills used by Claude Code, Codex, and other coding a
 ## Language
 
 **Issue tracker**:
-The tool that hosts a repo's issues — GitHub Issues, Linear, a local `.scratch/` markdown convention, or similar. Skills like `to-tickets`, `to-spec`, and `triage` read from and write to it through the conventions in `docs/agents/issue-tracker.md`.
+The tool that hosts a repo's issues: GitHub Issues, Linear, a local `.scratch/` markdown convention, or similar. Skills like `to-tickets`, `to-spec`, and `triage` read from and write to it through the conventions in `docs/agents/issue-tracker.md`.
 _Avoid_: backlog manager, backlog backend, issue host
 
 **Ticket**:
 A tracer-bullet implementation unit produced by `to-tickets`, published to the configured **Issue tracker**.
 
 **Issue**:
-A work item hosted by an **Issue tracker** — a bug, request, spec, task, or published ticket.
+A single tracked unit of work inside an **Issue tracker**: a bug, task, spec, or slice produced by `to-tickets`.
+_Avoid_: ticket (use only when quoting external systems that call them tickets, or for a **Decision ticket**, see below)
 
 **Decision ticket**:
-A `wayfinder` unit — a child **Issue** of a `wayfinder:map` holding a *question* whose resolution is a decision, not an implementation ticket. The **decision** qualifier is what keeps it distinct from an implementation ticket; `wayfinder` introduces the term, then uses "ticket".
+A `wayfinder` unit: a child **Issue** of a `wayfinder:map` holding a *question* whose resolution is a decision, not a slice of a build to execute. The **decision** qualifier is what keeps it distinct from an implementation ticket; `wayfinder` introduces the term, then uses "ticket".
 
 **Lifecycle slug**:
 A kebab-case identifier that groups one parent spec with its implementation tickets across their shared lifecycle.
@@ -51,5 +52,5 @@ Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **l
 
 ## Flagged ambiguities
 
-- "backlog" was previously used to mean both the *tool* hosting issues and the *body of work* inside it — resolved: the tool is the **Issue tracker**; "backlog" is no longer used as a domain term.
-- "backlog backend" / "backlog manager" — resolved: collapsed into **Issue tracker**.
+- "backlog" was previously used to mean both the *tool* hosting issues and the *body of work* inside it. Resolved: the tool is the **Issue tracker**; "backlog" is no longer used as a domain term.
+- "backlog backend" / "backlog manager". Resolved: collapsed into **Issue tracker**.

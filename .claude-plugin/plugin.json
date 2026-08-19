@@ -1,7 +1,7 @@
 {
   "name": "ai-agent-skills",
-  "version": "1.2.0",
-  "description": "Agent skills for real engineering — grilling, spec/ticket flows, TDD, code review, domain modelling and more. Fork of mattpocock/skills with additional workflow skills.",
+  "version": "1.2.3",
+  "description": "Agent skills for real engineering: grilling, spec/ticket flows, TDD, code review, domain modelling and more. Fork of mattpocock/skills with additional workflow skills.",
   "author": {
     "name": "Haris Javaid"
   },
@@ -37,13 +37,17 @@
     "./skills/engineering/to-tickets",
     "./skills/engineering/triage",
     "./skills/engineering/wayfinder",
+    "./skills/engineering/wizard",
     "./skills/productivity/cross-check-with-codex",
     "./skills/productivity/grill-me",
     "./skills/productivity/grilling",
     "./skills/productivity/handoff",
     "./skills/productivity/setup-claude-code",
     "./skills/productivity/teach",
+    "./skills/productivity/to-questionnaire",
+    "./skills/productivity/wait-what",
     "./skills/productivity/write-a-skill",
+    "./skills/productivity/writing-for-agents",
     "./skills/productivity/writing-great-skills"
   ]
 }

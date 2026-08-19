@@ -8,7 +8,7 @@
     {
       "name": "ai-agent-skills",
       "source": "./",
-      "description": "Agent skills for real engineering — grilling, spec/ticket flows, TDD, code review, domain modelling and more.",
+      "description": "Agent skills for real engineering: grilling, spec/ticket flows, TDD, code review, domain modelling and more.",
       "category": "engineering",
       "keywords": [
         "engineering",
