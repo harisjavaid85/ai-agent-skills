@@ -39,9 +39,9 @@ description: Brief description of capability. Use when [specific triggers].
 
 - ≤ 512 chars
 - Third person
-- Exactly two sentences. The first names **what** the skill does or produces, in terms a user would recognize. Not a recipe — no enumerated steps, command literals (`pnpm install`), no file-level counts ("three prompt.md edits"). The second is `Use when [specific triggers]`. If you need a third sentence, you're overspecifying.
-- **No navigational paths or filenames** — i.e. where things live in this repo (`docs/agents/`, `settings.local.json`, `CLAUDE.md/AGENTS.md`). Those belong in the body.
-- **Trigger markers are fine** — file extensions or filename patterns that are how the agent *recognises* the situation (`.env`, `*.pem`, `package.json`) belong in the trigger sentence when they're load-bearing for matching.
+- Exactly two sentences. The first names **what** the skill does or produces, in terms a user would recognize. Not a recipe: no enumerated steps, command literals (`pnpm install`), no file-level counts ("three prompt.md edits"). The second is `Use when [specific triggers]`. If you need a third sentence, you're overspecifying.
+- **No navigational paths or filenames**: i.e. where things live in this repo (`docs/agents/`, `settings.local.json`, `CLAUDE.md/AGENTS.md`). Those belong in the body.
+- **Trigger markers are fine**: file extensions or filename patterns that are how the agent *recognises* the situation (`.env`, `*.pem`, `package.json`) belong in the trigger sentence when they're load-bearing for matching.
 
 **Good**:
 
@@ -49,28 +49,28 @@ description: Brief description of capability. Use when [specific triggers].
 Extract text and tables from PDF files, fill forms, merge documents. Use when working with PDF files or when user mentions PDFs, forms, or document extraction.
 ```
 
-**Bad** — too vague: `Helps with documents.` — gives the agent no way to distinguish this from other document skills.
+**Bad**, too vague: `Helps with documents.` gives the agent no way to distinguish this from other document skills.
 
-**Bad** — navigational paths in description:
+**Bad**, navigational paths in description:
 
 ```
 Set up the repo's docs/agents/ folder with issue-tracker.md, triage-labels.md, commit-tags.md, and domain.md, plus harness-specific working directories and the agent-guidance sections in AGENTS.md/CLAUDE.md. Use when configuring a repo for the engineering skills.
 ```
 
-**Rewritten clean** — capability without the file tour:
+**Rewritten clean**, capability without the file tour:
 
 ```
-Configure the current repo so the engineering skills work in it — scaffolds working directories, repo settings, and the per-skill config files the other skills consume. Use when the user wants to set up, wire, or configure a repo for the engineering skills.
+Configure the current repo so the engineering skills work in it: scaffolds working directories, repo settings, and the per-skill config files the other skills consume. Use when the user wants to set up, wire, or configure a repo for the engineering skills.
 ```
 
-**Bad** — enumerated steps in description:
+**Bad**, enumerated steps in description:
 
 ```
-Scaffold a new experiment in this rehearsal harness — copy a base template, `pnpm install`, run `sandcastle init` and apply surgical patches (one main.ts replacement + three prompt.md edits), seed a runnable PRD, seed AGENTS/findings stubs, create the `exp/<name>` GitHub label, and seed one GitHub Issue per acceptance criterion labeled `exp/<name>` + `needs-triage`, all committed on `main`. Use when the user wants to start a new experiment, scaffold an experiment dir, or says "create experiment" / "new experiment from <template>".
+Scaffold a new experiment in this rehearsal harness: copy a base template, `pnpm install`, run `sandcastle init` and apply surgical patches (one main.ts replacement + three prompt.md edits), seed a runnable PRD, seed AGENTS/findings stubs, create the `exp/<name>` GitHub label, and seed one GitHub Issue per acceptance criterion labeled `exp/<name>` + `needs-triage`, all committed on `main`. Use when the user wants to start a new experiment, scaffold an experiment dir, or says "create experiment" / "new experiment from <template>".
 ```
 
-**Rewritten clean** — names what's produced, not the recipe:
+**Rewritten clean**, naming what's produced rather than the recipe:
 
 ```
-Scaffold a new experiment from a template in the rehearsal harness — produces a runnable PRD and one GitHub issue per acceptance criterion. Use when the user wants to start a new experiment, or says "create experiment" or "new experiment from <template>".
+Scaffold a new experiment from a template in the rehearsal harness: produces a runnable PRD and one GitHub issue per acceptance criterion. Use when the user wants to start a new experiment, or says "create experiment" or "new experiment from <template>".
 ```

@@ -32,7 +32,7 @@ The tracker classification applied during triage: `bug` for broken behavior or `
 A canonical category prefixing a commit subject, applied by `commit` (e.g. `Feature`, `Fix`). Each tag maps to the repo's actual tag string and subject format via `docs/agents/commit-tags.md`.
 
 **Repo mode**:
-The rigor posture `setup-repo-skills` assigns a repo — `prototype`, `standard`, or `production` — governing how much an agent tests, hardens error paths, and refactors.
+The rigor posture `setup-repo-skills` assigns a repo (`prototype`, `standard`, or `production`) governing how much an agent tests, hardens error paths, and refactors.
 _Avoid_: repo type, quality level
 
 **Coding standard**:

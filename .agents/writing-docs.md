@@ -1,14 +1,14 @@
 # Writing docs pages
 
-Every skill in `engineering/` and `productivity/` has a human-facing **docs page** at `docs/<bucket>/<skill-name>.md` — the docs tree mirrors those two bucket folders under `skills/`. The page is not the skill and not a copy of `SKILL.md`. Only these two buckets are promoted; the rest (`misc/`, `personal/`, `in-progress/`, `deprecated/`) ship no docs page.
+Every skill in `engineering/` and `productivity/` has a human-facing **docs page** at `docs/<bucket>/<skill-name>.md`. The docs tree mirrors those two bucket folders under `skills/`. The page is not the skill and not a copy of `SKILL.md`. Only these two buckets are promoted; the rest (`misc/`, `personal/`, `in-progress/`, `deprecated/`) ship no docs page.
 
 Most of these skills are **user-invoked**: the agent will never fire them for you, so *you* are the index that has to remember they exist and when to reach for them. That memory is **cognitive load**. The job of a docs page is to relieve it: to orient one reader around one skill so they can hold it in their head, know when to reach for it, and see where it sits in the system. The pages are collectively a distributed router; each is a node.
 
-Act whenever a promoted skill is added, renamed, or has its behaviour changed: create or re-sync its docs page. A rename moves the file too (`docs/<bucket>/<old>.md` → `docs/<bucket>/<new>.md`), because the docs path tracks the name; a skill that moves between `engineering/` and `productivity/` moves its docs file to the matching folder. Skills in `misc/`, `personal/`, `in-progress/`, and `deprecated/` get no page — none of those buckets is promoted. A skill moving *out* of one of them into `engineering/` or `productivity/` gains a page; one moving the other way loses it.
+Act whenever a promoted skill is added, renamed, or has its behaviour changed: create or re-sync its docs page. A rename moves the file too (`docs/<bucket>/<old>.md` → `docs/<bucket>/<new>.md`), because the docs path tracks the name; a skill that moves between `engineering/` and `productivity/` moves its docs file to the matching folder. Skills in `misc/`, `personal/`, `in-progress/`, and `deprecated/` get no page, because none of those buckets is promoted. A skill moving *out* of one of them into `engineering/` or `productivity/` gains a page; one moving the other way loses it.
 
-Because these pages live in a repo readers may browse on GitHub or in a clone, **every link is absolute** — never a repo-relative path. A link to another skill's docs page points at its full `https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/<bucket>/<name>.md` URL; a link into the repo points at its full `https://github.com/harisjavaid85/ai-agent-skills/...` URL.
+Because these pages live in a repo readers may browse on GitHub or in a clone, **every link is absolute**: never a repo-relative path. A link to another skill's docs page points at its full `https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/<bucket>/<name>.md` URL; a link into the repo points at its full `https://github.com/harisjavaid85/ai-agent-skills/...` URL.
 
-There is no H1 — the filename supplies the page title when rendered.
+There is no H1. The filename supplies the page title when rendered.
 
 ## Page structure
 
@@ -28,12 +28,12 @@ One or two plain-language paragraphs. Lead with the skill's one-sentence job, th
 
 How and when you reach for the skill, in two beats that are both effectively always present:
 
-- **Invocation mode.** State whether you type it or the agent fires it. A user-invoked skill: "You invoke this by typing `/<name>` — the agent won't reach for it on its own." A model-invoked skill: "Type `/<name>`, or the agent reaches for it automatically when a task fits."
-- **Trigger boundary.** The index entry: "reach for this when …". Where the skill is confusable with a sibling, add the other half — "for <X> instead, use [<sibling>](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/<bucket>/<sibling>.md)."
+- **Invocation mode.** State whether you type it or the agent fires it. A user-invoked skill: "You invoke this by typing `/<name>`, and the agent won't reach for it on its own." A model-invoked skill: "Type `/<name>`, or the agent reaches for it automatically when a task fits."
+- **Trigger boundary.** The index entry: "reach for this when …". Where the skill is confusable with a sibling, add the other half: "for <X> instead, use [<sibling>](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/<bucket>/<sibling>.md)."
 
 ## Prerequisites
 
-Optional — include only when the skill needs something in place to be functional; omit the heading entirely otherwise. Covers: a **workspace it writes into** (a stateful skill like `grill-with-context` writes `CONTEXT.md` and ADRs; `teach` builds a whole directory — say what it writes and where), **prior setup** (`triage`/`to-spec`/`to-tickets` need `setup-repo-skills` to have configured an issue tracker), or **repo-specific tooling**. A stateless skill that runs anywhere has no prerequisites — drop the section.
+Optional: include only when the skill needs something in place to be functional; omit the heading entirely otherwise. Covers: a **workspace it writes into** (a stateful skill like `grill-with-context` writes `CONTEXT.md` and ADRs; `teach` builds a whole directory, so say what it writes and where), **prior setup** (`triage`/`to-spec`/`to-tickets` need `setup-repo-skills` to have configured an issue tracker), or **repo-specific tooling**. A stateless skill that runs anywhere has no prerequisites, so drop the section.
 
 ## <free-form middle>
 
@@ -63,7 +63,7 @@ A few bullets naming what the reader sees when the skill is doing its job. The b
 
 Always present. Situate the skill in the system in a sentence or two:
 
-- **Role.** Name it: a **chain step** (`grill-with-context → to-spec → to-tickets → implement → commit → open-pr`), a **run-once setup** (`setup-repo-skills`), **periodic maintenance** (`improve-codebase-architecture`, "every few days"), or a **reach-for-it-anytime standalone** (`diagnosing-bugs`, `prototype`, `handoff`). A standalone's map is one honest sentence — far better than omitting the section.
+- **Role.** Name it: a **chain step** (`grill-with-context → to-spec → to-tickets → implement → commit → open-pr`), a **run-once setup** (`setup-repo-skills`), **periodic maintenance** (`improve-codebase-architecture`, "every few days"), or a **reach-for-it-anytime standalone** (`diagnosing-bugs`, `prototype`, `handoff`). A standalone's map is one honest sentence, which is far better than omitting the section.
 - **Neighbours.** The one or two siblings that matter, each with a because-clause, linked absolutely.
 - **The map.** Point to [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md), the router over the whole set, so this page stays a node and never has to redraw the graph.
 

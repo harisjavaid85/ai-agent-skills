@@ -37,11 +37,11 @@ Bash(gh pr close:*)
 Bash(gh api graphql:*)
 ```
 
-`Bash(gh api graphql:*)` blocks all `gh api graphql` calls — GraphQL reads and writes share the same HTTP verb and the read/write distinction lives in the query body, which the hook can't inspect. REST `gh api <path>` is allowed; the hook blocks `gh api -X POST/PUT/PATCH/DELETE` and `-XPOST` / `--method=POST` forms.
+`Bash(gh api graphql:*)` blocks all `gh api graphql` calls, because GraphQL reads and writes share the same HTTP verb and the read/write distinction lives in the query body, which the hook can't inspect. REST `gh api <path>` is allowed; the hook blocks `gh api -X POST/PUT/PATCH/DELETE` and `-XPOST` / `--method=POST` forms.
 
-`gh auth` is not denied — the hook blocks the mutating subcommands (`login`/`logout`/`refresh`/`switch`/`setup-git`) so `gh auth status` and `gh auth token` work without prompts.
+`gh auth` is not denied: the hook blocks the mutating subcommands (`login`/`logout`/`refresh`/`switch`/`setup-git`) so `gh auth status` and `gh auth token` work without prompts.
 
-`Bash(curl:*)`, `Bash(wget:*)`, and `WebFetch` default to "ask" — opt in per-repo if needed.
+`Bash(curl:*)`, `Bash(wget:*)`, and `WebFetch` default to "ask"; opt in per-repo if needed.
 
 ### `permissions.ask`
 
@@ -130,7 +130,7 @@ Adds the PreToolUse hook entry to `settings.json` only. No deny/ask or other ent
 
 Three levels. `standard` is the default and writes nothing.
 
-`lean` denies these tools — tracked as `managedToolSurfaceDeny`, kept out of the safety deny list above so `GUARDRAILS.md` stays a safety surface:
+`lean` denies these tools, tracked as `managedToolSurfaceDeny`, kept out of the safety deny list above so `GUARDRAILS.md` stays a safety surface:
 
 ```
 DesignSync
@@ -158,8 +158,8 @@ and writes:
 
 What each level costs the operator:
 
-- `lean` — `/loop` and `/schedule` stop working (consistent with the cron denies), Jupyter notebook editing goes, the bundled `/security-review`, `/review`, `/run`, `/simplify` and `/init` disappear, and code-review findings render as prose instead of the findings UI.
-- `leanest` — also gives up publishing Artifacts.
+- `lean`: `/loop` and `/schedule` stop working (consistent with the cron denies), Jupyter notebook editing goes, the bundled `/security-review`, `/review`, `/run`, `/simplify` and `/init` disappear, and code-review findings render as prose instead of the findings UI.
+- `leanest`: also gives up publishing Artifacts.
 
 Keep enabled at every level: `EnterPlanMode` / `ExitPlanMode`, `AskUserQuestion`, `PushNotification`, `SendMessage`, `EnterWorktree` / `ExitWorktree`.
 
@@ -167,7 +167,7 @@ Never deny `EnterPlanMode` / `ExitPlanMode`. Their schemas ship whether or not t
 
 ## Hook patterns (all modes)
 
-See [`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) — covers `rm -rf` variants, `find . -delete`, dangerous git operations, and destructive/identity-mutating `gh` operations.
+See [`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) covers `rm -rf` variants, `find . -delete`, dangerous git operations, and destructive/identity-mutating `gh` operations.
 
 ## `~/.claude/GUARDRAILS.md` template
 
@@ -190,7 +190,7 @@ Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regene
 
 ### Tool surface
 
-- Level {{toolSurface}} — denied tools: {{toolSurfaceDenies}}
+- Level {{toolSurface}}, denied tools: {{toolSurfaceDenies}}
 
 ## Hook-enforced (~/.claude/hooks/block-dangerous-bash.sh)
 

@@ -24,7 +24,7 @@ The skill takes one argument (`host` | `sandbox` | `guardrails`). If no argument
 | ------------ | -------------------------------------------------------------------------------- |
 | `host`       | Hook + strict permissions for a long-lived dev machine                           |
 | `sandbox`    | Hook + relaxed permissions for a disposable Docker container running Claude Code |
-| `guardrails` | Hook only — no permissions or other settings changes                             |
+| `guardrails` | Hook only, no permissions or other settings changes                             |
 
 Non-interactive bootstrap example (Dockerfile): `RUN claude -p "/setup-claude-code sandbox"`.
 
@@ -53,14 +53,14 @@ Start from existing `settings.json`. Apply changes per mode:
 
 ### 4. Ask about opt-ins (host/sandbox only, interactive only)
 
-- **Default mode**: `plan` (requires approval before acting — safest) / `auto` (handles permissions automatically — middle ground) / `bypassPermissions` (skips all permission checks) / `skip` (don't set it)?
+- **Default mode**: `plan` (requires approval before acting, safest) / `auto` (handles permissions automatically, middle ground) / `bypassPermissions` (skips all permission checks) / `skip` (don't set it)?
 - **Model**: `opus` / `sonnet` / `haiku` / `skip` (don't set it)?
 - **Statusline**: install `scripts/statusline.sh` → `~/.claude/statusline.sh` and set `statusLine.type = "command"`, `statusLine.command = "~/.claude/statusline.sh"`? (`yes` / `skip`)
-- **Tool surface**: `standard` (default) / `lean` / `leanest`? Read the levels out of [REFERENCE.md](REFERENCE.md#tool-surface-hostsandbox) and present what each one costs. Before recommending a lean level, grep the user's installed skills for the tools it denies — a skill that calls a denied tool fails at the point of use.
+- **Tool surface**: `standard` (default) / `lean` / `leanest`? Read the levels out of [REFERENCE.md](REFERENCE.md#tool-surface-hostsandbox) and present what each one costs. Before recommending a lean level, grep the user's installed skills for the tools it denies, because a skill that calls a denied tool fails at the point of use.
 
 If the user chooses `skip` for any opt-in, do not write that key to `settings.json` at all. `standard` is the same: write no tool-surface keys.
 
-Skip all opt-ins in non-interactive (scripted) invocations — e.g. `RUN claude -p "/setup-claude-code sandbox"` in a Dockerfile.
+Skip all opt-ins in non-interactive (scripted) invocations, e.g. `RUN claude -p "/setup-claude-code sandbox"` in a Dockerfile.
 
 ### 5. Show diff and confirm
 
@@ -72,9 +72,9 @@ Skip in non-interactive invocations.
 
 Write all generated files to a temp staging directory `/tmp/claude-setup-<timestamp>/` with all placeholders resolved to actual paths:
 
-- `settings.json` — merged config with `_setupClaudeCode` sentinel (shape in [REFERENCE.md](REFERENCE.md#sentinel-shape))
-- `GUARDRAILS.md` — summarising both static permissions and hook patterns (template in [REFERENCE.md](REFERENCE.md))
-- `apply.sh` — script that performs all writes:
+- `settings.json`: merged config with `_setupClaudeCode` sentinel (shape in [REFERENCE.md](REFERENCE.md#sentinel-shape))
+- `GUARDRAILS.md`: summarising both static permissions and hook patterns (template in [REFERENCE.md](REFERENCE.md))
+- `apply.sh`: script that performs all writes:
   1. `cp ~/.claude/settings.json ~/.claude/settings.json.bak-$(date +%s)` (if it exists)
   2. `mkdir -p ~/.claude/hooks`
   3. `cp <staging>/settings.json ~/.claude/settings.json`

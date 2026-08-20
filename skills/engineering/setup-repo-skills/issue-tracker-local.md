@@ -20,7 +20,7 @@ Read the file at the referenced path. The user will normally pass the path or th
 
 ## Spec lifecycle operations
 
-None — lifecycle labels don't apply here. Publish specs and tickets per the conventions above; the `.scratch/<feature-slug>/` directory already groups a spec with its tickets.
+None: lifecycle labels don't apply here. Publish specs and tickets per the conventions above; the `.scratch/<feature-slug>/` directory already groups a spec with its tickets.
 
 ## Wayfinding operations
 

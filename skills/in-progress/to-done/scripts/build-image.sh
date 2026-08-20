@@ -19,7 +19,7 @@ Run from the root of the repo you want an image for.
 
   --image-name  Final image tag (default: $TO_DONE_IMAGE, else to-done:<repo>).
   --skills-ref  Branch or tag of the skills repo to bake in (default: its current
-                branch). Must be pushed. A raw commit sha is not accepted — the
+                branch). Must be pushed. A raw commit sha is not accepted; the
                 skills installer resolves refs only.
   --no-cache    Rebuild every layer from scratch.
 EOF
@@ -53,7 +53,7 @@ repo_tag="${repo_tag%-}"
 
 remote_url="$(git -C "$script_dir" remote get-url origin)"
 skills_repo="$(printf '%s' "$remote_url" | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##')"
-# A branch or tag, because the installer rejects a raw sha — see the Dockerfile.
+# A branch or tag, because the installer rejects a raw sha; see the Dockerfile.
 # Defaults to the checked-out branch, so a feature-branch build tests that
 # branch's skills rather than silently testing the default one.
 [ -n "$skills_ref" ] || skills_ref="$(git -C "$script_dir" rev-parse --abbrev-ref HEAD)"
@@ -91,7 +91,7 @@ if [ -f "$overlay" ]; then
     --file "$overlay" \
     "$target_dir"
 else
-  echo "No .to-done/Dockerfile in ${target_dir} — tagging the base as ${image_name}"
+  echo "No .to-done/Dockerfile in ${target_dir}: tagging the base as ${image_name}"
   docker tag "$base_image" "$image_name"
 fi
 

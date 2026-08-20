@@ -2,7 +2,7 @@
 
 How agents write code in this repo, per language. The **producing** agent reads the relevant section _before_ writing code in that language; `review`'s Standards axis reads it as a backstop.
 
-A section binds the agent to a named external style guide. The guide is the source of truth for the whole convention set — both what tooling enforces and the judgment calls it cannot (naming, docstrings, module boundaries). The linter is the mechanical safety net; the guide covers the rest. When a rule is unclear, fetch the authoritative URL and follow it.
+A section binds the agent to a named external style guide. The guide is the source of truth for the whole convention set: both what tooling enforces and the judgment calls it cannot (naming, docstrings, module boundaries). The linter is the mechanical safety net; the guide covers the rest. When a rule is unclear, fetch the authoritative URL and follow it.
 
 Across every language: reach for an existing helper before writing a near-duplicate; don't extract a shared abstraction until a second caller genuinely earns it.
 
@@ -14,17 +14,17 @@ Binds every language; the sections below add the per-language docstring form.
 
 - **Earn it.** Write a comment only when the code can't say it: a non-obvious invariant, a constraint on a future change, a reason the obvious alternative fails. When the name, type, or signature already says it, let them.
 - **In a body, at a use site, beside a branch: one line by default, three the ceiling.** Consecutive comment lines on one subject count as one block.
-- **A comment that outgrows the ceiling isn't local.** It's carrying a fact about the whole file or module — move it to its arrival site (`docs/agents/domain.md`) and leave behind only what is true at this line and nowhere else.
+- **A comment that outgrows the ceiling isn't local.** It's carrying a fact about the whole file or module, so move it to its arrival site (`docs/agents/domain.md`) and leave behind only what is true at this line and nowhere else.
 - **At a declaration, length is set by the design, not the ceiling.** This is where an invariant or a constraint on a future change gets written down. Structured docstrings follow the bound style guide, which owns their form and length.
 - **The same bar applies in every file**, whatever its neighbours already carry.
 
 ## Python
 
 - **Follow:** Google Python Style Guide
-- **Authoritative:** https://google.github.io/styleguide/pyguide.html — fetch when a rule is unclear
-- **Enforced by:** `ruff` + `black` — the same commands the `## Verify` Fast tier runs
-- **Deviations:** _none_ — list where this repo departs from the guide (e.g. line length 100)
-- **Emphasise:** _optional_ — judgment-layer rules to weight here (e.g. Google-style docstrings on the public API)
+- **Authoritative:** https://google.github.io/styleguide/pyguide.html (fetch when a rule is unclear)
+- **Enforced by:** `ruff` + `black`, the same commands the `## Verify` Fast tier runs
+- **Deviations:** _none_; list where this repo departs from the guide (e.g. line length 100)
+- **Emphasise:** _optional_; judgment-layer rules to weight here (e.g. Google-style docstrings on the public API)
 
 _(One block like the above per language present in the repo. The block is this repo's binding and may carry deviations; the table below is the deviation-free default.)_
 

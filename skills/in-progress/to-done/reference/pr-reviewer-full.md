@@ -1,7 +1,7 @@
 > **Not wired into the loop.** Kept as the starting point for a future review phase that
 > lands findings as resolvable PR threads instead of a local audit record. It does not run
 > as written: step 4 calls `/code-review medium --comment`, and that skill takes no severity
-> argument and no `--comment` flag — it reports findings and leaves remediation to its
+> argument and no `--comment` flag; it reports findings and leaves remediation to its
 > caller. The thread-reading GraphQL below is sound; the missing half is creating the
 > threads, via `POST /repos/{owner}/{repo}/pulls/{n}/comments` with `commit_id`, `path`, and
 > `line`.
@@ -25,7 +25,7 @@ You are a reviewer. Skip if the PR carries the actual `needs-info` label; otherw
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | **Mechanical** | Typo, formatting, naming nit, redundant import, missing null check, missing await, obvious extractable helper, missing edge-case test for a known case                                          | Fix yourself (Procedure step 6)    |
 | **Judgment**   | Wrong logic, bad abstraction, performance regression requiring redesign, security concern, missing acceptance criterion, anything where the right fix depends on intent not visible in the diff | File an issue (Procedure step 7)   |
-| **Skip**       | Finding contradicts PRD's implementation decisions, acceptance criteria, or out-of-scope items — the diff already matches stated PRD intent                                                     | Reply + resolve (Procedure step 5) |
+| **Skip**       | Finding contradicts PRD's implementation decisions, acceptance criteria, or out-of-scope items, because the diff already matches stated PRD intent                                                     | Reply + resolve (Procedure step 5) |
 
 For the non-skipped threads, can the fix be applied confidently from the comment alone, without asking "is this what the team wants"? Yes → mechanical. No → judgment. When in doubt → judgment.
 
@@ -85,7 +85,7 @@ Acceptance-criterion rules:
 
 ## Procedure
 
-**Discipline**: The Procedure is a single multi-step transaction. From any intermediate step, continue to the next — do not stop. The only valid termination is a step that emits the complete signal.
+**Discipline**: The Procedure is a single multi-step transaction. From any intermediate step, continue to the next, and do not stop. The only valid termination is a step that emits the complete signal.
 
 1. **Find the PR**:
 
@@ -96,7 +96,7 @@ Acceptance-criterion rules:
 
    Hold `<owner>`, `<repo>`, `<pr-number>`. If no PR exists, print "No PR found for branch.", emit `<promise>COMPLETE</promise>`, and stop.
 
-2. **Self-gate** — read the PR labels. If the actual `needs-info` label is present, print "PR has needs-info label — skipping review.", emit `<promise>COMPLETE</promise>`, and stop. Do not invoke `/code-review`. Do not modify the PR.
+2. **Self-gate**: read the PR labels. If the actual `needs-info` label is present, print "PR has needs-info label, skipping review.", emit `<promise>COMPLETE</promise>`, and stop. Do not invoke `/code-review`. Do not modify the PR.
 
 3. **Read the PRD body**:
 
@@ -138,13 +138,13 @@ Filter to `isResolved: false`. For each unresolved thread, the first comment is 
    ```
 
 6. **Apply mechanical fixes (batched)**:
-   - **Pass A** — for each mechanical thread:
+   - **Pass A**: for each mechanical thread:
      - Read the file referenced in the comment (use `Read`, not `gh pr diff`).
      - Edit to apply the fix.
      - Run Fast-tier verify (read `AGENTS.md` for the commands).
      - If verify fails: revert the edit, reclassify this thread as judgment, move on.
    - If at least one edit survived: single `/commit auto` over all surviving edits, then `git push origin {{BRANCH}}`. If the push fails, reclassify ALL surviving threads as judgment.
-   - **Pass B** — for each thread still classified as mechanical after Pass A: **Thread reply + resolve** with body. The "Fixed: <commit-sha>" line below asserts the commit is on `origin/{{BRANCH}}`; never apply this template otherwise.
+   - **Pass B**: for each thread still classified as mechanical after Pass A: **Thread reply + resolve** with body. The "Fixed: <commit-sha>" line below asserts the commit is on `origin/{{BRANCH}}`; never apply this template otherwise.
 
      ```
      <AI disclaimer>
@@ -152,7 +152,7 @@ Filter to `isResolved: false`. For each unresolved thread, the first comment is 
      > Fixed: <commit-sha>.
      ```
 
-7. **File judgment findings as issues** — for each thread classified judgment (including any reclassified in step 6):
+7. **File judgment findings as issues**: for each thread classified judgment (including any reclassified in step 6):
    - Use `<prd-tracker-number>` held from step 3 (no second fetch needed).
    - Compose body using **Issue body envelope** to `/tmp/reviewer-issue-<thread-index>.md`.
    - Create the issue:

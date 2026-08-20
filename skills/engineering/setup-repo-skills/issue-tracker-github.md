@@ -38,7 +38,7 @@ Run `gh issue view <number> --comments`.
 Used by `/to-spec` and `/to-tickets`. A **parent spec** is an issue carrying the fixed marker `kind:spec` and no triage-state label; an optional lifecycle slug adds the label `spec:<slug>`, shared by the parent and every implementation ticket produced from it.
 
 - **Ensure the parent marker**: exact-name lookup via `gh label list --json name`; only when missing, `gh label create "kind:spec" --description "Identifies parent spec issues" --color "EDEDED"`. Preserve any existing color and description.
-- **Check slug uniqueness**: `gh issue list --state all --label "kind:spec" --label "spec:<slug>" --json number,title,url --limit 100` — any result means the lifecycle identifier is already in use.
+- **Check slug uniqueness**: `gh issue list --state all --label "kind:spec" --label "spec:<slug>" --json number,title,url --limit 100`; any result means the lifecycle identifier is already in use.
 - **Create a lifecycle label** (idempotent): `gh label create "spec:<slug>" --description "Spec lifecycle: <slug>" --force`.
 - **Resolve a parent spec by slug**: `gh issue list --state open --label "kind:spec" --label "spec:<slug>" --json number,title,body,labels,url --limit 100`.
 - **Read a source issue's lifecycle labels**: the `spec:*` entries in its `labels` field.

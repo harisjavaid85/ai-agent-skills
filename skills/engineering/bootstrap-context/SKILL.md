@@ -1,14 +1,14 @@
 ---
 name: bootstrap-context
-description: Create or refresh a repository's domain-language glossary and context map in a single batched pass. Use when establishing the project's canonical terminology for the first time, or auditing it for drift — not for inline term-sharpening during design work.
+description: Create or refresh a repository's domain-language glossary and context map in a single batched pass. Use when establishing the project's canonical terminology for the first time, or auditing it for drift, not for inline term-sharpening during design work.
 disable-model-invocation: true
 ---
 
 ## Guiding principle
 
-The audience is a human onboarding _and_ an agent loading context — both should use the same domain language. Keep it a glossary, not a spec or operational handbook.
+The audience is a human onboarding _and_ an agent loading context, and both should use the same domain language. Keep it a glossary, not a spec or operational handbook.
 
-This is the **batched** mode of domain modeling: run once to establish `CONTEXT.md`, then occasionally to audit drift. The **inline** mode — challenging terms as they come up mid-session, updating the glossary the moment a term resolves — is the `/domain-modeling` skill, which other skills (`/grill-with-context`, `/triage`) use while they work. Formats are canonical there: [CONTEXT-FORMAT.md](../domain-modeling/CONTEXT-FORMAT.md) and [ADR-FORMAT.md](../domain-modeling/ADR-FORMAT.md).
+This is the **batched** mode of domain modeling: run once to establish `CONTEXT.md`, then occasionally to audit drift. The **inline** mode, challenging terms as they come up mid-session and updating the glossary the moment a term resolves, is the `/domain-modeling` skill, which other skills (`/grill-with-context`, `/triage`) use while they work. Formats are canonical there: [CONTEXT-FORMAT.md](../domain-modeling/CONTEXT-FORMAT.md) and [ADR-FORMAT.md](../domain-modeling/ADR-FORMAT.md).
 
 ## Terminology used in this skill
 
@@ -23,7 +23,7 @@ Read enough to know what already exists:
 
 - Top-level tree (1–2 levels deep).
 - Root `README*` and any subfolder `README*` files.
-- Manifests — only to spot monorepo workspace boundaries.
+- Manifests: only to spot monorepo workspace boundaries.
 - `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`.
 - Any existing `CONTEXT.md` / `CONTEXT-MAP.md` / per-folder `CONTEXT.md`.
 
@@ -35,7 +35,7 @@ If any exist → **update mode**: diff against current repo state and list:
 - **Drifted**: definitions that no longer match how the code uses the term.
 - **Out of contract**: implementation details, operational rules, conventions, or gotchas that are not domain language.
 
-Surface this list to the user before touching anything. Preserve out-of-contract content; classify each item per the taxonomy in [domain.md](../setup-repo-skills/domain.md) and always ask the user where each belongs — never relocate or delete it automatically.
+Surface this list to the user before touching anything. Preserve out-of-contract content; classify each item per the taxonomy in [domain.md](../setup-repo-skills/domain.md) and always ask the user where each belongs, and never relocate or delete it automatically.
 
 ### 2. Choose layout
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installed by setup-claude-code. Overwritten on each skill re-run — edit the source in
+# Installed by setup-claude-code. Overwritten on each skill re-run; edit the source in
 # the skill's scripts/ folder, not the installed copy at ~/.claude/statusline.sh.
 # Claude Code status line - oh-my-posh agnoster style
 # Segments: user@host | cwd | git branch | model | context %
@@ -7,7 +7,7 @@
 input=$(cat)
 
 if ! command -v jq >/dev/null 2>&1; then
-  printf "\033[1;31m⚠ statusline needs jq — run in terminal: sudo apt-get install -y jq\033[0m\n"
+  printf "\033[1;31m⚠ statusline needs jq; run in terminal: sudo apt-get install -y jq\033[0m\n"
   exit 0
 fi
 

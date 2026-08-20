@@ -36,7 +36,7 @@ Run `glab issue view <number> --comments`.
 
 ## Spec lifecycle operations
 
-None — lifecycle labels are not configured for this tracker. Publish specs and tickets per the conventions above.
+None: lifecycle labels are not configured for this tracker. Publish specs and tickets per the conventions above.
 
 ## Wayfinding operations
 

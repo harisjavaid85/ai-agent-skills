@@ -26,8 +26,8 @@ Do not search for or guess a work item. If the source is a lifecycle slug, an un
 
 When the working tree is dirty, ask the user to classify the existing changes:
 
-- **Fold in** — include them in this work item and its review.
-- **Ignore** — preserve those paths and exclude them from implementation and review.
+- **Fold in**: include them in this work item and its review.
+- **Ignore**: preserve those paths and exclude them from implementation and review.
 
 If implementation later needs an ignored path, ask whether to fold it in before editing it.
 
@@ -82,13 +82,13 @@ Fixed point: <starting SHA>
 
 ### Code review
 
-- Status: completed once | not run — <blocker>
+- Status: completed once | not run: <blocker>
 - Findings accepted and fixed: <count; omit when not run>
 - Findings declined: <count and concise rationale; omit when not run>
 
 ### Verification
 
-- `<command>` — <outcome>
+- `<command>`: <outcome>
 
 ### Assumptions or blockers
 

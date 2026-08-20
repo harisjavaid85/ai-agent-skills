@@ -4,38 +4,38 @@ How the engineering skills read, and add to, this repo's domain documentation an
 
 ## What goes where
 
-When you learn or decide something durable, route it — don't leave it in a session summary, agent memory, or the nearest open file. Match it to one home:
+When you learn or decide something durable, route it rather than leaving it in a session summary, agent memory, or the nearest open file. Match it to one home:
 
 - a **term** or domain concept → the glossary (`CONTEXT.md`). Write it directly or via `/grill-with-context`, in that skill's format.
 - a **decision and its tradeoffs** → an ADR (`docs/adr/`). Write it directly or via `/grill-with-context`, in that skill's format.
-- **how the system behaves across module boundaries** — a gotcha or non-obvious invariant → the knowledge base (`KNOWLEDGE.md`); you write it (detailed below).
-- a **rule for how the agent should work** → operational policy (`AGENTS.md` / `CLAUDE.md`); you write it, sparingly — it loads every session.
+- **how the system behaves across module boundaries**: a gotcha or non-obvious invariant → the knowledge base (`KNOWLEDGE.md`); you write it (detailed below).
+- a **rule for how the agent should work** → operational policy (`AGENTS.md` / `CLAUDE.md`); you write it, sparingly, because it loads every session.
 - a fact **scoped to one file or module** → a comment at its arrival site (below).
 
 **The boundaries are where classification goes wrong.** Each pair sits on one topic:
 
 - _Term vs fact._ "An **Invoice** is a request for payment sent to a customer after delivery" defines vocabulary → glossary. "An invoice renders its VAT line only if the customer's country is set before the PDF job runs; set it after and the total is silently wrong" → knowledge.
 - _Decision vs fact._ "Postgres backs the write model" records a choice and its tradeoffs → ADR. "The unique index on `(customer_id, idempotency_key)` is what stops a retried checkout double-charging; dropping it looks safe and isn't" → knowledge.
-- _Rule vs fact._ "Deploy only from a green `main`" prescribes how to work → operational policy. "The deploy loads secrets at boot, so a rotated secret needs a pod restart — updating the secret store alone does nothing" → knowledge.
+- _Rule vs fact._ "Deploy only from a green `main`" prescribes how to work → operational policy. "The deploy loads secrets at boot, so a rotated secret needs a pod restart, and updating the secret store alone does nothing" → knowledge.
 - _Module-scoped vs cross-module._ "Construct this client before the event loop starts; a late bind attaches the socket to the wrong worker" concerns one module → a comment at the code. "Fulfillment retries webhooks for 24h with backoff, so a handler that isn't idempotent double-ships" crosses fulfillment and every handler → knowledge.
 
-**Arrival site.** When a fact goes to the code, comment it on the exported declaration a caller reaches — not the line where you discovered it. That declaration carries everything a caller must know to use the module correctly: signature, invariants, ordering, error modes. A fact found deep in an implementation file and commented there is accurate and unread, because the caller never opens that file. Move it to the symbol they land on.
+**Arrival site.** When a fact goes to the code, comment it on the exported declaration a caller reaches, not the line where you discovered it. That declaration carries everything a caller must know to use the module correctly: signature, invariants, ordering, error modes. A fact found deep in an implementation file and commented there is accurate and unread, because the caller never opens that file. Move it to the symbol they land on.
 
-The cut most easily missed is knowledge vs operational policy, and it is **register**: `KNOWLEDGE.md` _describes_ how the system behaves; operational policy _prescribes_ how the agent acts. One reality can throw off both — "webhooks retry for 24h with backoff" is a fact (knowledge); "make handlers idempotent" is a rule (policy) — but they are not duplicates, and a fact that also warrants a rule lives once in knowledge, and is referenced instead of being copied.
+The cut most easily missed is knowledge vs operational policy, and it is **register**: `KNOWLEDGE.md` _describes_ how the system behaves; operational policy _prescribes_ how the agent acts. One reality can throw off both, since "webhooks retry for 24h with backoff" is a fact (knowledge) while "make handlers idempotent" is a rule (policy), but they are not duplicates, and a fact that also warrants a rule lives once in knowledge, and is referenced instead of being copied.
 
-`CLAUDE.md` loads into every session, so keep it small — stable, global policy only. `CONTEXT.md`, `KNOWLEDGE.md`, and ADRs are distributed beside the code they describe and read only when that area is touched, so prefer them by default; even a prescriptive rule that bites in just one area belongs in that area's docs, not the always-loaded file.
+`CLAUDE.md` loads into every session, so keep it small: stable, global policy only. `CONTEXT.md`, `KNOWLEDGE.md`, and ADRs are distributed beside the code they describe and read only when that area is touched, so prefer them by default; even a prescriptive rule that bites in just one area belongs in that area's docs, not the always-loaded file.
 
 Whatever you add, state it as what **is currently true**, keep the bar high (this is not a log of what you did), and note the addition in your summary so a human can review it.
 
 ## Before exploring, read these
 
-- **`CONTEXT-MAP.md`** at the repo root, if it exists — the entry point for a multi-context repo. It indexes one `CONTEXT.md` per context; from it, read the root `CONTEXT.md` (repo-wide carrier terms) and each per-context `CONTEXT.md` relevant to your topic.
-- **`CONTEXT.md`** at the repo root, when there is no `CONTEXT-MAP.md` — the single-context glossary.
-- **`KNOWLEDGE.md`** — durable, learned facts about how the system behaves. Read a context's `KNOWLEDGE.md` beside its `CONTEXT.md`, and the root `KNOWLEDGE.md` for system-wide facts.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in (in multi-context repos, also each context's own `docs/adr/` beside its `CONTEXT.md`). If your output contradicts one, surface it rather than silently overriding — e.g. _"Contradicts ADR-0007 (event-sourced orders) — but worth reopening because…"_.
-- **`docs/out-of-scope/`** — records of rejected feature requests. Check before proposing work that may have been declined before.
+- **`CONTEXT-MAP.md`** at the repo root, if it exists: the entry point for a multi-context repo. It indexes one `CONTEXT.md` per context; from it, read the root `CONTEXT.md` (repo-wide carrier terms) and each per-context `CONTEXT.md` relevant to your topic.
+- **`CONTEXT.md`** at the repo root, when there is no `CONTEXT-MAP.md`: the single-context glossary.
+- **`KNOWLEDGE.md`**: durable, learned facts about how the system behaves. Read a context's `KNOWLEDGE.md` beside its `CONTEXT.md`, and the root `KNOWLEDGE.md` for system-wide facts.
+- **`docs/adr/`**: read ADRs that touch the area you're about to work in (in multi-context repos, also each context's own `docs/adr/` beside its `CONTEXT.md`). If your output contradicts one, surface it rather than silently overriding, e.g. _"Contradicts ADR-0007 (event-sourced orders), but worth reopening because…"_.
+- **`docs/out-of-scope/`**: records of rejected feature requests. Check before proposing work that may have been declined before.
 
-If any of these don't exist, **proceed silently**. Don't flag their absence or suggest creating them upfront. They are created lazily — the glossary and ADRs by the producer skills (`/bootstrap-context`, `/grill-with-context`) as terms and decisions get resolved, and `KNOWLEDGE.md` as facts are learned.
+If any of these don't exist, **proceed silently**. Don't flag their absence or suggest creating them upfront. They are created lazily: the glossary and ADRs by the producer skills (`/bootstrap-context`, `/grill-with-context`) as terms and decisions get resolved, and `KNOWLEDGE.md` as facts are learned.
 
 Layout is self-describing on disk: a root `CONTEXT-MAP.md` means multi-context (a root `CONTEXT.md` may still exist alongside it for repo-wide carrier terms); a root `CONTEXT.md` with no map means single-context. (Canonical layout also in the `bootstrap-context` skill's `CONTEXT-FORMAT.md`.)
 
@@ -61,17 +61,17 @@ multi-context:
 
 ## Glossary
 
-When your output names a domain concept (an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in the glossary (the relevant context's `CONTEXT.md`). Don't drift to synonyms the glossary explicitly avoids. If the concept you need isn't there yet, that's a signal — either you're inventing language the project doesn't use (reconsider), or there's a real gap (note it for `/grill-with-context`).
+When your output names a domain concept (an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in the glossary (the relevant context's `CONTEXT.md`). Don't drift to synonyms the glossary explicitly avoids. If the concept you need isn't there yet, that's a signal: either you're inventing language the project doesn't use (reconsider), or there's a real gap (note it for `/grill-with-context`).
 
 ## Knowledge base
 
-A `KNOWLEDGE.md` holds durable, learned facts about how the system behaves — the gotchas and non-obvious invariants a future agent would otherwise waste time rediscovering. Each file is the behavioral companion to a `CONTEXT.md`, created lazily: the first fact makes the file. Facts are pruned when they stop being true.
+A `KNOWLEDGE.md` holds durable, learned facts about how the system behaves: the gotchas and non-obvious invariants a future agent would otherwise waste time rediscovering. Each file is the behavioral companion to a `CONTEXT.md`, created lazily: the first fact makes the file. Facts are pruned when they stop being true.
 
-**Where it goes — the nearest common home.**
+**Where it goes: the nearest common home.**
 
 A fact that crosses module boundaries goes in the `KNOWLEDGE.md` beside the nearest ancestor `CONTEXT.md` covering every module it touches: that context's own when the modules sit within one context, the root's when it spans contexts.
 
-A context whose code is a single module has no boundary to cross — those facts belong at the code. Don't create its `KNOWLEDGE.md`.
+A context whose code is a single module has no boundary to cross, so those facts belong at the code. Don't create its `KNOWLEDGE.md`.
 
 `CONTEXT-MAP.md` already routes to every context, so no separate index is needed.
 

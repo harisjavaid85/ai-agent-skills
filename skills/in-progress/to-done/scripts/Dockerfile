@@ -43,12 +43,12 @@ RUN curl -fsSL https://claude.ai/install.sh | bash
 # `#<ref>`, not `@<ref>`: `@` selects a *skill name*, so `repo@<sha>` was
 # silently discarded by `--all` and exited 0 while installing the default
 # branch. `#<ref>` fails loudly on a bad ref, but takes only branches and
-# tags — which is why the pin is a ref rather than a sha.
+# tags, which is why the pin is a ref rather than a sha.
 ARG SKILLS_REPO
 ARG SKILLS_REF
 # The sha cannot be installed from, but it has to be in this layer's cache key.
 # `<ref>` is a branch name, which does not change when the branch moves, so
-# without the sha here Docker reuses the cached install — and since the label
+# without the sha here Docker reuses the cached install, and since the label
 # below still gets the new sha, loop.mts compares it to HEAD, sees a match, and
 # reports the image current while the agents run whatever the branch held last
 # time. A wrong answer with the alarm disabled, so pay a rebuild instead.

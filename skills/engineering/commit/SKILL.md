@@ -1,11 +1,11 @@
 ---
 name: commit
-description: Stage and commit working-tree changes — group them into a sensible commit plan, write concise tagged messages following the repo's convention (commit after approval by default, or automatically when explicitly asked). Use when the user wants to commit changes.
+description: "Stage and commit working-tree changes: group them into a sensible commit plan, write concise tagged messages following the repo's convention (commit after approval by default, or automatically when explicitly asked). Use when the user wants to commit changes."
 ---
 
 # Commit
 
-Group working-tree changes into one or more commits, each with a tagged subject following the repo's convention, and commit them. Commit only — no pushing and branch ops.
+Group working-tree changes into one or more commits, each with a tagged subject following the repo's convention, and commit them. Commit only: no pushing and no branch ops.
 
 ## Tags & message format
 
@@ -19,11 +19,11 @@ Tags and message style are defined in the **Tags & message convention** section 
 ## Workflow
 
 1. **Survey** the whole working tree (staged + unstaged + untracked; `.gitignore` respected). If nothing to commit, report "nothing to commit" and stop.
-2. **Group & tag. Preserve work-item atomicity.** Treat each logical work item as the commit boundary. Keep everything required to deliver it — including implementation, schema or migrations, tests, fixtures, generated outputs, and documentation — in one commit. A file is not an independent change merely because it belongs to a different category, layer, or directory. Tags classify a group after grouping; they never determine the split. A documentation or test tag applies only when the work item itself is documentation-only or test-only; supporting docs and tests inherit the work item's dominant tag. Split only genuinely independent work items that can be understood, delivered, and reverted separately. Whole files only. Give each commit the **dominant tag** for its change. When a single logical change truly spans two categories and one tag alone would mislead, combine both tags per the repo's template (dominant first, never three); otherwise one tag. The resulting grouping is shown in the plan in both modes.
+2. **Group & tag. Preserve work-item atomicity.** Treat each logical work item as the commit boundary. Keep everything required to deliver it, including implementation, schema or migrations, tests, fixtures, generated outputs, and documentation, in one commit. A file is not an independent change merely because it belongs to a different category, layer, or directory. Tags classify a group after grouping; they never determine the split. A documentation or test tag applies only when the work item itself is documentation-only or test-only; supporting docs and tests inherit the work item's dominant tag. Split only genuinely independent work items that can be understood, delivered, and reverted separately. Whole files only. Give each commit the **dominant tag** for its change. When a single logical change truly spans two categories and one tag alone would mislead, combine both tags per the repo's template (dominant first, never three); otherwise one tag. The resulting grouping is shown in the plan in both modes.
 3. **Build the plan:** for each commit, list its files and proposed message. Mark untracked files `NEW:`. For a plan with multiple commits, name the independent work item represented by each commit. If the only justification for a split is artifact type, tag, directory, or implementation layer, merge those groups before presenting the plan.
 4. **Handle the two cases where the modes differ:**
-   - **No fitting tag at all** — the change matches none of the canonical tags (distinct from spanning two; usually means it's doing two things). _Review:_ stop and ask. _Auto:_ commit under the best-fit dominant tag.
-   - **Sensitive file** — `.env`, `*.key`/`*.pem`, credential-ish names, large binaries, files outside normal source dirs. _Review:_ ask before including. _Auto:_ exclude it and report it.
+   - **No fitting tag at all**: the change matches none of the canonical tags (distinct from spanning two; usually means it's doing two things). _Review:_ stop and ask. _Auto:_ commit under the best-fit dominant tag.
+   - **Sensitive file**: `.env`, `*.key`/`*.pem`, credential-ish names, large binaries, files outside normal source dirs. _Review:_ ask before including. _Auto:_ exclude it and report it.
 
    Auto prints the full plan as a reviewable trail and never blocks.
 
@@ -38,7 +38,7 @@ Always fix the root cause → re-stage → create a **new** commit (never `--ame
 
 ## Amend (opt-in)
 
-Only when the user asks. **HEAD only**, and **only if unpushed** — verify the target isn't on the remote-tracking branch; refuse if already pushed. Default always creates new commits.
+Only when the user asks. **HEAD only**, and **only if unpushed**: verify the target isn't on the remote-tracking branch; refuse if already pushed. Default always creates new commits.
 
 ## Tags & message convention
 
@@ -59,6 +59,6 @@ The canonical vocabulary and message style.
 
 ### Message style
 
-- **Subject:** `[Tag] imperative summary` — always imperative mood ("Add", "Fix", "Consolidate"), ≤ ~50 chars including the tag, no trailing period.
+- **Subject:** `[Tag] imperative summary`, always imperative mood ("Add", "Fix", "Consolidate"), ≤ ~50 chars including the tag, no trailing period.
 - **Body:** only when it adds _why_ the subject alone doesn't capture; 1–3 short lines on intent. Never enumerate file changes. Wrap ~72; blank line after subject.
 - **Trailer:** append a `Co-Authored-By:` trailer identifying the agent that authored the commit (Claude Code → `Co-Authored-By: Claude <noreply@anthropic.com>`; other harnesses use their own identities).

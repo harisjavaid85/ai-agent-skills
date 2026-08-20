@@ -52,11 +52,11 @@ Record the choice in `docs/agents/issue-tracker.md`. The GitHub and GitLab templ
 
 The five canonical roles:
 
-- `needs-triage` — maintainer needs to evaluate
-- `needs-info` — waiting on reporter
-- `ready-for-agent` — fully specified, AFK-ready (an agent can pick it up with no human context)
-- `ready-for-human` — needs human implementation
-- `wontfix` — will not be actioned
+- `needs-triage`: maintainer needs to evaluate
+- `needs-info`: waiting on reporter
+- `ready-for-agent`: fully specified, AFK-ready (an agent can pick it up with no human context)
+- `ready-for-human`: needs human implementation
+- `wontfix`: will not be actioned
 
 The defaults are the five canonical roles, each label string equal to its name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. On **yes**, write them as-is. Only if the user says no, usually because their tracker already uses other names (e.g. `bug:triage` for `needs-triage`), collect the overrides so `triage` applies existing labels instead of creating duplicates.
 

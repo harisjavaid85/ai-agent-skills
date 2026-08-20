@@ -1,5 +1,5 @@
 #!/bin/bash
-# Installed by setup-claude-code. Overwritten on each skill re-run — edit the source in
+# Installed by setup-claude-code. Overwritten on each skill re-run; edit the source in
 # the skill's scripts/ folder, not the installed copy at ~/.claude/hooks/.
 # Blocks dangerous Bash commands at PreToolUse time. Exits 2 to deny.
 
@@ -44,7 +44,7 @@ FIND_PATTERNS=(
 GH_PATTERNS=(
   # auth mutations (swap/refresh/clear the active token)
   '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+auth[[:space:]]+(login|logout|refresh|switch|setup-git)\b'
-  # PR approvals — flag can appear anywhere after `pr review`
+  # PR approvals; the flag can appear anywhere after `pr review`
   '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+pr[[:space:]]+review([[:space:]]+[^[:space:]]+)*[[:space:]]+(--approve|-a)\b'
   # gh api REST mutating verbs in all three flag forms (-X POST, -XPOST, --method=POST).
   '(^|[;&|"'"'"'[:space:]])gh[[:space:]]+api([[:space:]]+[^[:space:]]+)*[[:space:]]+(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)\b'

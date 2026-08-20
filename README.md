@@ -44,7 +44,7 @@ npx skills@latest add harisjavaid85/ai-agent-skills
    - Wire up `.gitignore` for the agent working directories (`.plans/`, `.handoffs/`), plus Claude Code settings when that harness is active
    - Ask whether this repo is `prototype`, `standard`, or `production` (tunes how aggressively skills push for tests, error handling, and refactoring)
    - Propose a per-language coding standard (a style-guide binding, e.g. Google Python) so agents write high-quality code by default
-   - Record your issue-tracker choice (GitHub, GitLab, or local markdown) — the workflow `/to-spec`, `/to-tickets`, and `/triage` read
+   - Record your issue-tracker choice (GitHub, GitLab, or local markdown), which `/to-spec`, `/to-tickets`, and `/triage` read
    - Ask what labels represent your triage roles, then create any required tracker labels that are missing (GitHub only)
    - Write the `docs/agents/` config the other skills read
 
@@ -68,12 +68,12 @@ Each entry is a symlink into this repo, so a `git pull` keeps installed skills c
 
 ### Once per repo
 
-3. `/setup-repo-skills` — required before `/to-spec`, `/to-tickets`, and `/triage`; strongly recommended for other engineering and agent-loop workflows.
-4. `/bootstrap-context` — create the repo's `CONTEXT.md` glossary so skills speak your project's language.
+3. `/setup-repo-skills`: required before `/to-spec`, `/to-tickets`, and `/triage`; strongly recommended for other engineering and agent-loop workflows.
+4. `/bootstrap-context`: create the repo's `CONTEXT.md` glossary so skills speak your project's language.
 
 ## Install as a Claude Code plugin
 
-Prefer a plug-and-play install you don't maintain by hand? These skills also ship as a native [Claude Code plugin](https://code.claude.com/docs/en/plugins). Instead of copying editable files into your repo, the plugin installs the whole skill set as a managed bundle that updates when a new version ships — you subscribe rather than fork.
+Prefer a plug-and-play install you don't maintain by hand? These skills also ship as a native [Claude Code plugin](https://code.claude.com/docs/en/plugins). Instead of copying editable files into your repo, the plugin installs the whole skill set as a managed bundle that updates when a new version ships; you subscribe rather than fork.
 
 Inside Claude Code:
 
@@ -94,7 +94,7 @@ Then run `/setup-repo-skills` once per repo, exactly as in the quickstart above.
 </details>
 
 - **[skills.sh](https://skills.sh/harisjavaid85/ai-agent-skills)** copies the skills into your project so you can hack on them and make them your own.
-- **The plugin** keeps them as a read-only, always-current bundle you don't edit — best when you just want the set to work and follow along as it evolves.
+- **The plugin** keeps them as a read-only, always-current bundle you don't edit, best when you just want the set to work and follow along as it evolves.
 
 ## Why These Skills Exist
 
