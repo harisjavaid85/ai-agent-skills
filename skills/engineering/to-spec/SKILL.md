@@ -1,12 +1,12 @@
 ---
 name: to-spec
-description: Turn the current conversation into a spec and publish it to the project issue tracker, optionally grouped under a lifecycle slug — no interview, just synthesis of what you've already discussed.
+description: "Turn the current conversation into a spec and publish it to the project issue tracker, optionally grouped under a lifecycle slug: no interview, just synthesis of what you've already discussed."
 disable-model-invocation: true
 ---
 
-This skill takes the current conversation context and codebase understanding and produces a spec (you may know this document as a PRD). Do NOT interview the user — just synthesize what you already know.
+This skill takes the current conversation context and codebase understanding and produces a spec (you may know this document as a PRD). Do NOT interview the user; just synthesize what you already know.
 
-The issue tracker and triage label vocabulary should have been provided to you — run `/setup-repo-skills` if not.
+The issue tracker and triage label vocabulary should have been provided to you. If not, tell the user to run `/setup-repo-skills`.
 
 ## Arguments
 
@@ -25,7 +25,7 @@ Check with the user that these seams match their expectations.
 3. Write the spec using the template below, then publish it to the project issue tracker. If the tracker config defines **Spec lifecycle operations**, follow its commands:
 
    - Ensure the fixed parent marker exists.
-   - When a slug is supplied, run the uniqueness check; if the slug is already in use, stop and report the existing parent — creating and updating specs are separate operations. Otherwise create the lifecycle label idempotently.
+   - When a slug is supplied, run the uniqueness check; if the slug is already in use, stop and report the existing parent: creating and updating specs are separate operations. Otherwise create the lifecycle label idempotently.
    - Publish the parent with the marker and, when supplied, the lifecycle label. Title a slugged parent `Spec: <slug>`; otherwise use a concise descriptive title.
 
    On a tracker without lifecycle operations, publish the parent using its configured convention.
@@ -66,7 +66,7 @@ A list of implementation decisions that were made. This can include:
 
 Do NOT include specific file paths or code snippets. They may end up being outdated very quickly.
 
-Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it within the relevant decision and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
+Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it within the relevant decision and note briefly that it came from a prototype. Trim to the decision-rich parts, not a working demo, just the important bits.
 
 ## Testing Decisions
 

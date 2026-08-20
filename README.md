@@ -210,6 +210,7 @@ Skills I use daily for code work.
 - **[bootstrap-context](./skills/engineering/bootstrap-context/SKILL.md)**: Create or refresh the repo's domain-language glossary and context map in a single batched pass; the audit counterpart to `/domain-modeling`'s inline mode.
 - **[grill-with-context](./skills/engineering/grill-with-context/SKILL.md)**: Grilling session that also builds your project's domain model, sharpening terminology and updating `CONTEXT.md` and ADRs inline.
 - **[improve-codebase-architecture](./skills/engineering/improve-codebase-architecture/SKILL.md)**: Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
+- **[setup-repo-skills](./skills/engineering/setup-repo-skills/SKILL.md)**: Configure the current repo for the engineering skills: issue-tracker conventions, repo mode, triage and commit-tag vocabularies, verify tiers, per-language coding standards, and agent guidance. Run once per repo.
 - **[to-spec](./skills/engineering/to-spec/SKILL.md)**: Turn the current conversation into a spec and publish it to the issue tracker. No interview, just synthesizes what you've already discussed.
 - **[to-tickets](./skills/engineering/to-tickets/SKILL.md)**: Break any plan, spec, or conversation into a set of tracer-bullet tickets, each declaring its blocking edges, written as text in a local file, or as native blocking links on a real tracker.
 - **[triage](./skills/engineering/triage/SKILL.md)**: Move issues and external PRs through a state machine of triage roles.
