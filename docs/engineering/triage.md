@@ -20,7 +20,7 @@ Where the tracker treats external pull requests as a request surface, `triage` r
 
 ## Verify before you brief
 
-The step that separates `triage` from ad-hoc labelling is verification. It reproduces the bug from the reporter's steps, or checks out the PR and runs the tests, and reports back: confirmed with a code path, failed, or insufficient detail (which is itself a strong `needs-info` signal). It also runs two codebase checks: **redundancy** (is this already implemented? then it's a `wontfix`) and **prior rejection** (does `docs/out-of-scope/` already say no?). A confirmed verification makes a far stronger agent brief; guessing does not.
+The step that separates `triage` from ad-hoc labelling is verification. It reproduces the bug from the reporter's steps, or checks out the PR and runs the tests, and reports back: confirmed with a code path, failed, or insufficient detail (which is itself a strong `needs-info` signal). It also runs two codebase checks: **redundancy** (is this already implemented? then it's a `wontfix`) and **prior rejection** (does `.out-of-scope/` already say no?). A confirmed verification makes a far stronger agent brief; guessing does not.
 
 ## It's working if
 

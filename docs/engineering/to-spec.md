@@ -1,6 +1,6 @@
 ## What it does
 
-`to-spec` turns the current conversation and your codebase understanding into a spec (you may know this document as a PRD), then publishes it as the parent artifact in your issue tracker. An optional lifecycle slug groups that spec with its implementation tickets on GitHub.
+`to-spec` turns the current conversation and your codebase understanding into a spec, then publishes it as the parent artifact in your issue tracker. An optional lifecycle slug groups that spec with its implementation tickets on GitHub.
 
 It does **not** interview you again. By the time you reach for it, the alignment work is done, and `to-spec` synthesises what is already known rather than asking a fresh round of questions.
 

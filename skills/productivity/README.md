@@ -21,4 +21,3 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 - **[grilling](./grilling/SKILL.md)**: Interview the user relentlessly about a plan, decision, or idea until every branch of the design tree is resolved. The reusable loop behind `grill-me` and `grill-with-context`.
 - **[write-a-skill](./write-a-skill/SKILL.md)**: Convert settled requirements into a well-structured skill (steps, reference, progressive disclosure). Grill first if scope is fuzzy.
 - **[writing-for-agents](./writing-for-agents/SKILL.md)**: Writing documents for agents: skills, AGENTS.md/CLAUDE.md, and any doc an agent reaches by a pointer.
-- **[writing-great-skills](./writing-great-skills/SKILL.md)**: Reference for writing and editing skills well: the vocabulary and principles that make a skill predictable.

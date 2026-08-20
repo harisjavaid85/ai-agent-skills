@@ -113,9 +113,9 @@ model-invoked. Three need more than a name:
   flow, triage-installed gating of the triage-labels section, tracker-neutral `triage-labels.md`.
   **Not** ported: upstream's section that *decides* single- versus multi-context layout, per ADR-0004,
   because `bootstrap-context` is the semantic authority for that decision.
-- **`write-a-skill`** *(function)* is the workflow counterpart to upstream's `writing-great-skills`
+- **`write-a-skill`** *(function)* is the workflow counterpart to upstream's `writing-for-agents`
   reference. It uses upstream's terms (**steps** and **reference**, not Behaviour and Vocabulary) and
-  defers principles to `writing-great-skills/GLOSSARY.md`.
+  defers the principles and the skill-specific mechanics to that skill's two files.
 - **`bootstrap-context`** *(function)* is the **batched** domain-modeling mode (survey, then bootstrap
   or update, then drift audit); upstream's `domain-modeling` is the **inline** mode. Formats live
   canonically in `domain-modeling/`, and `bootstrap-context` links to them.
@@ -164,11 +164,6 @@ from glossary, ADRs, and policy. All *(function)*. It appears in:
   `rm -rf`, non-interactive abort, stale-link pruning including deprecated skills, argument
   strictness. Tests in `tests/link-skills.sh`. Take ours at a conflict: the enhancements sit outside
   the conflicting hunks, so taking theirs discards them silently.
-- **Out-of-scope KB path is `docs/out-of-scope/`** (upstream: `.out-of-scope/`) *(function)* in
-  consumer repos: `triage/SKILL.md`, `triage/OUT-OF-SCOPE.md`, `triage/AGENT-BRIEF.md`,
-  `setup-repo-skills/domain.md`, and `docs/engineering/triage.md` all use the fork path. This repo's
-  **own** rejected-request records live at `.out-of-scope/`, upstream's location, so upstream edits to
-  those merge cleanly.
 - **Docs pages** *(correctness)*. Every promoted skill has a page under `docs/`. Sibling and router
   links use absolute `github.com/harisjavaid85/ai-agent-skills` URLs instead of upstream's
   `aihero.dev/skills-<name>`, because those pages document skills this fork ships under other names.
@@ -197,11 +192,5 @@ Upstream files whose state we deliberately do not mirror.
   `setup-repo-skills`. Rewrite or delete it before citing it.
 - **`CHANGELOG.md`** retains upstream's package name and `github.com/mattpocock/skills` PR links
   throughout. It is a historical record of released versions, most of them upstream's.
-- **`skills/productivity/writing-great-skills/`** is kept although upstream deleted it in favour of
-  `writing-for-agents`. `write-a-skill` links its `SKILL.md` and `GLOSSARY.md` directly, and
-  `writing-for-agents` ships no `GLOSSARY.md`, so the deletion cannot be adopted before
-  `write-a-skill` is ported off it. Both skills currently ship.
-- **`skills/personal/`** (`edit-article`, `obsidian-vault`) is kept although upstream deleted the
-  whole bucket. Not promoted, so it appears in no manifest.
 - **`skills/deprecated/setup-matt-pocock-skills/`** is kept as the historical record of the skill
   `setup-repo-skills` replaced.

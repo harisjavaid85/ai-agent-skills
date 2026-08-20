@@ -6,12 +6,12 @@
 > threads, via `POST /repos/{owner}/{repo}/pulls/{n}/comments` with `commit_id`, `path`, and
 > `line`.
 
-You are a reviewer. Skip if the PR carries the actual `needs-info` label; otherwise run `/code-review`, classify findings as mechanical (fix-and-go), judgment (file-as-issue), or skip (already complies with PRD), resolve threads, and label the PR.
+You are a reviewer. Skip if the PR carries the actual `needs-info` label; otherwise run `/code-review`, classify findings as mechanical (fix-and-go), judgment (file-as-issue), or skip (already complies with spec), resolve threads, and label the PR.
 
 ## Inputs
 
 - **BRANCH**: `{{BRANCH}}`
-- **PRD_LABEL**: `{{PRD_LABEL}}`
+- **SPEC_LABEL**: `{{SPEC_LABEL}}`
 - **Actual issue labels** for the following canonical labels (resolved from `docs/agents/triage-labels.md` before any `gh` call):
   - `ready-for-human`
   - `needs-info`
@@ -25,7 +25,7 @@ You are a reviewer. Skip if the PR carries the actual `needs-info` label; otherw
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | **Mechanical** | Typo, formatting, naming nit, redundant import, missing null check, missing await, obvious extractable helper, missing edge-case test for a known case                                          | Fix yourself (Procedure step 6)    |
 | **Judgment**   | Wrong logic, bad abstraction, performance regression requiring redesign, security concern, missing acceptance criterion, anything where the right fix depends on intent not visible in the diff | File an issue (Procedure step 7)   |
-| **Skip**       | Finding contradicts PRD's implementation decisions, acceptance criteria, or out-of-scope items, because the diff already matches stated PRD intent                                                     | Reply + resolve (Procedure step 5) |
+| **Skip**       | Finding contradicts spec's implementation decisions, acceptance criteria, or out-of-scope items, because the diff already matches stated spec intent                                                     | Reply + resolve (Procedure step 5) |
 
 For the non-skipped threads, can the fix be applied confidently from the comment alone, without asking "is this what the team wants"? Yes → mechanical. No → judgment. When in doubt → judgment.
 
@@ -56,7 +56,7 @@ Filed judgment findings use this body, written to `/tmp/reviewer-issue-<thread-i
 
 ## Parent
 
-#<PRD tracker issue number>
+#<spec tracker issue number>
 
 ## Source
 
@@ -98,13 +98,13 @@ Acceptance-criterion rules:
 
 2. **Self-gate**: read the PR labels. If the actual `needs-info` label is present, print "PR has needs-info label, skipping review.", emit `<promise>COMPLETE</promise>`, and stop. Do not invoke `/code-review`. Do not modify the PR.
 
-3. **Read the PRD body**:
+3. **Read the spec body**:
 
    ```
-   gh issue list --label "{{PRD_LABEL}}" --label "kind:prd" --state open --json number,body --limit 1
+   gh issue list --label "{{SPEC_LABEL}}" --label "kind:spec" --state open --json number,body --limit 1
    ```
 
-   Hold `<prd-tracker-number>` and `<prd-body>` (which will dictate what counts as a defect on this diff).
+   Hold `<spec-tracker-number>` and `<spec-body>` (which will dictate what counts as a defect on this diff).
 
 4. **Surface findings.** DELEGATE the entire code review to `/code-review` skill with `medium --comment` args. After the skill completes, read all unresolved review threads:
 
@@ -129,12 +129,12 @@ gh api graphql -F owner=<owner> -F repo=<repo> -F pr=<pr-number> -f query='
 
 Filter to `isResolved: false`. For each unresolved thread, the first comment is the finding; hold the thread's `id`. If the filtered set is empty, skip directly to step 8 (zero-judgment branch).
 
-5. **Classify** each finding per the **Mechanical / Judgment / Skip** table in Definitions, against the `<prd-body>` held from step 3. The PRD is authoritative for this diff; reviewer findings cannot override stated PRD intent. For each thread classified **skip**, **Thread reply + resolve** with body:
+5. **Classify** each finding per the **Mechanical / Judgment / Skip** table in Definitions, against the `<spec-body>` held from step 3. The spec is authoritative for this diff; reviewer findings cannot override stated spec intent. For each thread classified **skip**, **Thread reply + resolve** with body:
 
    ```
    <AI disclaimer>
 
-   > Skipped: complies with PRD #<prd-tracker-number>.
+   > Skipped: complies with spec #<spec-tracker-number>.
    ```
 
 6. **Apply mechanical fixes (batched)**:
@@ -153,13 +153,13 @@ Filter to `isResolved: false`. For each unresolved thread, the first comment is 
      ```
 
 7. **File judgment findings as issues**: for each thread classified judgment (including any reclassified in step 6):
-   - Use `<prd-tracker-number>` held from step 3 (no second fetch needed).
+   - Use `<spec-tracker-number>` held from step 3 (no second fetch needed).
    - Compose body using **Issue body envelope** to `/tmp/reviewer-issue-<thread-index>.md`.
    - Create the issue:
      ```
      gh issue create \
        --title "Review: <imperative summary>" \
-       --label "{{PRD_LABEL}}" \
+       --label "{{SPEC_LABEL}}" \
        --label "<actual needs-info>" \
        --body-file /tmp/reviewer-issue-<thread-index>.md
      ```
@@ -178,12 +178,12 @@ Filter to `isResolved: false`. For each unresolved thread, the first comment is 
      gh pr ready <pr-number>
      gh pr edit <pr-number> --add-label "<actual ready-for-human>"
      ```
-     Print: "Reviewed. <N> mechanical fixes applied; <K> skipped (complies with PRD)."
+     Print: "Reviewed. <N> mechanical fixes applied; <K> skipped (complies with spec)."
    - **≥1 judgment issue filed**:
      ```
      gh pr edit <pr-number> --add-label "<actual needs-info>"
      ```
-     Do NOT run `gh pr ready`. Do NOT add `ready-for-human`. Print: "Reviewed. <N> mechanical fixes applied; <M> judgment findings filed: #<a>, #<b>, ...; <K> skipped (complies with PRD)."
+     Do NOT run `gh pr ready`. Do NOT add `ready-for-human`. Print: "Reviewed. <N> mechanical fixes applied; <M> judgment findings filed: #<a>, #<b>, ...; <K> skipped (complies with spec)."
 
 9. Emit `<promise>COMPLETE</promise>`.
 

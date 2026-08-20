@@ -33,7 +33,7 @@ Whatever you add, state it as what **is currently true**, keep the bar high (thi
 - **`CONTEXT.md`** at the repo root, when there is no `CONTEXT-MAP.md`: the single-context glossary.
 - **`KNOWLEDGE.md`**: durable, learned facts about how the system behaves. Read a context's `KNOWLEDGE.md` beside its `CONTEXT.md`, and the root `KNOWLEDGE.md` for system-wide facts.
 - **`docs/adr/`**: read ADRs that touch the area you're about to work in (in multi-context repos, also each context's own `docs/adr/` beside its `CONTEXT.md`). If your output contradicts one, surface it rather than silently overriding, e.g. _"Contradicts ADR-0007 (event-sourced orders), but worth reopening because…"_.
-- **`docs/out-of-scope/`**: records of rejected feature requests. Check before proposing work that may have been declined before.
+- **`.out-of-scope/`**: records of rejected feature requests. Check before proposing work that may have been declined before.
 
 If any of these don't exist, **proceed silently**. Don't flag their absence or suggest creating them upfront. They are created lazily: the glossary and ADRs by the producer skills (`/bootstrap-context`, `/grill-with-context`) as terms and decisions get resolved, and `KNOWLEDGE.md` as facts are learned.
 

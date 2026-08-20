@@ -7,7 +7,7 @@ description: Convert settled requirements into a well-structured agent skill wit
 
 This skill does one thing: transform **settled requirements** into a clean, well-structured skill. It does not gather requirements itself, because a shallow self-grill produces low-quality drafts and rework is needed later.
 
-Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **completion criterion**, **leading word**) are defined in [`../writing-great-skills/GLOSSARY.md`](../writing-great-skills/GLOSSARY.md); the principles behind the rules below are in [`../writing-great-skills/SKILL.md`](../writing-great-skills/SKILL.md). Work the numbered steps below in order; templates to use are in `FORMAT.md`.
+The terms below (**steps**, **reference**, **progressive disclosure**, **completion criterion**, **leading word**) and the principles behind the rules are in [`../writing-for-agents/SKILL.md`](../writing-for-agents/SKILL.md); what changes because the document is a skill (frontmatter, the invocation choice, router skills) is in [`../writing-for-agents/SKILL-MECHANICS.md`](../writing-for-agents/SKILL-MECHANICS.md). Work the numbered steps below in order; templates to use are in `FORMAT.md`.
 
 ## Workflow
 
@@ -69,7 +69,7 @@ The produced skill is for whoever runs it later, not a record of the grilling co
 
 - **Cut** all process archaeology: "we considered X but decided against it", "this skill does not build Y", rationale for rejected alternatives. None of it helps a future reader of the finished skill.
 - **Keep only** a terse, present-tense **scope guard** when the agent would plausibly overstep without it ("Only triages; never edits code"). The test: does the line stop the agent from doing the wrong thing _right now_? If it just explains a past decision, cut it.
-- Prune everything else per `writing-great-skills`: run the **no-op** test sentence by sentence, state the **positive** rather than steering by **negation**, and prefer a strong **leading word** over a restated triad.
+- Prune everything else per `writing-for-agents`: run the **no-op** test sentence by sentence, state the **positive** rather than steering by **negation**, and prefer a strong **leading word** over a restated triad.
 
 Whether a cut decision deserves an ADR is the grilling skill's call at runtime; this skill doesn't record rejected decisions anywhere.
 
@@ -79,7 +79,7 @@ Add utility scripts when the operation is deterministic (validation, formatting)
 
 #### Write a concise description
 
-The description is **the only thing the agent sees** when deciding which skill to load, surfaced in the system prompt alongside all other installed skills. Follow the **Description format** in `FORMAT.md`, and the description principles in `writing-great-skills`: front-load the skill's **leading word**, one trigger per **branch**, cut identity already in the body.
+The description is **the only thing the agent sees** when deciding which skill to load, surfaced in the system prompt alongside all other installed skills. Follow the **Description format** in `FORMAT.md`, and the context-pointer rules in `writing-for-agents`: front-load the skill's **leading word**, one trigger per **branch**, cut identity already in the body.
 
 ### 4. Review checklist
 

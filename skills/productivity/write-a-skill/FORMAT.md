@@ -66,11 +66,11 @@ Configure the current repo so the engineering skills work in it: scaffolds worki
 **Bad**, enumerated steps in description:
 
 ```
-Scaffold a new experiment in this rehearsal harness: copy a base template, `pnpm install`, run `sandcastle init` and apply surgical patches (one main.ts replacement + three prompt.md edits), seed a runnable PRD, seed AGENTS/findings stubs, create the `exp/<name>` GitHub label, and seed one GitHub Issue per acceptance criterion labeled `exp/<name>` + `needs-triage`, all committed on `main`. Use when the user wants to start a new experiment, scaffold an experiment dir, or says "create experiment" / "new experiment from <template>".
+Scaffold a new experiment in this rehearsal harness: copy a base template, `pnpm install`, run `sandcastle init` and apply surgical patches (one main.ts replacement + three prompt.md edits), seed a runnable spec, seed AGENTS/findings stubs, create the `exp/<name>` GitHub label, and seed one GitHub Issue per acceptance criterion labeled `exp/<name>` + `needs-triage`, all committed on `main`. Use when the user wants to start a new experiment, scaffold an experiment dir, or says "create experiment" / "new experiment from <template>".
 ```
 
 **Rewritten clean**, naming what's produced rather than the recipe:
 
 ```
-Scaffold a new experiment from a template in the rehearsal harness: produces a runnable PRD and one GitHub issue per acceptance criterion. Use when the user wants to start a new experiment, or says "create experiment" or "new experiment from <template>".
+Scaffold a new experiment from a template in the rehearsal harness: produces a runnable spec and one GitHub issue per acceptance criterion. Use when the user wants to start a new experiment, or says "create experiment" or "new experiment from <template>".
 ```

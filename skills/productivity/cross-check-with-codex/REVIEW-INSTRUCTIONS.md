@@ -16,7 +16,7 @@ Review the artifact against:
 
 - The original user request.
 - Settled constraints and explicit exclusions.
-- Applicable repository instructions and authoritative documents, including domain context, ADRs, and issue or PRD documents.
+- Applicable repository instructions and authoritative documents, including domain context, ADRs, and issue or spec documents.
 
 Report an unrelated repository defect only when it invalidates an artifact assumption, prevents the artifact from satisfying the request, is caused or worsened by the artifact, or creates a concrete risk within the artifact's scope.
 

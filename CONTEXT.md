@@ -39,7 +39,7 @@ _Avoid_: repo type, quality level
 A per-language binding to a named external style guide (e.g. Google Python Style Guide) plus this repo's deviations, that an agent follows when writing code. Emitted by `setup-repo-skills` and read by the producing agent; the guide, not the binding, holds the rules.
 _Avoid_: style guide (the external source, not this repo's binding to it), linting rules
 
-Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **leading word**, **completion criterion**) are defined in [`skills/productivity/writing-great-skills/GLOSSARY.md`](./skills/productivity/writing-great-skills/GLOSSARY.md), not here.
+Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **leading word**, **completion criterion**) are defined in [`skills/productivity/writing-for-agents/SKILL.md`](./skills/productivity/writing-for-agents/SKILL.md), not here.
 
 ## Relationships
 
