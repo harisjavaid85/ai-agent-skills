@@ -16,21 +16,9 @@ Fill the template below, keeping its order. The **fixed frame** (`## What it doe
 
 Four sections make a page worth reading: `What it does`, `When to reach for it`, `Common questions`, `It's working if`. The first two orient the reader; the last two are where the page stops summarising the skill and starts answering the reader's own situation. Each of the last two has a bar to clear, below, but treat a page that clears neither as unfinished, not as finished-and-short.
 
-**A page carries no install commands.** The ai-hero page template renders the install widget itself (a copy button, the single-skill command, the whole-set command, and the update line) above the body. A page that also writes them out shows the reader the same command twice, and the two copies drift: the hand-written pair on every page went stale against the widget beside it. Install wording is a property of the site, not of the page. If it needs changing, change it in ai-hero; the canonical wording lives in [the install block](./install-block.md).
+**A page carries no install commands.** Install wording is a property of the repository, not of a page: it lives once in the top-level [`README.md`](../README.md). A page that writes the commands out again is a second copy to keep in step, and the hand-written pair that used to sit on every page went stale against it. This matches upstream, which drops the block for its own reason (its site renders an install widget above the body), so the pages stay mergeable.
 
 <page-template>
-
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=<name>
-```
-
-```bash
-npx skills update <name>
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/<bucket>/<name>)
 
 ## What it does
 

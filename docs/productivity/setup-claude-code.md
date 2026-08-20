@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=setup-claude-code
-```
-
-```bash
-npx skills update setup-claude-code
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/productivity/setup-claude-code)
-
 ## What it does
 
 `setup-claude-code` bootstraps a machine's global Claude Code configuration under `~/.claude/`: a permissions baseline, a dangerous-command hook, and optional interface settings. It works in three modes — `host`, `sandbox`, and `guardrails` — for a personal machine, an ephemeral environment, or just the safety layer.

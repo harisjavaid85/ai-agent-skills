@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=open-pr
-```
-
-```bash
-npx skills update open-pr
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/open-pr)
-
 ## What it does
 
 `open-pr` pushes the current branch and opens — or updates — its GitHub pull request in a standard format: a tagged title, a summary, and a curated change list. It is idempotent: re-running pushes new commits and refreshes the same PR rather than opening a duplicate.

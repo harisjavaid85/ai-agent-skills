@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=commit
-```
-
-```bash
-npx skills update commit
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/commit)
-
 ## What it does
 
 `commit` stages and commits your working-tree changes: it groups them into a sensible commit plan and writes a concise, tagged message for each, following the repo's convention. It only commits — no pushing, no branch operations.

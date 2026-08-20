@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=to-spec
-```
-
-```bash
-npx skills update to-spec
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/to-spec)
-
 ## What it does
 
 `to-spec` turns the current conversation and your codebase understanding into a spec (you may know this document as a PRD), then publishes it as the parent artifact in your issue tracker. An optional lifecycle slug groups that spec with its implementation tickets on GitHub.

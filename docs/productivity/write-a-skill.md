@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=write-a-skill
-```
-
-```bash
-npx skills update write-a-skill
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/productivity/write-a-skill)
-
 ## What it does
 
 `write-a-skill` converts settled requirements into a well-structured skill — clean steps, separated reference material, a description that triggers reliably, and a review checklist before it ships. It handles both creating a new skill and updating an existing one.

@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=setup-repo-skills
-```
-
-```bash
-npx skills update setup-repo-skills
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/setup-repo-skills)
-
 ## What it does
 
 `setup-repo-skills` wires a repo for the engineering skills: `.gitignore` and Claude Code settings, the `AGENTS.md`/`CLAUDE.md` agent guide, and the `docs/agents/` config that the other skills read — issue-tracker conventions, triage-label and commit-tag vocabularies, coding standards, and domain-doc rules.

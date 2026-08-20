@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=implement
-```
-
-```bash
-npx skills update implement
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/implement)
-
 ## What it does
 
 `implement` turns one concrete work item into reviewed, verified code and leaves the result uncommitted for a separate commit step. Its source is the exact issue or path you name, or the settled current conversation when you supply no argument; it never selects work from a lifecycle or ticket collection.

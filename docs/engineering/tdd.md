@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=tdd
-```
-
-```bash
-npx skills update tdd
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/tdd)
-
 ## What it does
 
 `tdd` builds a feature or fixes a bug test-first, one behaviour at a time, driving the code out through a red-green loop.

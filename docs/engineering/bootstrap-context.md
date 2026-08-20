@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=bootstrap-context
-```
-
-```bash
-npx skills update bootstrap-context
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/bootstrap-context)
-
 ## What it does
 
 `bootstrap-context` builds — or refreshes — a repo's domain-language glossary (`CONTEXT.md`, plus a `CONTEXT-MAP.md` in multi-context repos) in one dedicated, batched pass. It surveys the repo, interviews you briefly, and writes the glossary in the canonical format.

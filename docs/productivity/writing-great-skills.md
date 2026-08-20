@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=writing-great-skills
-```
-
-```bash
-npx skills update writing-great-skills
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/productivity/writing-great-skills)
-
 ## What it does
 
 `writing-great-skills` is the reference you write and edit skills against — the shared vocabulary and principles that make a skill predictable.

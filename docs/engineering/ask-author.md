@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=ask-author
-```
-
-```bash
-npx skills update ask-author
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/ask-author)
-
 ## What it does
 
 `ask-author` is the router over the skills in this repo. You describe the situation you're in; it tells you which skill or flow fits and in what order to run them.

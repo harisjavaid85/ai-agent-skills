@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=triage
-```
-
-```bash
-npx skills update triage
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/engineering/triage)
-
 ## What it does
 
 `triage` moves issues on your project's tracker through a small **state machine** of triage roles — categorise them, verify the claim, grill them into shape if needed, and leave a ready-for-agent brief.

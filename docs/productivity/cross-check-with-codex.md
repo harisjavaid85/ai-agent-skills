@@ -1,15 +1,3 @@
-Quickstart:
-
-```bash
-npx skills add harisjavaid85/ai-agent-skills --skill=cross-check-with-codex
-```
-
-```bash
-npx skills update cross-check-with-codex
-```
-
-[Source](https://github.com/harisjavaid85/ai-agent-skills/tree/main/skills/productivity/cross-check-with-codex)
-
 ## What it does
 
 `cross-check-with-codex` gets an independent second opinion on an artifact — a plan, diagnosis, design, or implementation — by having Codex review it while Claude reconciles the findings. Every round is preserved as a local audit record, so the review history survives the session.
