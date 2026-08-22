@@ -41,7 +41,7 @@ npx skills@latest add harisjavaid85/ai-agent-skills
 2. Pick the skills you want, and which coding agents you want to install them on. Select `/setup-repo-skills` when using the issue-lifecycle skills.
 
 3. Run `/setup-repo-skills` in your agent. It will:
-   - Wire up `.gitignore` for the agent working directories (`.plans/`, `.handoffs/`), plus Claude Code settings when that harness is active
+   - Wire up `.gitignore` for the agent working directories (`.plans/`, `.handoffs/`, `.overviews/`), plus Claude Code settings when that harness is active
    - Ask whether this repo is `prototype`, `standard`, or `production` (tunes how aggressively skills push for tests, error handling, and refactoring)
    - Propose a per-language coding standard (a style-guide binding, e.g. Google Python) so agents write high-quality code by default
    - Record your issue-tracker choice (GitHub, GitLab, or local markdown), which `/to-spec`, `/to-tickets`, and `/triage` read
@@ -240,6 +240,7 @@ General workflow tools, not code-specific.
 - **[grill-me](./skills/productivity/grill-me/SKILL.md)**: Get relentlessly interviewed about a plan or design until every branch of the design tree is resolved.
 - **[handoff](./skills/productivity/handoff/SKILL.md)**: Compact the current conversation into a handoff document so another agent can continue the work.
 - **[setup-claude-code](./skills/productivity/setup-claude-code/SKILL.md)**: Bootstrap a machine's global Claude Code setup at `~/.claude/`: permissions baseline, dangerous-command hook, optional statusline. Supports `host` / `sandbox` / `guardrails` modes.
+- **[summarize](./skills/productivity/summarize/SKILL.md)**: Read one article, paper, or document and produce a structured overview of it: key insights, a section-by-section summary, caveats, and the jump-back references you follow to check a point in the original.
 - **[teach](./skills/productivity/teach/SKILL.md)**: Teach the user a new skill or concept over multiple sessions, using the current directory as a stateful teaching workspace.
 - **[to-questionnaire](./skills/productivity/to-questionnaire/SKILL.md)**: Turn a decision you can't answer alone into a Markdown questionnaire for the one person who can, filled in async, or together over a meeting. It grills you about the send (who it's for, what you need back), not the subject.
 - **[wait-what](./skills/productivity/wait-what/SKILL.md)**: Fire this the moment a message doesn't land. The agent re-pitches it with the context you're missing, in plain English, using your `CONTEXT.md` vocabulary.

@@ -39,6 +39,10 @@ _Avoid_: repo type, quality level
 A per-language binding to a named external style guide (e.g. Google Python Style Guide) plus this repo's deviations, that an agent follows when writing code. Emitted by `setup-repo-skills` and read by the producing agent; the guide, not the binding, holds the rules.
 _Avoid_: style guide (the external source, not this repo's binding to it), linting rules
 
+**Overview**:
+A condensation of one external source (an article, paper, or document), produced by `summarize`.
+_Avoid_: summary (the everyday word for the act, not the artifact), digest, brief
+
 Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **leading word**, **completion criterion**) are defined in [`skills/productivity/writing-for-agents/SKILL.md`](./skills/productivity/writing-for-agents/SKILL.md), not here.
 
 ## Relationships
@@ -54,3 +58,4 @@ Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **l
 
 - "backlog" was previously used to mean both the *tool* hosting issues and the *body of work* inside it. Resolved: the tool is the **Issue tracker**; "backlog" is no longer used as a domain term.
 - "backlog backend" / "backlog manager". Resolved: collapsed into **Issue tracker**.
+- "summary", "overview" and "brief" all named a condensation. Resolved: the artifact `summarize` produces is an **Overview**; **brief** stays `loop-me`'s term for a decision-ready recap of work an agent produced.

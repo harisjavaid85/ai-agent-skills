@@ -43,6 +43,7 @@
     "./skills/productivity/grilling",
     "./skills/productivity/handoff",
     "./skills/productivity/setup-claude-code",
+    "./skills/productivity/summarize",
     "./skills/productivity/teach",
     "./skills/productivity/to-questionnaire",
     "./skills/productivity/wait-what",

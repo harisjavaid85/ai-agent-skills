@@ -9,6 +9,7 @@ Reachable only when you type them (Claude Code: `disable-model-invocation: true`
 - **[grill-me](./grill-me/SKILL.md)**: Get relentlessly interviewed about a plan or design until every branch of the design tree is resolved.
 - **[handoff](./handoff/SKILL.md)**: Compact the current conversation into a handoff document so another agent can continue the work.
 - **[setup-claude-code](./setup-claude-code/SKILL.md)**: Bootstrap a machine's global Claude Code setup at `~/.claude/`: permissions baseline, dangerous-command hook, optional statusline. Supports `host` / `sandbox` / `guardrails` modes.
+- **[summarize](./summarize/SKILL.md)**: Read one article, paper, or document and produce a structured overview of it: key insights, a section-by-section summary, caveats, and the jump-back references you follow to check a point in the original.
 - **[teach](./teach/SKILL.md)**: Teach the user a new skill or concept over multiple sessions, using the current directory as a stateful teaching workspace.
 - **[to-questionnaire](./to-questionnaire/SKILL.md)**: Turn a decision you can't answer alone into a Markdown questionnaire for the one person who can (filled in async, or together over a meeting).
 - **[wait-what](./wait-what/SKILL.md)**: Fire this the moment a message doesn't land. The agent re-pitches it with the context you're missing, in plain English, using your `CONTEXT.md` vocabulary.

@@ -28,7 +28,7 @@ Read the current repo to understand its starting state. Don't assume:
 - `.scratch/`: is a local-markdown issue-tracker convention already in use?
 - Monorepo signals: a `pnpm-workspace.yaml`, a `workspaces` field in `package.json`, or a populated `packages/*` with its own `src/` (feeds the bootstrap-context nudge only, never a layout decision here).
 - `AGENTS.md` and `CLAUDE.md` at the root: does either exist? Do the agent-guide sections already exist, e.g. a `### Repo mode: <mode>` subsection under `## Operating mode`?
-- `.gitignore`: does it already ignore `.plans/` and `.handoffs/`?
+- `.gitignore`: does it already ignore `.plans/`, `.handoffs/`, and `.overviews/`?
 - `CONTEXT.md` / `CONTEXT-MAP.md` at the root: present or absent? (For the bootstrap-context nudge, never to decide domain layout.)
 - `docs/agents/`: does this skill's prior output already exist?
 - `package.json`: is this a JS/TS repo? (For the pre-commit nudge.)
@@ -37,7 +37,7 @@ Summarise what's present and what's missing before changing anything.
 
 ## 2. Structural scaffolding
 
-Agent working directories live at the repo root, at the same paths whatever harness is running: `.plans/` for plan and design docs, `.handoffs/` for handoff documents. Don't create them; the skill that writes one creates it.
+Agent working directories live at the repo root, at the same paths whatever harness is running: `.plans/` for plan and design docs, `.handoffs/` for handoff documents, `.overviews/` for saved source overviews. Don't create them; the skill that writes one creates it.
 
 ### `.gitignore`
 
@@ -48,6 +48,7 @@ Ignore the working directories in every repo:
 ```
 .plans/
 .handoffs/
+.overviews/
 ```
 
 For Claude Code, also ignore `.claude/*`, then explicitly allow the checked-in Claude config and repo-local skills:

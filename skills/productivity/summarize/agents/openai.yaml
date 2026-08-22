@@ -1,0 +1,5 @@
+interface:
+  display_name: "Summarize"
+  short_description: "Turn one article, paper, or document into a structured overview"
+policy:
+  allow_implicit_invocation: false
