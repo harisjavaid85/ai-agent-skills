@@ -45,7 +45,7 @@ A caller-supplied source is authoritative; do not replace or expand it through d
 
 ### 3. Identify the standards sources
 
-Anything in the repo that documents how code should be written, such as `CODING_STANDARDS.md` or `CONTRIBUTING.md`.
+Start from the repo's agent guide (`AGENTS.md` or `CLAUDE.md`) and follow every standards pointer it carries, since the guide names where this repo keeps them. Add anything else that documents how code should be written, such as a `CONTRIBUTING.md` the guide doesn't mention.
 
 On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below: a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
 

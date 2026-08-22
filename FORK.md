@@ -53,7 +53,7 @@ in `SKILL.md` frontmatter are quoted YAML scalars when they contain a colon.
 | `skills/engineering/{to-spec,to-tickets}/SKILL.md` | hand-merge, keep the lifecycle arguments | Spec lifecycle |
 | `skills/engineering/ask-author/**` | hand-merge, the router must list fork skills | Renamed skills |
 | `skills/**/SKILL.md` (all others) | take theirs, re-apply fork names | Renamed skills |
-| `skills/engineering/domain-modeling/**`, `setup-repo-skills/domain.md` | hand-merge, preserve the `KNOWLEDGE.md` block | KNOWLEDGE.md |
+| `skills/engineering/domain-modeling/**`, `setup-repo-skills/domain.md` | hand-merge, keep the fork's `KNOWLEDGE.md` routing | KNOWLEDGE.md |
 | `.changeset/*.md` | take theirs, rename the package key | Repo furniture |
 | `scripts/link-skills.sh` | take ours | Repo furniture |
 | `README.md`, `CLAUDE.md`, `CONTEXT.md` | hand-merge | Repo furniture |
@@ -154,7 +154,12 @@ from glossary, ADRs, and policy. All *(function)*. It appears in:
   plus the "root `CONTEXT.md` may sit alongside the map for repo-wide carrier vocabulary" line in the
   multi-context section.
 - `setup-repo-skills/domain.md`, as the full routing taxonomy. Fork-authored; upstream's `domain.md`
-  is a subset.
+  is a subset. Its whole `## What goes where` section is shaped around the fork's arrival-site test,
+  so a hand-merge rebuilds the section rather than lifting a block out of it.
+- `setup-repo-skills/SKILL.md`, in the agent-guide seed: the routing table's two fact rows and the
+  source-of-truth line, written into each consumer repo's `AGENTS.md` or `CLAUDE.md`.
+- `setup-repo-skills/coding-standards.md`, where a comment that outgrows its ceiling routes to a
+  declaration or, failing one, to `KNOWLEDGE.md`.
 - `bootstrap-context/SKILL.md`, where the out-of-contract audit classifies per `domain.md`.
 
 ### Repo furniture

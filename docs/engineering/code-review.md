@@ -14,7 +14,7 @@ The **Spec** axis needs somewhere to find the originating spec: a source the cal
 
 ## Two axes, never merged
 
-The defining idea is the **two axes**. **Standards** asks whether the change set conforms to how this repo writes code: its `CODING_STANDARDS.md` or `CONTRIBUTING.md`, plus a fixed baseline of ~12 Fowler code smells (Mysterious Name, Duplicated Code, Feature Envy, Data Clumps, …). Two rules keep the baseline safe: a documented repo standard always overrides it, and every smell is a judgement call, never a hard violation. **Spec** asks the orthogonal question: does the code do what the issue or spec actually asked, without missing requirements or smuggling in scope creep?
+The defining idea is the **two axes**. **Standards** asks whether the change set conforms to how this repo writes code: whatever standards the repo's agent guide points at, plus anything else documenting how code should be written, plus a fixed baseline of ~12 Fowler code smells (Mysterious Name, Duplicated Code, Feature Envy, Data Clumps, …). Two rules keep the baseline safe: a documented repo standard always overrides it, and every smell is a judgement call, never a hard violation. **Spec** asks the orthogonal question: does the code do what the issue or spec actually asked, without missing requirements or smuggling in scope creep?
 
 They run as parallel sub-agents so neither pollutes the other's context, and the final report presents them under separate `## Standards` and `## Spec` headings with a per-axis summary. There is deliberately no single winner across axes. The skill reports findings; its caller owns remediation.
 

@@ -4,28 +4,39 @@ How the engineering skills read, and add to, this repo's domain documentation an
 
 ## What goes where
 
-When you learn or decide something durable, route it rather than leaving it in a session summary, agent memory, or the nearest open file. Match it to one home:
+When you learn or decide something durable, route it rather than leaving it in a session summary, agent memory, or the nearest open file.
 
-- a **term** or domain concept → the glossary (`CONTEXT.md`). Write it directly or via `/grill-with-context`, in that skill's format.
-- a **decision and its tradeoffs** → an ADR (`docs/adr/`). Write it directly or via `/grill-with-context`, in that skill's format.
-- **how the system behaves across module boundaries**: a gotcha or non-obvious invariant → the knowledge base (`KNOWLEDGE.md`); you write it (detailed below).
-- a **rule for how the agent should work** → operational policy (`AGENTS.md` / `CLAUDE.md`); you write it, sparingly, because it loads every session.
-- a fact **scoped to one file or module** → a comment at its arrival site (below).
+### 1. What kind of thing is it?
+
+- a **term**, a word for a domain concept → the glossary (`CONTEXT.md`). Write it directly or via `/grill-with-context`, in that skill's format.
+- a **decision** taken among real alternatives, and its tradeoffs → an ADR (`docs/adr/`). Same two routes.
+- a **rule** for how the agent should work → operational policy (`AGENTS.md` / `CLAUDE.md`); you write it, sparingly, because it loads every session.
+- a **fact** about how the system behaves → step 2; you write it.
 
 **The boundaries are where classification goes wrong.** Each pair sits on one topic:
 
-- _Term vs fact._ "An **Invoice** is a request for payment sent to a customer after delivery" defines vocabulary → glossary. "An invoice renders its VAT line only if the customer's country is set before the PDF job runs; set it after and the total is silently wrong" → knowledge.
-- _Decision vs fact._ "Postgres backs the write model" records a choice and its tradeoffs → ADR. "The unique index on `(customer_id, idempotency_key)` is what stops a retried checkout double-charging; dropping it looks safe and isn't" → knowledge.
-- _Rule vs fact._ "Deploy only from a green `main`" prescribes how to work → operational policy. "The deploy loads secrets at boot, so a rotated secret needs a pod restart, and updating the secret store alone does nothing" → knowledge.
-- _Module-scoped vs cross-module._ "Construct this client before the event loop starts; a late bind attaches the socket to the wrong worker" concerns one module → a comment at the code. "Fulfillment retries webhooks for 24h with backoff, so a handler that isn't idempotent double-ships" crosses fulfillment and every handler → knowledge.
+- _Term vs fact._ "An **Invoice** is a request for payment sent to a customer after delivery" defines vocabulary → glossary. "An invoice renders its VAT line only if the customer's country is set before the PDF job runs; set it after and the total is silently wrong" → fact.
+- _Decision vs fact._ "Postgres backs the write model" records a choice and its tradeoffs → ADR. "The unique index on `(customer_id, idempotency_key)` is what stops a retried checkout double-charging; dropping it looks safe and isn't" → fact.
+- _Rule vs fact._ "Deploy only from a green `main`" prescribes how to work → operational policy. "The deploy loads secrets at boot, so a rotated secret needs a pod restart, and updating the secret store alone does nothing" → fact.
 
-**Arrival site.** When a fact goes to the code, comment it on the exported declaration a caller reaches, not the line where you discovered it. That declaration carries everything a caller must know to use the module correctly: signature, invariants, ordering, error modes. A fact found deep in an implementation file and commented there is accurate and unread, because the caller never opens that file. Move it to the symbol they land on.
+The cut most easily missed is fact vs rule, and it is **register**: a fact _describes_ how the system behaves; rule _prescribes_ how the agent acts. One reality can throw off both, since "webhooks retry for 24h with backoff" is a fact while "make handlers idempotent" is a rule, but they are not duplicates, and a fact that also warrants a rule lives once as a fact, and is referenced instead of being copied.
 
-The cut most easily missed is knowledge vs operational policy, and it is **register**: `KNOWLEDGE.md` _describes_ how the system behaves; operational policy _prescribes_ how the agent acts. One reality can throw off both, since "webhooks retry for 24h with backoff" is a fact (knowledge) while "make handlers idempotent" is a rule (policy), but they are not duplicates, and a fact that also warrants a rule lives once in knowledge, and is referenced instead of being copied.
+### 2. Where does a fact go, and does it earn its place?
+
+**The code is the source of truth.** A written fact is a **cache** of it: a copy worth keeping only when the lookup it saves is expensive. Both answers follow from one question.
+
+Find the fact's **arrival site**: the single declaration that every reader who needs this fact passes through, meaning the exported function, type, endpoint, or config key they land on.
+
+- **It has one** → comment it there, on that declaration rather than on the line where you discovered it. A fact commented deep in an implementation file is accurate and unread, because the reader never opens that file. The lookup you save is reading the code in front of you, so the bar is whatever that code cannot say for itself; `docs/agents/coding-standards.md` holds the bar and the length budget. _"Construct this client before the event loop starts; a late bind attaches the socket to the wrong worker"_ goes on the client's constructor.
+- **It has none**, because the readers who need it share no declaration → `KNOWLEDGE.md` (below). The lookup you save is discovery, so the bar is higher: keep the fact only if you learned it by running the system, or by following a behaviour through code that never states it. If reading the code would have shown it, the code already says it and the copy only waits to go stale. _"The deploy loads secrets at boot, so a rotated secret needs a pod restart"_ has no declaration to sit on.
+
+Two readings of the same fact can differ, and the code decides which is right: where a facade gates every path to a behaviour, that facade is the arrival site, however many parts the behaviour spans; where the readers are handlers registered by convention with no shared declaration, there is nowhere to put it but `KNOWLEDGE.md`.
+
+When a written fact and the code disagree, the code is what is true, and the change that invalidated the fact updates it in the same pass, because nothing else revisits them.
 
 `CLAUDE.md` loads into every session, so keep it small: stable, global policy only. `CONTEXT.md`, `KNOWLEDGE.md`, and ADRs are distributed beside the code they describe and read only when that area is touched, so prefer them by default; even a prescriptive rule that bites in just one area belongs in that area's docs, not the always-loaded file.
 
-Whatever you add, state it as what **is currently true**, keep the bar high (this is not a log of what you did), and note the addition in your summary so a human can review it.
+Whatever you add, state it as what **is currently true**, and note the addition in your summary so a human can review it.
 
 ## Before exploring, read these
 
@@ -65,15 +76,13 @@ When your output names a domain concept (an issue title, a refactor proposal, a 
 
 ## Knowledge base
 
-A `KNOWLEDGE.md` holds durable, learned facts about how the system behaves: the gotchas and non-obvious invariants a future agent would otherwise waste time rediscovering. Each file is the behavioral companion to a `CONTEXT.md`, created lazily: the first fact makes the file. Facts are pruned when they stop being true.
+A `KNOWLEDGE.md` holds durable, learned facts about how the system behaves: the gotchas and non-obvious invariants that have no arrival site to sit on. Each file is the behavioral companion to a `CONTEXT.md`, created lazily: the first fact makes the file.
 
 **Where it goes: the nearest common home.**
 
-A fact that crosses module boundaries goes in the `KNOWLEDGE.md` beside the nearest ancestor `CONTEXT.md` covering every module it touches: that context's own when the modules sit within one context, the root's when it spans contexts.
+A fact goes in the `KNOWLEDGE.md` beside the nearest ancestor `CONTEXT.md` that covers everything the fact touches: that context's own when it stays inside one context, the root's when it spans several.
 
-A context whose code is a single module has no boundary to cross, so those facts belong at the code. Don't create its `KNOWLEDGE.md`.
-
-`CONTEXT-MAP.md` already routes to every context, so no separate index is needed.
+`CONTEXT-MAP.md` already routes to every context, so no separate index is needed. A context whose facts all have arrival sites in code never grows a `KNOWLEDGE.md`, which is the file working as intended.
 
 **Format.** Mirror `CONTEXT.md`: a headed file whose entries are the facts. No frontmatter.
 
