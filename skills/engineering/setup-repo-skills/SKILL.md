@@ -210,7 +210,7 @@ _(Claude Code only)_ **Memory**: the harness surfaces this project's memory inde
 | What you have | Goes to |
 | --- | --- |
 | a term / domain concept | glossary: `CONTEXT.md` |
-| a decision + its tradeoffs | an ADR: `docs/adr/` |
+| a decision + its tradeoffs | an ADR in `docs/adr/`, format per `docs/agents/domain.md` |
 | a rule for how the agent should work | operational policy: this file |
 | a fact about how the system behaves | a comment at its **arrival site**: the one declaration every reader of the fact passes through |
 | the same fact but where those readers share no declaration | knowledge: `KNOWLEDGE.md` |

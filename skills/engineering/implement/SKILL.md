@@ -22,7 +22,7 @@ Do not search for or guess a work item. If the source is a lifecycle slug, an un
 
 ## 2. Establish the baseline
 
-**Repository guidance is binding.** Read the repository's agent instructions and every authoritative convention, standard, and guideline they point to for issue access, implementation, review, and verification. Apply that guidance throughout the run. Record `git rev-parse HEAD` as the review fixed point and inspect `git status --short`.
+**Repository guidance is binding.** Read the repository's agent instructions and every authoritative convention, standard, and guideline they point to for issue access, implementation, code comments, review, and verification. Apply that guidance throughout the run. Record `git rev-parse HEAD` as the review fixed point and inspect `git status --short`.
 
 When the working tree is dirty, ask the user to classify the existing changes:
 
@@ -31,7 +31,7 @@ When the working tree is dirty, ask the user to classify the existing changes:
 
 If implementation later needs an ignored path, ask whether to fold it in before editing it.
 
-**Complete when:** the binding repository guidance, fixed point, and included and excluded paths are identified.
+**Complete when:** the binding repository guidance is read, and the fixed point and included and excluded paths are identified.
 
 ## 3. Build in red-green slices
 

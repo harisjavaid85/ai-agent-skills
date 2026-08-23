@@ -8,8 +8,8 @@ When you learn or decide something durable, route it rather than leaving it in a
 
 ### 1. What kind of thing is it?
 
-- a **term**, a word for a domain concept → the glossary (`CONTEXT.md`). Write it directly or via `/grill-with-context`, in that skill's format.
-- a **decision** taken among real alternatives, and its tradeoffs → an ADR (`docs/adr/`). Same two routes.
+- a **term**, a word for a domain concept → the glossary (`CONTEXT.md`); you write it, in the format the `/domain-modeling` skill carries in its `CONTEXT-FORMAT.md`.
+- a **decision** taken among real alternatives, and its tradeoffs → an ADR (`docs/adr/`); you write it, in the format the `/domain-modeling` skill carries in its `ADR-FORMAT.md`.
 - a **rule** for how the agent should work → operational policy (`AGENTS.md` / `CLAUDE.md`); you write it, sparingly, because it loads every session.
 - a **fact** about how the system behaves → step 2; you write it.
 
@@ -46,9 +46,9 @@ Whatever you add, state it as what **is currently true**, and note the addition 
 - **`docs/adr/`**: read ADRs that touch the area you're about to work in (in multi-context repos, also each context's own `docs/adr/` beside its `CONTEXT.md`). If your output contradicts one, surface it rather than silently overriding, e.g. _"Contradicts ADR-0007 (event-sourced orders), but worth reopening because…"_.
 - **`.out-of-scope/`**: records of rejected feature requests. Check before proposing work that may have been declined before.
 
-If any of these don't exist, **proceed silently**. Don't flag their absence or suggest creating them upfront. They are created lazily: the glossary and ADRs by the producer skills (`/bootstrap-context`, `/grill-with-context`) as terms and decisions get resolved, and `KNOWLEDGE.md` as facts are learned.
+If any of these don't exist, **proceed silently**. Don't flag their absence or suggest creating them upfront. They are created lazily: the glossary and ADRs by the producer skills (`/domain-modeling`, `/bootstrap-context`, `/grill-with-context`) as terms and decisions get resolved, and `KNOWLEDGE.md` as facts are learned.
 
-Layout is self-describing on disk: a root `CONTEXT-MAP.md` means multi-context (a root `CONTEXT.md` may still exist alongside it for repo-wide carrier terms); a root `CONTEXT.md` with no map means single-context. (Canonical layout also in the `bootstrap-context` skill's `CONTEXT-FORMAT.md`.)
+Layout is self-describing on disk: a root `CONTEXT-MAP.md` means multi-context (a root `CONTEXT.md` may still exist alongside it for repo-wide carrier terms); a root `CONTEXT.md` with no map means single-context. (Canonical layout also in the `/domain-modeling` skill's `CONTEXT-FORMAT.md`.)
 
 ```
 single-context:
