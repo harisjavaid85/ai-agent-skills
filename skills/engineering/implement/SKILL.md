@@ -51,9 +51,11 @@ Run the `/code-review` skill exactly once. Pass it:
 - The exact work source and explicit overrides from step 1.
 - Any paths excluded in step 2.
 
-Judge every finding. A finding that demonstrates a breach of the work source or binding repository guidance is valid and must be fixed. Fix other findings that are valid for the work item and record a concise rationale for each declined finding. Do not rerun `/code-review`. After remediation, run the verification required by the repository's instructions, or the existing project scripts selected in step 3.
+Judge every finding. A finding that demonstrates a breach of the work source or binding repository guidance is valid and must be fixed. Fix other findings that are valid for the work item and record a concise rationale for each declined finding. Do not rerun `/code-review`.
 
-**Complete when:** every review finding has a disposition and post-remediation verification has completed or produced a concrete blocker.
+After remediation, re-read every comment in the files you touched, from the files rather than from memory, and cut each one the binding guidance from step 2 would not have earned. Then run the verification required by the repository's instructions, or the existing project scripts selected in step 3.
+
+**Complete when:** every review finding has a disposition, the comments in the touched files have been re-read and cut to the binding guidance, and post-remediation verification has completed or produced a concrete blocker.
 
 ## 5. Report the handoff
 

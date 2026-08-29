@@ -158,8 +158,9 @@ from glossary, ADRs, and policy. All *(function)*. It appears in:
   so a hand-merge rebuilds the section rather than lifting a block out of it.
 - `setup-repo-skills/SKILL.md`, in the agent-guide seed: the routing table's two fact rows and the
   source-of-truth line, written into each consumer repo's `AGENTS.md` or `CLAUDE.md`.
-- `setup-repo-skills/coding-standards.md`, where a comment that outgrows its ceiling routes to a
-  declaration or, failing one, to `KNOWLEDGE.md`.
+- `setup-repo-skills/coding-standards.md`, in two `## Comments` bullets: a comment that outgrows its
+  ceiling routes to a declaration or, failing one, to `KNOWLEDGE.md`; and a comment cites an ADR but
+  never the glossary or `KNOWLEDGE.md`.
 - `bootstrap-context/SKILL.md`, where the out-of-contract audit classifies per `domain.md`.
 
 ### Repo furniture
