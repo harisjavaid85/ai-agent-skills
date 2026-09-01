@@ -2,6 +2,7 @@ import { run, claudeCode, Output } from "@ai-hero/sandcastle";
 import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
@@ -150,16 +151,27 @@ console.error(
     .join("  ")}`,
 );
 console.error(`Auth: ${authUsing.join("  ")}`);
+// Reported, not held: every phase re-reads the live credential when its own
+// container launches, so nothing resolved here is what any of them will use.
+reportCodexCredential();
 
 // After the config trail, so a missing image still shows what would have run.
 requireImage();
 requireQueue();
 mkdirSync(LOG_DIR, { recursive: true });
 
-const sandbox = docker({
-  imageName: IMAGE_NAME,
-  env: { CI: "true", ...sandboxEnv },
-});
+/**
+ * Built per phase launch, not once per run. The codex credential is a live file
+ * with an expiry, and a drain runs for hours, so one provider made at startup
+ * would hand the last phase a credential read before the first ticket began.
+ * Sandcastle bakes env per sandbox rather than per run, so a fresh provider is
+ * what a fresh read means.
+ */
+const phaseSandbox = (codex = resolveCodexCredential()) =>
+  docker({
+    imageName: IMAGE_NAME,
+    env: { CI: "true", ...sandboxEnv, ...codex.env },
+  });
 
 /**
  * Shared run config for every phase. `branch` is the branch the phase is
@@ -638,15 +650,30 @@ function ticketIsClosed(ticket: number, ref: string): boolean {
 // success advances the shared branch.
 // ---------------------------------------------------------------------------
 
-const ticketBranch = (ticket: number): string => `${BRANCH}-wip-${ticket}`;
+/**
+ * Two disjoint namespaces, and the split is load-bearing. `-<N>` is cut and
+ * recut locally and never pushed; `-wip-<N>` is where a bail-out is parked, and
+ * is the only ticket branch that reaches origin. Overlap them and a published
+ * branch leaves a `refs/remotes/origin/` ref behind that the next recut
+ * silently resolves through; see dropTicketBranch.
+ */
+const ticketBranch = (ticket: number): string => `${BRANCH}-${ticket}`;
+const wipBranch = (ticket: number): string => `${BRANCH}-wip-${ticket}`;
 
-function branchExists(branch: string): boolean {
+// Declarations, not `const` arrows: queueRef() reaches these from module scope
+// well above this point, where a `const` would still be in its temporal dead
+// zone.
+function refExists(ref: string): boolean {
   try {
-    git(`show-ref --verify --quiet refs/heads/${branch}`);
+    git(`show-ref --verify --quiet ${ref}`);
     return true;
   } catch {
     return false;
   }
+}
+
+function branchExists(branch: string): boolean {
+  return refExists(`refs/heads/${branch}`);
 }
 
 /**
@@ -681,6 +708,20 @@ function worktreeFor(branch: string): string | undefined {
  * matters.
  */
 function dropTicketBranch(branch: string): void {
+  removeWorktreeFor(branch);
+  if (branchExists(branch)) git(`update-ref -d refs/heads/${branch}`);
+  // Not housekeeping. `git worktree add <path> <branch>` resolves through
+  // refs/remotes/origin/<branch> when the local head is gone, so a surviving
+  // remote-tracking ref recuts the ticket from whatever was published there,
+  // and sandcastle never sees the `invalid reference` that is its only route to
+  // honouring baseBranch. The naming split above already makes that
+  // unreachable; this covers a human or an older run having pushed `-<N>`.
+  const remote = `refs/remotes/origin/${branch}`;
+  if (refExists(remote)) git(`update-ref -d ${remote}`);
+}
+
+/** Split out of dropTicketBranch because parkBailOut needs it without the ref. */
+function removeWorktreeFor(branch: string): void {
   const worktree = worktreeFor(branch);
   if (worktree) {
     try {
@@ -694,7 +735,6 @@ function dropTicketBranch(branch: string): void {
   } catch {
     /* pruning is opportunistic */
   }
-  if (branchExists(branch)) git(`update-ref -d refs/heads/${branch}`);
 }
 
 /**
@@ -730,6 +770,29 @@ function snapshotBailOut(branch: string, ticket: number): void {
     );
   } catch (e) {
     console.error(`   could not snapshot the bail-out for ticket ${ticket}: ${message(e)}`);
+  }
+}
+
+/**
+ * Renames a failed ticket branch to the `-wip-` name, which is the only one
+ * publishWipBranches ever pushes. So a `-wip-` branch existing is itself the
+ * signal that a ticket bailed out.
+ */
+function parkBailOut(branch: string, ticket: number): void {
+  snapshotBailOut(branch, ticket);
+  // Before the rename, not after: worktreeFor looks a worktree up by branch
+  // name, so one still attached here follows the ref to `-wip-<N>`, and the
+  // next attempt's dropTicketBranch then finds nothing to remove.
+  removeWorktreeFor(branch);
+  if (!branchExists(branch)) return;
+  const parked = wipBranch(ticket);
+  try {
+    // update-ref, matching dropTicketBranch, and it overwrites, which is what a
+    // second bail-out of the same ticket in one run needs.
+    git(`update-ref refs/heads/${parked} ${git(`rev-parse ${branch}`)}`);
+    git(`update-ref -d refs/heads/${branch}`);
+  } catch (e) {
+    console.error(`   could not park ticket ${ticket} as ${parked}: ${message(e)}`);
   }
 }
 
@@ -785,7 +848,7 @@ async function runPlanner(workable: Ticket[]): Promise<Ticket[]> {
   try {
     const result = await runPhase("planner", () =>
       run({
-        sandbox,
+        sandbox: phaseSandbox(),
         ...phaseOpts({ branch: BRANCH, deps: false }),
         name: "planner",
         agent: claudeCode(MODELS.planner),
@@ -829,7 +892,7 @@ const outcomeSchema = z.object({
 async function runImplementer(ticket: number, attempt: number, branch: string) {
   return runPhase(`implementer-${ticket}`, () =>
     run({
-      sandbox,
+      sandbox: phaseSandbox(),
       ...phaseOpts({ branch, base: BRANCH, deps: true }),
       name: `implementer-${ticket}`,
       agent: claudeCode(MODELS.implementer),
@@ -884,7 +947,7 @@ async function runPrComposer(
 ): Promise<void> {
   await runPhase("pr-composer", () =>
     run({
-      sandbox,
+      sandbox: phaseSandbox(),
       ...phaseOpts({ branch: BRANCH, deps: false }),
       name: "pr-composer",
       agent: claudeCode(MODELS.prComposer),
@@ -911,9 +974,20 @@ async function runPrComposer(
 }
 
 async function runPrReviewer(pr: number): Promise<void> {
+  // The one phase that requires codex rather than merely carrying it, so the
+  // refusal lives here. Read once and handed to phaseSandbox below, so the
+  // check and the container it gates see the same credential.
+  const codex = resolveCodexCredential();
+  if (codex.problem) {
+    fail(
+      `Cannot review PR #${pr}: ${codex.problem}.\n` +
+        `Fix that, then run the review on its own: loop.mts ${slug} review`,
+    );
+  }
+
   await runPhase("pr-reviewer", () =>
     run({
-      sandbox,
+      sandbox: phaseSandbox(codex),
       ...phaseOpts({ branch: BRANCH, deps: true }),
       name: "pr-reviewer",
       agent: claudeCode(MODELS.prReviewer),
@@ -933,6 +1007,11 @@ async function runPrReviewer(pr: number): Promise<void> {
       logging: logging("pr-reviewer"),
     }),
   );
+
+  // pr-reviewer.md forbids the reviewer pushing, and its accepted fixes are
+  // commits on the shared branch. Here rather than in the callers, so the
+  // standalone `review` phase cannot leave them local.
+  await withRetry("push", () => git(`push origin ${BRANCH}`));
 }
 
 type PullRequest = {
@@ -1009,7 +1088,21 @@ function reviewPostcondition(number: number): string | undefined {
   }
 
   const missing: string[] = [];
-  if (!comments.some((c) => c.body.includes(REVIEW_MARKER))) missing.push("a verdict comment");
+  if (pr && pr.headRefOid !== git(`rev-parse ${BRANCH}`)) missing.push("the branch tip");
+
+  const verdict = comments.find((c) => c.body.includes(REVIEW_MARKER));
+  if (!verdict) missing.push("a verdict comment");
+  else {
+    // The cross-check runs in a container worktree that is destroyed, and its
+    // audit record is git-excluded, so the verdict comment is the only place
+    // the loop can observe whether an independent review happened at all.
+    const crossCheck = verdict.body.match(/^Cross-check:\s*(.+)$/m)?.[1]?.trim();
+    if (!crossCheck) missing.push("a `Cross-check:` line in the verdict");
+    else if (!/^performed\b/i.test(crossCheck)) {
+      missing.push(`an independent cross-check: ${crossCheck}`);
+    }
+  }
+
   if (pr && !hasLabel(pr, LABELS.readyForHuman)) {
     missing.push(`the \`${LABELS.readyForHuman}\` label`);
   }
@@ -1048,8 +1141,6 @@ async function finalize(
   }
 
   await withRetry("pr-reviewer", () => runPrReviewer(pr.number));
-  // The reviewer's accepted fixes are commits on the shared branch.
-  await withRetry("push", () => git(`push origin ${BRANCH}`));
 
   const missing = reviewPostcondition(pr.number);
   if (missing) console.error(`   ${missing}`);
@@ -1143,8 +1234,8 @@ async function auto(): Promise<void> {
         continue;
       }
 
-      // The ticket branch survives, carrying whatever was reached.
-      snapshotBailOut(branch, ticket.number);
+      // The work survives on the parked branch, carrying whatever was reached.
+      parkBailOut(branch, ticket.number);
       consecutiveFailures++;
       console.error(`   ticket ${ticket.number} did not close: ${failed}`);
       if (consecutiveFailures >= LIMITS.consecutiveFailures) {
@@ -1219,11 +1310,13 @@ function isMetered(name: string): boolean {
  * others, which is worse than not having one.
  *
  * Names are most-preferred first, subscription before API key, because metered
- * billing across a six-hour run is the expensive mistake. `injectFallback`
- * turns on whether a rejected credential can be *observed*: codex logs in, so
- * the sandbox hook sees the rejection and tries the next one. Claude Code has
- * no login step, so withholding the fallback is the only thing stopping an
- * expired token from silently billing per token for a whole run.
+ * billing across a six-hour run is the expensive mistake, and only the
+ * preferred one reaches the container. Claude Code has no login step, so
+ * withholding the rest is the only thing stopping an expired token from
+ * silently billing per token for a whole run.
+ *
+ * Codex is not here. Its credential is a live file rather than a value in this
+ * one; resolveCodexCredential() reads it, and only the review phase gets it.
  */
 function resolveCredentials(): {
   env: Record<string, string>;
@@ -1244,22 +1337,26 @@ function resolveCredentials(): {
   const using: string[] = [];
   const missing: string[] = [];
 
-  const take = (names: string[], injectFallback = false): void => {
-    const found = names.filter((n) => secrets[n]?.trim());
-    if (found.length === 0) {
+  const take = (names: string[]): void => {
+    const found = names.find((n) => secrets[n]?.trim());
+    if (!found) {
       missing.push(names.join(" or "));
       return;
     }
-    for (const name of injectFallback ? found : found.slice(0, 1)) {
-      env[name] = secrets[name]!.trim();
-    }
+    env[found] = secrets[found]!.trim();
     // "This run bills per token" is worth seeing before six hours of it.
-    using.push(isMetered(found[0]!) ? `${found[0]} (metered)` : found[0]!);
+    using.push(isMetered(found) ? `${found} (metered)` : found);
   };
 
   take(["GH_TOKEN"]);
   take(["CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY"]);
-  take(["CODEX_AUTH_JSON", "OPENAI_API_KEY"], true);
+
+  if (secrets.CODEX_AUTH_JSON?.trim()) {
+    console.error(
+      `Warning: ${SECRETS_FILE} sets CODEX_AUTH_JSON, which is now ignored. The loop reads the\n` +
+        `  live credential itself at review time. Delete the line, and the stale token with it.`,
+    );
+  }
 
   if (missing.length > 0) {
     fail(`${SECRETS_FILE} sets no ${missing.join(", and no ")}.`);
@@ -1274,30 +1371,141 @@ function resolveCredentials(): {
   return { env, using };
 }
 
+/** What the review phase will run codex with. Resolved fresh at every read. */
+type CodexCredential = {
+  /** Injected into the review sandbox. Empty when nothing usable resolved. */
+  env: Record<string, string>;
+  /** The startup banner's account of which credential this is. */
+  label: string;
+  /** Epoch ms the access token expires, when the credential carries one. */
+  expiresAt?: number;
+  /** Why there is nothing usable, when there is not. */
+  problem?: string;
+};
+
 /**
- * `CODEX_AUTH_JSON` is a copy of `~/.codex/auth.json`; it carries the refresh
- * token, so codex renews itself mid-run. `codex login --with-access-token` is
- * deliberately unused: it wants a Business/Enterprise workspace token, not
- * anything in that file.
+ * Codex sits outside resolveCredentials() because it is not a value in
+ * `.to-done/secrets`: it is a live file the host's own `codex login`
+ * maintains. Pasting a copy into `secrets` is what let a 12-day-old token
+ * against a 10-day lifetime look healthy for a whole run, so this reads the
+ * real file, every time it is asked, and never writes back to `secrets`.
  *
- * Falls through on *rejection*, not absence: an expired credential is present
- * and useless. Never fatal, because this hook runs for every phase while only
- * the reviewer needs codex.
+ * The choice is made by what is configured, never by observing a rejection:
+ * `codex login status` is a local file check that passes for any well-formed
+ * `auth.json`, so there is no rejection to observe from here.
+ */
+function resolveCodexCredential(): CodexCredential {
+  const secrets = parseEnvFile(SECRETS_FILE);
+
+  // Static: no refresh, no rotation, nothing to preflight. It wins when set,
+  // and every run then bills.
+  const key = secrets.OPENAI_API_KEY?.trim();
+  if (key) return { env: { OPENAI_API_KEY: key }, label: "OPENAI_API_KEY (metered)" };
+
+  const configured = secrets.CODEX_AUTH_FILE?.trim() || "~/.codex/auth.json";
+  const file = configured.startsWith("~/")
+    ? path.join(homedir(), configured.slice(2))
+    : path.resolve(configured);
+  const none = (problem: string): CodexCredential => ({ env: {}, label: "none", problem });
+
+  if (!existsSync(file)) return none(`${file} does not exist; run \`codex login\``);
+
+  let auth: unknown;
+  try {
+    auth = JSON.parse(readFileSync(file, "utf8"));
+  } catch (e) {
+    return none(`${file} is not readable JSON: ${message(e)}`);
+  }
+
+  const expiresAt = accessTokenExpiry(auth);
+  if (expiresAt !== undefined && expiresAt <= Date.now()) {
+    return none(
+      `the access token in ${file} expired ${humanDuration(Date.now() - expiresAt)} ago, and ` +
+        `clearing that needs an interactive \`codex login\`, which the loop cannot run`,
+    );
+  }
+
+  // Re-serialised compact, which is what the container's auth.json wants and
+  // what proves the file parsed.
+  return {
+    env: { CODEX_AUTH_JSON: JSON.stringify(auth) },
+    label:
+      expiresAt === undefined ? file : `${file} (${humanDuration(expiresAt - Date.now())} left)`,
+    expiresAt,
+  };
+}
+
+/**
+ * A local decode, no network call, so there is no chance of spending the
+ * refresh token here and orphaning the host's own login. ChatGPT-mode access
+ * tokens live ten days. `id_token` expires hourly and is a short-lived
+ * identity assertion rather than the API credential, so it is not read.
+ */
+function accessTokenExpiry(auth: unknown): number | undefined {
+  const token = (auth as { tokens?: { access_token?: unknown } } | null)?.tokens?.access_token;
+  if (typeof token !== "string") return undefined;
+  const payload = token.split(".")[1];
+  if (!payload) return undefined;
+  try {
+    const { exp } = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return typeof exp === "number" ? exp * 1000 : undefined;
+  } catch {
+    return undefined; // Not a JWT we can read; the reviewer still gets to try.
+  }
+}
+
+function humanDuration(ms: number): string {
+  const hours = Math.max(0, Math.round(ms / 3_600_000));
+  return hours >= 48 ? `${Math.round(hours / 24)}d` : `${hours}h`;
+}
+
+/**
+ * A forecast, not a gate: the review is hours away and re-reads the credential
+ * itself. Saying so at minute one is what turns a cross-check the run silently
+ * lost into something a human can still act on.
+ */
+function reportCodexCredential(): void {
+  const codex = resolveCodexCredential();
+  console.error(`Codex: ${codex.label}`);
+  if (codex.problem) {
+    console.error(`Warning: ${codex.problem}.\n  The review phase will refuse to start.`);
+    return;
+  }
+  if (codex.expiresAt === undefined) return;
+  const left = codex.expiresAt - Date.now();
+  if (left < LIMITS.wallTimeMs) {
+    console.error(
+      `Warning: the codex credential expires in ${humanDuration(left)}, inside this run's ` +
+        `${LIMITS.wallTimeMs / 3_600_000}h window.\n` +
+        `  codex would then refresh it inside a container, and refresh tokens are single-use, so\n` +
+        `  that rotation orphans your host login. Run \`codex login\` first.`,
+    );
+  }
+}
+
+/**
+ * `codex login --with-access-token` is deliberately unused: it wants a
+ * Business/Enterprise workspace token, not anything a personal `auth.json`
+ * holds. There is no success gate either, because the only available one,
+ * `codex login status`, passes for any well-formed file. Expiry is caught on
+ * the host by resolveCodexCredential(); a credential the API refuses at review
+ * time surfaces as `Cross-check: unavailable` in the verdict, which
+ * reviewPostcondition refuses to promote.
+ *
+ * Runs in every container, so any phase can reach for codex, and it is a no-op
+ * when no credential resolved. Fatal when it fails, because a credential that
+ * was resolved on the host and then would not install is a broken container
+ * rather than a missing feature.
  */
 function codexLoginCommand(): string {
   return [
-    "ok=0;",
-    'if [ -n "$CODEX_AUTH_JSON" ]; then',
+    'if [ -n "$OPENAI_API_KEY" ]; then',
+    "  printenv OPENAI_API_KEY | codex login --with-api-key;",
+    'elif [ -n "$CODEX_AUTH_JSON" ]; then',
     '  mkdir -p "$HOME/.codex"',
     '    && printenv CODEX_AUTH_JSON > "$HOME/.codex/auth.json"',
-    '    && chmod 600 "$HOME/.codex/auth.json"',
-    "    && codex login status >/dev/null 2>&1 && ok=1;",
-    "fi;",
-    'if [ "$ok" = 0 ] && [ -n "$OPENAI_API_KEY" ]; then',
-    "  printenv OPENAI_API_KEY | codex login --with-api-key && ok=1;",
-    "fi;",
-    '[ "$ok" = 1 ] || echo "to-done: codex login failed; the review phase will not work" >&2;',
-    "exit 0",
+    '    && chmod 600 "$HOME/.codex/auth.json";',
+    "fi",
   ].join(" ");
 }
 
@@ -1485,7 +1693,7 @@ async function main(): Promise<void> {
       const result = await runImplementer(ticket, 1, branch);
       const failure = implementerPostcondition(ticket, result, branch);
       if (failure) {
-        snapshotBailOut(branch, ticket);
+        parkBailOut(branch, ticket);
         fail(`ticket ${ticket} did not close: ${failure}`);
       }
       fastForwardShared(branch);

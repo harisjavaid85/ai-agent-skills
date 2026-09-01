@@ -8,7 +8,7 @@ You are the implementer for ticket `{{TICKET}}` of spec `{{SPEC_SLUG}}`. Take it
 - **ATTEMPT**: `{{ATTEMPT}}`, how many times the loop has dispatched this ticket, including now
 - **Actual label strings** for the canonical roles `ready-for-agent` and `needs-info`, resolved from `docs/agents/triage-labels.md` before any tracker call.
 
-The branch is yours alone. The loop merges it into the shared branch when you close the ticket, and keeps it aside when you do not, so commit your work and leave the branch alone otherwise. Do not push; the loop owns every branch and remote operation.
+The branch is yours alone. The loop merges it into the shared branch when you close the ticket, and keeps it aside when you do not, so commit your work and leave the branch alone otherwise. Do not push; the loop owns the branch and every remote write to it.
 
 ## Procedure
 

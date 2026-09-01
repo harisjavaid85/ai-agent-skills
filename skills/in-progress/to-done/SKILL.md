@@ -37,7 +37,7 @@ cp <skill-dir>/secrets.example .to-done/secrets
 chmod 600 .to-done/secrets
 ```
 
-Fill in one value per group; the file explains each. It must stay gitignored, and `.to-done/.gitignore` is where that rule belongs, so it travels with the directory. Nothing is written into the image. The loop startup reports what each provider resolved to.
+Fill in one value per group; the file explains each. Codex is the exception: the loop reads the host's own `codex login` as each container starts, so that group is empty unless you want metered API billing instead. It must stay gitignored, and `.to-done/.gitignore` is where that rule belongs, so it travels with the directory. Nothing is written into the image. The loop startup reports what each provider resolved to.
 
 
 ## Optional settings
