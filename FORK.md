@@ -112,7 +112,9 @@ model-invoked. Three need more than a name:
   tracker-choice section (GitHub, GitLab, local, other), the interactive "one section, one answer"
   flow, triage-installed gating of the triage-labels section, tracker-neutral `triage-labels.md`.
   **Not** ported: upstream's section that *decides* single- versus multi-context layout, per ADR-0004,
-  because `bootstrap-context` is the semantic authority for that decision.
+  because `bootstrap-context` is the semantic authority for that decision. The ported wayfinding
+  bullets have since diverged: sub-issue and blocking edges use `gh issue` flags where upstream uses
+  `gh api --method POST`, which `setup-claude-code`'s hook denies. Do not re-port them verbatim.
 - **`write-a-skill`** *(function)* is the workflow counterpart to upstream's `writing-for-agents`
   reference. It uses upstream's terms (**steps** and **reference**, not Behaviour and Vocabulary) and
   defers the principles and the skill-specific mechanics to that skill's two files.
