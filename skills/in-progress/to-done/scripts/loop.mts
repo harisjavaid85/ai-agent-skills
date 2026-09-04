@@ -191,8 +191,15 @@ const phaseOpts = ({ branch, base, deps }: { branch: string; base?: string; deps
   hooks: {
     sandbox: {
       onSandboxReady: [
-        // Rewrite git's remotes to HTTPS + GH_TOKEN so pushes need no SSH key.
+        // Credential helper for https://github.com, so pushes need no SSH key.
         { command: "gh auth setup-git" },
+        // Which leaves an SSH-form origin unusable. Not `git remote set-url`: a
+        // worktree shares config with the clone it was cut from, so that would
+        // rewrite the host's own repo from inside the container.
+        {
+          command: 'git config --global url."https://github.com/".insteadOf "git@github.com:"',
+        },
+        { command: trustWorkspaceCommand() },
         { command: codexLoginCommand() },
         ...(deps && process.env.TO_DONE_SETUP
           ? [{ command: process.env.TO_DONE_SETUP, timeoutMs: 600_000 }]
@@ -1481,6 +1488,20 @@ function reportCodexCredential(): void {
         `  that rotation orphans your host login. Run \`codex login\` first.`,
     );
   }
+}
+
+/**
+ * An untrusted workspace makes Claude Code exit 1, and the only other way past
+ * it is a dialog no container can answer. `$PWD` because sandcastle runs these
+ * hooks in the worktree, which is the path the trust is keyed on.
+ */
+function trustWorkspaceCommand(): string {
+  return [
+    'f="$HOME/.claude.json";',
+    '[ -s "$f" ] || echo "{}" >"$f";',
+    "jq --arg p \"$PWD\" '.projects[$p].hasTrustDialogAccepted = true' \"$f\" >\"$f.new\"",
+    '&& mv "$f.new" "$f"',
+  ].join(" ");
 }
 
 /**
