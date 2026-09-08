@@ -1,5 +1,5 @@
 interface:
   display_name: "KB Builder"
-  short_description: "Build or update a knowledge base from named sources"
+  short_description: "Build or update a file-based knowledge base"
 policy:
   allow_implicit_invocation: false

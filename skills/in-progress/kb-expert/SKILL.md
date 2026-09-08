@@ -23,7 +23,7 @@ A request for *what the KB took from* a source ("what did we take from X") is a 
 ## 3. Answer a question
 
 - Read `knowledge/index.md`, then open only the notes relevant to the question. If it is absent or empty, tell the user the KB has no knowledge yet.
-- Give the takeaway first, concrete and quantitative, each claim carrying its citation.
+- Give the takeaway first, concrete and quantitative, each claim carrying its citation with a locator wherever the claim is specific.
 - Where a relevant claim is marked `[UNVERIFIED]` or `[DRIFTED]`, say so rather than presenting it as established.
 - Where the KB does not support an answer, say so: admit uncertainty rather than invent, per the [citation contract](../kb-builder/reference/citation.md).
 - **"Do any of the sources address Y?" is not answerable from the KB.** It records what its sources say, not what they leave out, and it tracks no coverage. Answer from what the notes do contain, and say plainly that a topic missing from the notes is no evidence the sources miss it too.

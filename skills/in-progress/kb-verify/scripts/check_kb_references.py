@@ -278,15 +278,15 @@ def main(root):
                 hygiene.append(f"duplicate note name '{name}': " + ", ".join(
                     os.path.relpath(p, root) for p in notes[name]))
 
-    index = os.path.join(kdir, "index.md")
-    if not os.path.exists(index):
-        hygiene.append("knowledge/index.md is missing: no note is listed")
-    else:
-        with open(index, encoding="utf-8") as fh:
-            listed = {m.group(1).strip() for m in WIKI.finditer(fh.read())}
-        for name in sorted(notes):
-            if name != "index" and name not in listed:
-                hygiene.append(f"knowledge/{name}.md  not listed in knowledge/index.md")
+        index = os.path.join(kdir, "index.md")
+        if not os.path.exists(index):
+            hygiene.append("knowledge/index.md is missing: no note is listed")
+        else:
+            with open(index, encoding="utf-8") as fh:
+                listed = {m.group(1).strip() for m in WIKI.finditer(fh.read())}
+            for name in sorted(notes):
+                if name != "index" and name not in listed:
+                    hygiene.append(f"knowledge/{name}.md  not listed in knowledge/index.md")
 
     if not os.path.exists(sindex):
         defects.append("sources/index.md is missing: no key can resolve")
