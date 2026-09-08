@@ -1,0 +1,3 @@
+interface:
+  display_name: "KB Integrate"
+  short_description: "Fold a registered source into a KB's notes"

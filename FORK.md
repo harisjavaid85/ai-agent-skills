@@ -54,8 +54,10 @@ in `SKILL.md` frontmatter are quoted YAML scalars when they contain a colon.
 | `skills/engineering/ask-author/**` | hand-merge, the router must list fork skills | Renamed skills |
 | `skills/**/SKILL.md` (all others) | take theirs, re-apply fork names | Renamed skills |
 | `skills/engineering/domain-modeling/**`, `setup-repo-skills/domain.md` | hand-merge, keep the fork's `KNOWLEDGE.md` routing | KNOWLEDGE.md |
+| `skills/*/README.md` | hand-merge, keep the fork-only entries | Fork-only skills |
 | `.changeset/*.md` | take theirs, rename the package key | Repo furniture |
 | `scripts/link-skills.sh` | take ours | Repo furniture |
+| `.gitignore` | take ours | Repo furniture |
 | `README.md`, `CLAUDE.md`, `CONTEXT.md` | hand-merge | Repo furniture |
 | `.claude-plugin/*.json`, `package.json` | hand-merge, fork identity wins | Repo furniture |
 | `.agents/install-block.md` | take theirs | Misc |
@@ -122,6 +124,17 @@ model-invoked. Three need more than a name:
   or update, then drift audit); upstream's `domain-modeling` is the **inline** mode. Formats live
   canonically in `domain-modeling/`, and `bootstrap-context` links to them.
 
+The `in-progress/` bucket is upstream's apart from two fork-only additions. Neither ships in the
+plugin, so neither takes a docs page, a manifest entry, or a changeset. Both are listed only in
+`skills/in-progress/README.md`, which is what makes that file a diverged one.
+
+- **`to-done`** *(function)*. Drains a spec's agent-ready tickets to a reviewed draft PR, one ticket
+  per fresh sandboxed container. User-invoked.
+- **`kb-builder`, `kb-ingest`, `kb-integrate`, `kb-verify`, `kb-expert`** *(function)*. One family
+  over a file-based knowledge base: `kb-builder` orchestrates the other skills and is user-invoked. Their three
+  shared contracts live in `kb-builder/reference/`, and the Python under `kb-ingest/scripts/` and
+  `kb-verify/scripts/` is the only Python in the repo.
+
 ### Spec lifecycle
 
 Fork-only, and cross-cutting: it touches `to-spec`, `to-tickets`, `open-pr`, and `setup-repo-skills`
@@ -179,6 +192,11 @@ from glossary, ADRs, and policy. All *(function)*. It appears in:
   dropped Quickstart and Source links from every page and this fork followed. Install wording lives
   once in the top-level `README.md`. Rules and template in `.agents/writing-docs.md`. Links to the
   AI Coding Dictionary are upstream's convention and are kept.
+- **`.gitignore`** *(function)*. Upstream's is the single line `node_modules`; ours is a superset, so
+  take ours at a conflict. It adds local settings, the `.claude/` carve-outs, the fork's working
+  directories (`.plans/`, `.handoffs/`, `.overviews/`), and `__pycache__/` plus `*.pyc` for the
+  `kb-*` scripts, which are the only Python in either repo. Each line that goes missing starts
+  committing generated files silently.
 - **`.changeset/*.md`** *(identity)*. Every changeset keys on `ai-agent-skills`. Upstream's arrive
   naming `mattpocock-skills`, which makes `changeset status` exit 1 with "not in the workspace";
   rename the key on every incoming changeset.

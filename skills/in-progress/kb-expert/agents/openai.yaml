@@ -1,0 +1,3 @@
+interface:
+  display_name: "KB Expert"
+  short_description: "Answer from a KB with cited claims"

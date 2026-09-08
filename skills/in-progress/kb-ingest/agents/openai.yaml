@@ -1,0 +1,3 @@
+interface:
+  display_name: "KB Ingest"
+  short_description: "Normalize and register sources into a knowledge base"

@@ -1,0 +1,5 @@
+interface:
+  display_name: "KB Builder"
+  short_description: "Build or update a knowledge base from named sources"
+policy:
+  allow_implicit_invocation: false

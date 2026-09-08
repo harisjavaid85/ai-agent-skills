@@ -15,3 +15,8 @@ npx skills@latest add harisjavaid85/ai-agent-skills --skill=<name>
 - **[claude-handoff](./claude-handoff/SKILL.md)**: Hand the current conversation off to a fresh background agent that picks up the work immediately, seeded with a handoff summary via `claude --bg`. User-invoked.
 - **[setup-ts-deep-modules](./setup-ts-deep-modules/SKILL.md)**: Wire dependency-cruiser into a TypeScript repo so each package is a deep module: implementation hidden in subfolders, reachable only through its entry-point files, tests exercising it through those. User-invoked.
 - **[to-done](./to-done/SKILL.md)**: Drain a spec's agent-ready tickets to a reviewed draft PR, implementing one ticket per fresh sandboxed container until the queue empties. User-invoked.
+- **[kb-builder](./kb-builder/SKILL.md)**: Build or update a file-based knowledge base from named sources in one pass, producing cited topic notes, an audit of their references, and a repair of what the audit finds. User-invoked.
+- **[kb-ingest](./kb-ingest/SKILL.md)**: Ingest sources into a named file-based knowledge base: normalize each to Markdown and register it under a stable key.
+- **[kb-integrate](./kb-integrate/SKILL.md)**: Fold a registered source's insights into a named file-based knowledge base as cited claims in its topic notes, and re-ground its open markers.
+- **[kb-verify](./kb-verify/SKILL.md)**: Audit a named file-based knowledge base for reference integrity, marking drifted claims inline and recording the pass.
+- **[kb-expert](./kb-expert/SKILL.md)**: Answer a question from a file-based knowledge base with cited claims, or summarize one of its registered sources.
