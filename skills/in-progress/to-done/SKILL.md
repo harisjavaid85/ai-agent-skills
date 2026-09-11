@@ -114,7 +114,7 @@ To inspect without launching, `... <slug> plan` prints `workable`, `remaining`, 
 
 ## 3. Report the outcome
 
-The loop exits `0` when the queue drained, `1` when it stopped early. Either way it opens or refreshes a draft PR and runs the review.
+The loop exits `0` when the queue drained, `1` when it stopped early. Either way it opens or refreshes a draft PR; it runs the review only when the queue drained, so a run that stopped early leaves the PR stalled for a human instead.
 
 The PR's labels say which of the two it is, and the loop verifies both states rather than assuming them:
 
@@ -124,6 +124,8 @@ The PR's labels say which of the two it is, and the loop verifies both states ra
 | `spec:<slug>` + `ready-for-human` | Drained and reviewed. Yours to look at |
 
 It is assigned to the token owner either way. Repeat any "missing" line the loop prints, because a draft PR with no label looks exactly like one still being worked on.
+
+When a run leaves unfinished tickets, the PR's **Stuck work** section names each stuck ticket and its one remote branch `agent/<slug>-wip-<N>`, which holds that ticket's latest attempt. Every attempt's work stays in the local repo as `agent/<slug>-wip-<N>-<k>`. None of it is merged: take what is useful by hand.
 
 Report the exit status, the PR, and, when it stopped early, the reason the loop recorded in the PR body. Leave the PR in draft; promoting it to ready is the user's call.
 

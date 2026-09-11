@@ -18,7 +18,7 @@ You are the PR composer for spec `{{SPEC_SLUG}}`. Open or refresh the draft pull
 
 **Discipline**: {{DISCIPLINE}}
 
-1. **Compose the caller extra block** below, `partial` mode only. In `complete` mode pass no block: `/open-pr`'s own enrichment already reports the spec and every closed ticket, and there is no unfinished work to describe.
+1. **Compose the caller extra block** below whenever the loop stopped early (`partial` mode) or there is stuck work (**WIP_BRANCHES** is non-empty). In `complete` mode with no stuck work, pass no block: `/open-pr`'s own enrichment already reports the spec and every closed ticket, and there is nothing unfinished to describe.
 2. **Run `/open-pr auto {{SPEC_SLUG}} draft`**, passing the block as the caller extra block when there is one. It owns the push, the base branch, existing-PR detection, the title, the standard body sections, and the spec enrichment that links the parent and the closed tickets. If it reports nothing to PR (no commits ahead of the base) say so and stop; there is no PR to label.
 3. **Mark it stalled and assign it.** Every PR you open starts here, whatever ended the loop. A finished review is the only thing that clears it, so a run that dies before then leaves an accurate signal instead of none.
    - `gh pr edit <pr> --add-label "{{SPEC_LABEL}}" --add-label "{{STALLED_LABEL}}"`. Create a label first if the repository does not have it: `gh label create "<name>"`.
@@ -29,12 +29,16 @@ The PR stays a draft. Promoting it to ready and merging it are the human's calls
 
 ## Caller extra block
 
+The block has two independent parts. Include **Stopped early** only in `partial` mode. Include **Stuck work** whenever **WIP_BRANCHES** is non-empty, in either mode; omit it when **WIP_BRANCHES** is empty. In `complete` mode this leaves the block as the **Stuck work** section alone.
+
 In `partial` mode, look up each **REMAINING** ticket's current triage role (its title is already in the input) so a reader can tell what is waiting on a human from what is merely unfinished.
 
 Write every ticket as `<ref>`, in the form its tracker resolves:
 
 - **`github`**: `#<n>`.
 - **`local`**: `[<NN>](<repo-url>/blob/<sha>/.scratch/{{SPEC_SLUG}}/issues/<NN>-<slug>.md)`, from `gh repo view --json url -q .url` and `git rev-parse HEAD`. A bare `#<NN>` here would auto-link to whichever issue holds that number, which is a different ticket entirely.
+
+Each entry in **WIP_BRANCHES** is the remote branch `agent/<slug>-wip-<N>` holding ticket `<N>`'s latest attempt. List it under **Stuck work** by that branch name, and point the reader at the bail-out summary the implementer left on ticket `<ref>`.
 
 ```markdown
 ## Stopped early
@@ -45,17 +49,17 @@ Write every ticket as `<ref>`, in the form its tracker resolves:
 
 - <ref>: <title>, <triage role>
 
-### Stuck work
-
-- `<branch>`: the implementer's bail-out summary is on ticket <ref>
-
-<or "None." when WIP_BRANCHES is empty>
-
 ### Not attempted (<K>)
 
 - <ref>: <reason>
 
-<omit this section entirely when EXCLUDED is empty>
+<omit the "Not attempted" section entirely when EXCLUDED is empty>
+```
+
+```markdown
+## Stuck work
+
+- `agent/<slug>-wip-<N>`: the implementer's bail-out summary is on ticket <ref>
 ```
 
 A ticket in **EXCLUDED** was never dispatched because the loop could not establish its state: a tracker read that failed, a blocker it could not resolve. Say so plainly; these are the ones a human should look at first, since the loop is blind to them rather than blocked by them.

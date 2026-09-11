@@ -1,11 +1,8 @@
 import { git, message } from "./git.mts";
 
-// ---------------------------------------------------------------------------
-// Branch, ref, and worktree queries used by both the loop's normal branch
-// lifecycle and the bail-out save subsystem. The shared branch is passed in
-// rather than read from module scope, so these run against any repo a test
-// points them at.
-// ---------------------------------------------------------------------------
+// Branch, ref, and worktree queries shared by the loop's branch lifecycle and
+// the save subsystem. The shared branch is passed in, not read from module
+// scope, so these run against any repo a test points them at.
 
 export function refExists(ref: string): boolean {
   try {
@@ -36,7 +33,7 @@ export function worktreeFor(branch: string): string | undefined {
   return undefined;
 }
 
-/** Split out of dropTicketBranch because parkBailOut needs it without the ref. */
+/** Split out of dropTicketBranch because saveBailOut needs it without the ref. */
 export function removeWorktreeFor(branch: string): void {
   const worktree = worktreeFor(branch);
   if (worktree) {
