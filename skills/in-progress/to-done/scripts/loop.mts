@@ -1,11 +1,19 @@
 import { run, claudeCode, Output } from "@ai-hero/sandcastle";
 import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
-import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { git, message, sh } from "./git.mts";
+import { classify, IncompleteError } from "./failures.mts";
+import {
+  branchExists,
+  localWipBranches,
+  refExists,
+  removeWorktreeFor,
+  worktreeFor,
+} from "./branches.mts";
 
 // Drains a spec's agent-ready tickets to a reviewed draft PR.
 //
@@ -65,9 +73,6 @@ const promptPath = (name: string): string => path.join(SKILL_DIR, name);
 const TRIAGE_DOC = "docs/agents/triage-labels.md";
 const SECRETS_FILE = path.resolve(".to-done", "secrets");
 
-/** Terminal for this run: stop dispatching, file a partial PR, exit 1. */
-class IncompleteError extends Error {}
-
 type Ticket = { number: number; title: string; body: string };
 type Excluded = { number: number; reason: string };
 
@@ -89,26 +94,6 @@ type Frontier = {
 };
 
 const EMPTY_FRONTIER: Frontier = { workable: [], remaining: [], excluded: [] };
-
-const sh = (command: string): string =>
-  execSync(command, {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-  }).trim();
-
-const git = (args: string): string => sh(`git ${args}`);
-
-/**
- * Everything the error actually says. `execSync` sets `message` to
- * "Command failed: <cmd>" and puts the process's own stderr in `stderr`, so
- * reading the first line alone reports every git and gh failure as the command
- * that failed with no reason attached.
- */
-const message = (e: unknown): string => {
-  if (!(e instanceof Error)) return String(e).trim();
-  const stderr = (e as { stderr?: unknown }).stderr?.toString().trim();
-  return (stderr ? `${e.message.split("\n")[0]}\n${stderr}` : e.message).trim();
-};
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
@@ -219,26 +204,10 @@ const logging = (name: string) =>
   ({ type: "file", path: path.join(LOG_DIR, `${name}.log`) }) as const;
 
 // ---------------------------------------------------------------------------
-// Failure classes, failing closed at ticket scope: only a systemic fault ends
-// the run, everything else costs one ticket at most.
+// Retry and phase wrappers. classify() and the failure classes live in
+// failures.mts; only a systemic fault ends the run, everything else costs one
+// ticket at most.
 // ---------------------------------------------------------------------------
-
-type FailureClass = "transient" | "local" | "systemic";
-
-const TRANSIENT =
-  /(429|rate.?limit|overloaded|too many requests|50[234]|bad gateway|ETIMEDOUT|ECONNRESET|ENOTFOUND|EAI_AGAIN|socket hang up|timed? ?out)/i;
-const SYSTEMIC =
-  /(401|unauthorized|invalid.{0,10}(api.?key|token)|authentication fail|bad credentials|credit balance|insufficient.{0,10}quota)/i;
-
-function classify(e: unknown): FailureClass {
-  // The whole text, not message()'s first line: runPhase() appends the
-  // provider's own account of the failure below that line.
-  const text = e instanceof Error ? e.message : String(e);
-  // Transient wins a tie: a rate-limited 403 says "rate limit" too.
-  if (TRANSIENT.test(text)) return "transient";
-  if (SYSTEMIC.test(text)) return "systemic";
-  return "local";
-}
 
 /** Sandcastle fails fast on provider errors; without this one 429 ends the run. */
 async function withRetry<T>(label: string, fn: () => Promise<T> | T): Promise<T> {
@@ -667,22 +636,6 @@ function ticketIsClosed(ticket: number, ref: string): boolean {
 const ticketBranch = (ticket: number): string => `${BRANCH}-${ticket}`;
 const wipBranch = (ticket: number): string => `${BRANCH}-wip-${ticket}`;
 
-// Declarations, not `const` arrows: queueRef() reaches these from module scope
-// well above this point, where a `const` would still be in its temporal dead
-// zone.
-function refExists(ref: string): boolean {
-  try {
-    git(`show-ref --verify --quiet ${ref}`);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function branchExists(branch: string): boolean {
-  return refExists(`refs/heads/${branch}`);
-}
-
 /**
  * Seeds whenever the branch carries no queue, not only when this call created
  * it, so a branch cut by hand to pick a different base is seeded too.
@@ -690,22 +643,6 @@ function branchExists(branch: string): boolean {
 function ensureSharedBranch(): void {
   if (!branchExists(BRANCH)) git(`branch ${BRANCH}`);
   if (TRACKER === "local" && ticketFilesAt(BRANCH).length === 0) seedQueue();
-}
-
-/** The worktree holding a branch, if one survived a previous run. */
-function worktreeFor(branch: string): string | undefined {
-  let listing: string;
-  try {
-    listing = git("worktree list --porcelain");
-  } catch {
-    return undefined;
-  }
-  for (const block of listing.split(/\n\s*\n/)) {
-    if (new RegExp(`^branch refs/heads/${branch}$`, "m").test(block)) {
-      return block.match(/^worktree (.+)$/m)?.[1];
-    }
-  }
-  return undefined;
 }
 
 /**
@@ -725,23 +662,6 @@ function dropTicketBranch(branch: string): void {
   // unreachable; this covers a human or an older run having pushed `-<N>`.
   const remote = `refs/remotes/origin/${branch}`;
   if (refExists(remote)) git(`update-ref -d ${remote}`);
-}
-
-/** Split out of dropTicketBranch because parkBailOut needs it without the ref. */
-function removeWorktreeFor(branch: string): void {
-  const worktree = worktreeFor(branch);
-  if (worktree) {
-    try {
-      git(`worktree remove --force ${worktree}`);
-    } catch (e) {
-      console.error(`   could not remove the worktree at ${worktree}: ${message(e)}`);
-    }
-  }
-  try {
-    git("worktree prune");
-  } catch {
-    /* pruning is opportunistic */
-  }
 }
 
 /**
@@ -803,22 +723,10 @@ function parkBailOut(branch: string, ticket: number): void {
   }
 }
 
-function localWipBranches(): string[] {
-  try {
-    return git(`branch --list "${BRANCH}-wip-*" --format='%(refname:short)'`)
-      .split("\n")
-      .map((b) => b.trim())
-      .filter(Boolean);
-  } catch (e) {
-    console.error(`   could not list bail-out branches: ${message(e)}`);
-    return [];
-  }
-}
-
 /** Bail-out branches reach the remote once, at finalize. */
 function publishWipBranches(): string[] {
   const published: string[] = [];
-  for (const branch of localWipBranches()) {
+  for (const branch of localWipBranches(BRANCH)) {
     try {
       // Force-with-lease: a retry recuts the branch, replacing its history.
       git(`push --force-with-lease origin ${branch}`);
@@ -1731,7 +1639,7 @@ async function main(): Promise<void> {
         mode,
         mode === "partial" ? "run by hand" : "",
         frontier,
-        localWipBranches(),
+        localWipBranches(BRANCH),
         assignee,
       );
       const { failure } = prPostcondition(assignee);
