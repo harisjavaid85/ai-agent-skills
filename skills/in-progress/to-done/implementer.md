@@ -9,6 +9,8 @@ You are the implementer for ticket `{{TICKET}}` of spec `{{SPEC_SLUG}}`. Take it
 
 The branch is yours alone. The loop merges it into the shared branch when you close the ticket, and keeps it aside when you do not, so commit your work and leave the branch alone otherwise. Do not push; the loop owns the branch and every remote write to it.
 
+This run ends when your turn ends, and nothing resumes you when a command finishes. Never end your turn while a command you started is still running, in the foreground or the background. Write a long-running command's output to a file and read the file after the command exits. If a command moves to the background, keep checking it in this turn until it exits.
+
 ## Procedure
 
 **Discipline**: {{DISCIPLINE}}

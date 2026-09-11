@@ -61,7 +61,7 @@ After remediation, re-read every comment in the files you touched, from the file
 
 Print the final report in the terminal. Leave the working tree uncommitted and leave issue and PR state unchanged. Use `COMPLETE` only when the source is implemented, accepted review findings are fixed, and required verification passes; otherwise use `BLOCKED`.
 
-**Complete when:** the report below is emitted, with `/commit` named as the next step only for `COMPLETE`.
+**Complete when:** the report below is emitted.
 
 ## Final report
 
@@ -96,6 +96,5 @@ Fixed point: <starting SHA>
 
 - <material assumptions, warnings, or blockers; omit when empty>
 
-Working tree intentionally left uncommitted.
-Next step: `/commit` | <resolve blocker>
+Working tree is uncommitted.
 ```
