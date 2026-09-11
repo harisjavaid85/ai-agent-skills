@@ -115,9 +115,17 @@ export function saveBailOut(ctx: SaveCtx, branch: string, ticket: number, save: 
   try {
     // Empty old-value: update-ref refuses to overwrite, so a slot is never lost.
     git(`update-ref refs/heads/${slot} ${git(`rev-parse ${branch}`)} ""`);
+  } catch (e) {
+    // Thrown, not logged: a later dispatch's recut would drop the ticket branch.
+    throw new IncompleteError(
+      `could not save ticket ${ticket} as ${slot}: ${message(e)}; ` +
+        `its work is left on ${branch} for recovery`,
+    );
+  }
+  try {
     git(`update-ref -d refs/heads/${branch}`);
   } catch (e) {
-    console.error(`   could not save ticket ${ticket} as ${slot}: ${message(e)}`);
+    console.error(`   could not drop ${branch} after saving it as ${slot}: ${message(e)}`);
   }
 }
 
@@ -154,20 +162,16 @@ export function stuckTickets(
 /**
  * Force-pushes each stuck ticket's highest slot to the unnumbered
  * `<shared>-wip-<ticket>` (safe: the numbered slots stay local). Returns the
- * remote names for the PR.
+ * remote names for the PR. A failed push throws, so the PR never lists fewer
+ * stuck tickets than there are; rerunning is safe.
  */
 export function publishStuckBranches(
   shared: string,
   isClosed: (ticket: number) => boolean,
 ): string[] {
-  const published: string[] = [];
-  for (const { slot, remote } of stuckTickets(shared, isClosed)) {
-    try {
-      git(`push --force origin refs/heads/${slot}:refs/heads/${remote}`);
-      published.push(remote);
-    } catch (e) {
-      console.error(`   could not publish ${remote}: ${message(e)}`);
-    }
+  const stuck = stuckTickets(shared, isClosed);
+  for (const { slot, remote } of stuck) {
+    git(`push --force origin refs/heads/${slot}:refs/heads/${remote}`);
   }
-  return published;
+  return stuck.map((s) => s.remote);
 }

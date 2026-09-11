@@ -911,7 +911,9 @@ async function finalize(
   frontier: Frontier,
   reason = "",
 ): Promise<void> {
-  const wipBranches = publishStuckBranches(BRANCH, (ticket) => ticketIsClosed(ticket, BRANCH));
+  const wipBranches = await withRetry("publish stuck work", () =>
+    publishStuckBranches(BRANCH, (ticket) => ticketIsClosed(ticket, BRANCH)),
+  );
   const assignee = tokenOwner();
 
   await withRetry("push", () => git(`push origin ${BRANCH}`));
@@ -942,15 +944,20 @@ async function finalize(
 // The loop
 // ---------------------------------------------------------------------------
 
+type SkipReason = "handed back" | "out of tries";
+
 /** Names the skipped and the blocked tickets, so the partial PR points a human at both. */
-function noneWorkableReason(frontier: Frontier, skipped: Set<number>): string {
-  const skippedList = [...skipped].sort((a, b) => a - b);
-  const blocked = frontier.remaining
-    .filter((t) => !frontier.workable.some((w) => w.number === t.number))
-    .map((t) => t.number);
+function noneWorkableReason(frontier: Frontier, skipped: Map<number, SkipReason>): string {
+  const remaining = frontier.remaining.map((t) => t.number);
+  const handedBack = remaining.filter((t) => skipped.get(t) === "handed back");
+  const outOfTries = remaining.filter((t) => skipped.get(t) === "out of tries");
+  const blocked = remaining.filter((t) => !frontier.workable.some((w) => w.number === t));
   const parts: string[] = [];
-  if (skippedList.length > 0) {
-    parts.push(`${skippedList.length} skipped after ${LIMITS.ticketTries} attempts (${skippedList.join(", ")})`);
+  if (handedBack.length > 0) {
+    parts.push(`${handedBack.length} handed back (${handedBack.join(", ")})`);
+  }
+  if (outOfTries.length > 0) {
+    parts.push(`${outOfTries.length} skipped after ${LIMITS.ticketTries} attempts (${outOfTries.join(", ")})`);
   }
   if (blocked.length > 0) {
     parts.push(`${blocked.length} blocked or unreadable (${blocked.join(", ")})`);
@@ -964,9 +971,10 @@ function noneWorkableReason(frontier: Frontier, skipped: Set<number>): string {
 async function auto(): Promise<void> {
   const startedAt = Date.now();
   const tries = new Map<number, number>();
-  // Failed ticketTries times: left in the queue but not dispatched again, so one
-  // stuck ticket does not end the run for the rest.
-  const skipped = new Set<number>();
+  // Handed back, or failed ticketTries times: not dispatched again, so one stuck
+  // ticket does not end the run for the rest. A local handback's status edit
+  // never reaches the shared branch, so this is what keeps it from a retry.
+  const skipped = new Map<number, SkipReason>();
   let consecutiveFailures = 0;
   let frontier = computeFrontier();
   let finalized = false;
@@ -1023,10 +1031,12 @@ async function auto(): Promise<void> {
       dropTicketBranch(branch);
 
       let failed: string | undefined;
+      let handedBack = false;
       try {
         const result = await withRetry(`implementer-${ticket.number}`, () =>
           runImplementer(ticket.number, branch),
         );
+        handedBack = result.output.result === "bailed";
         failed = implementerPostcondition(ticket.number, result, branch);
       } catch (e) {
         // Park the in-flight ticket before a systemic fault stops the run, so the
@@ -1056,8 +1066,11 @@ async function auto(): Promise<void> {
       saveBailOut(saveCtx, branch, ticket.number, bailSave(ticket.number, failed, attempt, LIMITS.ticketTries));
       consecutiveFailures++;
       console.error(`   ticket ${ticket.number} did not close: ${failed}`);
-      if (attempt >= LIMITS.ticketTries) {
-        skipped.add(ticket.number);
+      if (handedBack) {
+        skipped.set(ticket.number, "handed back");
+        console.error(`   ticket ${ticket.number} was handed back; leaving it for a human`);
+      } else if (attempt >= LIMITS.ticketTries) {
+        skipped.set(ticket.number, "out of tries");
         console.error(
           `   ticket ${ticket.number} failed ${LIMITS.ticketTries} times; ` +
             `leaving it in the queue for a human`,

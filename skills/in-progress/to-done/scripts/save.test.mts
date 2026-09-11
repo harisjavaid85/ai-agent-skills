@@ -228,6 +228,31 @@ test(
   },
 );
 
+// A failed slot write keeps the work on the ticket branch rather than losing it.
+test("a failed slot write leaves the work on the ticket branch", () => {
+  const repo = makeRepo();
+  const branch = `${SHARED}-7`;
+  const tip = commitInWorktree(ticketWorktree(repo, branch), "feature.txt", "done\n");
+  // A nested ref makes `-wip-7-1` a directory, so writing that slot fails.
+  G(repo, `update-ref refs/heads/${SHARED}-wip-7-1/x ${tip}`);
+  process.chdir(repo);
+
+  assert.throws(() => saveBailOut(ctx("github"), branch, 7, save()), /for recovery/);
+  assert.equal(G(repo, `rev-parse ${branch}`), tip, "the ticket branch still holds the work");
+  assert.equal(branchExists(`${SHARED}-wip-7-1`), false, "no slot was created");
+});
+
+// A failed push throws instead of dropping the ticket from the PR's list.
+test("publishStuckBranches throws when a push fails", () => {
+  const repo = makeRepo();
+  G(repo, `remote add origin ${path.join(repo, "no-such-origin")}`);
+  const slot = seedSlot(repo, `${SHARED}-wip-7-1`, "a.txt");
+  process.chdir(repo);
+
+  assert.throws(() => publishStuckBranches(SHARED, () => false));
+  assert.equal(G(repo, `rev-parse ${SHARED}-wip-7-1`), slot, "the local slot is untouched");
+});
+
 // bailOutMessage content, against literals read from the plan, not the code.
 test("bailOutMessage: github form", () => {
   assert.equal(
