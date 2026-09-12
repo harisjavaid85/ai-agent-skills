@@ -1,5 +1,118 @@
 # mattpocock-skills
 
+## 1.3.0
+
+### Minor Changes
+
+- [`b8485e5`](https://github.com/harisjavaid85/ai-agent-skills/commit/b8485e513ce5d310b937a5f504ea9ca5938e37c0) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Let the model invoke `/implement`.
+
+  It was reachable only by a human, which left it unreachable from any orchestrating skill: a user-invoked skill can never reach another user-invoked one, so a loop dispatching `/implement` per ticket had no way to call its one implementing step. Opening it unblocks that dispatch. The cost, taken knowingly: any model session may now reach for it on its own once a work item is settled and named.
+
+- [`cb47e49`](https://github.com/harisjavaid85/ai-agent-skills/commit/cb47e49e231d2db7ee0812126dd8970663676795) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Route learned facts by arrival site, with the code as the source of truth.
+
+  `domain.md`'s routing is now two steps. The first sorts by kind: a term to the glossary, a decision to an ADR, a rule to operational policy, and a fact about how the system behaves to the second step. The second finds the fact's **arrival site**, the single declaration every reader who needs it passes through, and settles placement and worth together. On that declaration the fact is a comment, held to the bar in `coding-standards.md`. With no such declaration it goes to `KNOWLEDGE.md`, held to a higher bar: only a fact learned by running the system, or by following a behaviour through code that never states it, is worth the copy.
+
+  This replaces the module-boundary test. "Module" is scale-agnostic in this repo's own vocabulary, covering a function, class, package, or tier-spanning slice, so the boundary it named moved with the reader, and `domain.md` ships into repos where nothing defines it at all. The arrival site is self-defining and names the failure it prevents: a fact commented where no reader passes is accurate and unread. It also fixes a case the old test got wrong, where a behaviour spanning several parts is gated by one facade and belongs on that facade rather than in a file.
+
+  A written fact is a **cache** of the code, so when the two disagree the code is what is true, and the change that invalidated the fact updates it in the same pass, because nothing else revisits them. This retires "Facts are pruned when they stop being true", an outcome with no actor or moment, along with the "keep the bar high" maxim and the ban on creating a `KNOWLEDGE.md` for a single-module context, which existed only to patch the old test.
+
+  `code-review` now identifies standards sources by following the agent guide's pointers rather than guessing at `CODING_STANDARDS.md`, so it reaches whatever file the repo documents standards in, including the comment budget in `docs/agents/coding-standards.md`.
+
+- [`b8485e5`](https://github.com/harisjavaid85/ai-agent-skills/commit/b8485e513ce5d310b937a5f504ea9ca5938e37c0) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Enrich `/open-pr <slug>` from a local ticket queue, not just GitHub.
+
+  Slug enrichment now probes the **slug** rather than the repo's tracker configuration: a `kind:spec` issue carrying `spec:<slug>`, or a `.scratch/<slug>/spec.md` committed on the branch, with GitHub winning when both answer. The tracker is a property of the spec, so a repo wired to GitHub can still carry a local queue for one feature. Local specs and tickets are linked by commit permalink, since those files exist only on the branch until the PR merges.
+
+  The body's Format rule now keys on whether a reader can resolve a reference rather than on where the artifact lives. The PR body is also written to the OS temp directory instead of an unlocated "scratchpad file", which had been landing inside the repo and leaving the working tree dirty.
+
+- [`d715f83`](https://github.com/harisjavaid85/ai-agent-skills/commit/d715f83d301b15181a3ae149275b02601af35523) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Port upstream's improvements into the five skills held at the fork side during the sync.
+
+  The merge kept `tdd`, `code-review`, `to-spec`, `to-tickets` and `ask-author` on the fork's behaviour, which also froze out everything upstream had improved around it. Each now carries both.
+
+  - `ask-author` gains upstream's **Phase boundaries** section, replacing the two-bullet `Crossing sessions`. It carries all five options in order (continue, `/clear`, `/handoff`, subagent, `/compact`) and discloses the reasoning to `PHASE-BOUNDARIES.md`, a file the sync brought in that nothing linked to. The router also picks up `/grilling`, `/resolving-merge-conflicts`, `/to-questionnaire`, `/wizard`, `/wait-what` and `/writing-for-agents`, and keeps the fork-only entries alongside them.
+  - `tdd` gains the pointer to `codebase-design` for when the shape of the interface, not the test, is the open question.
+  - `code-review` and `to-spec` quote their `description` front matter. An unquoted colon-space makes the block invalid YAML, and `skills.sh` skips such a skill during discovery rather than reporting it.
+  - Prose across all five moves to the repo's no-em-dash rule.
+
+  `setup-repo-skills` was missing from the top-level `README.md` skill list, and is now listed.
+
+- [`4c96f7c`](https://github.com/harisjavaid85/ai-agent-skills/commit/4c96f7cc1c7ebc71408e1658c168b20219fa7a16) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - **Breaking:** remove `writing-great-skills`. Use `writing-for-agents` instead.
+
+  Upstream renamed and restructured the skill in v1.1, and this fork kept the old copy alive for one reason: `write-a-skill` linked `writing-great-skills/GLOSSARY.md` directly, and `writing-for-agents` ships no glossary. It does not need one. Every term `write-a-skill` borrows (**steps**, **reference**, **progressive disclosure**, **completion criterion**, **leading word**, the **no-op** test, **negation**) is defined inline in `writing-for-agents/SKILL.md`, so `write-a-skill` now points there, and at `SKILL-MECHANICS.md` for what changes because the document is a skill.
+
+  `CONTEXT.md`, `ask-author` and the `write-a-skill` docs page follow the pointer to its new home.
+
+- [`3201486`](https://github.com/harisjavaid85/ai-agent-skills/commit/3201486fb50df6391b65690a8ff73de7f43f76cb) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Add `/summarize`: one article, paper, or document in, a structured **overview** out.
+
+  The overview is six fixed sections, ending in jump-back references (headings, page numbers, figures, phrases) so any line can be traced to the passage that produced it. Caveats print even when a source hedges nothing, since that is itself information about the source, and anything from outside the source is quarantined under Additional Context. The source is read inline and stays in context, so follow-up questions are answered from it rather than from the summary.
+
+  Scope is already-authored prose (URL, PDF, local document, pasted text), one source per overview. Video, audio, and codebases are out, and synthesis across several sources stays with `/research`. Printed in the conversation by default; saved to `.overviews/<topic-slug>.md` on request, with `source`, `title`, `authors`, and `accessed` frontmatter.
+
+  `setup-repo-skills` now documents and gitignores `.overviews/` alongside `.plans/` and `.handoffs/`, and `CONTEXT.md` defines **Overview** as the artifact, resolving it against "summary" and `loop-me`'s **brief**.
+
+### Patch Changes
+
+- [`545789a`](https://github.com/harisjavaid85/ai-agent-skills/commit/545789a2770377fcac18c6d3ac6a752997698083) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Close two gaps where binding guidance existed but the agent never reached it.
+
+  `domain.md` routed the glossary and ADR formats through `/grill-with-context`, which is user-invoked (`disable-model-invocation: true`, `allow_implicit_invocation: false`). An agent writing an ADR mid-implementation cannot invoke it, so the format was unreachable and the model's own heavy Status/Context/Decision/Consequences prior filled the gap. Both bullets now name the `/domain-modeling` skill, which is model-invoked and hands over `CONTEXT-FORMAT.md` and `ADR-FORMAT.md` on relative links that resolve wherever the skill is installed.
+
+  The agent guide's routing table said only `an ADR: docs/adr/`, which reads as complete and stops the agent going further. It now reads `an ADR in docs/adr/, format per docs/agents/domain.md`.
+
+  `implement` step 2 listed the guidance to read as issue access, implementation, review, and verification, leaving out the comment discipline that `coding-standards.md` carries, and its completion criterion asked only that the guidance be _identified_, which a glance at a filename satisfies. It now names code comments explicitly and requires that the guidance be read.
+
+- [`4c96f7c`](https://github.com/harisjavaid85/ai-agent-skills/commit/4c96f7cc1c7ebc71408e1658c168b20219fa7a16) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Delete the `skills/personal/` bucket (`edit-article`, `obsidian-vault`), following upstream.
+
+  The bucket was never promoted, so no manifest or docs page changes; the non-promoted bucket lists in `CLAUDE.md` and `.agents/writing-docs.md` drop it. ADR-0002 still names it, as the record of what the repo looked like when that decision was taken.
+
+- [#848](https://github.com/mattpocock/skills/pull/848) [`f02e2ed`](https://github.com/harisjavaid85/ai-agent-skills/commit/f02e2ed3624d031272f8547742d23bf6bca8b072) Thanks [@mattpocock](https://github.com/mattpocock)! - domain-modeling: trigger on discussing codebase terminology and on writing or editing a CONTEXT.md or an ADR directly, replacing the narrower "pin down domain terminology or a ubiquitous language" / "record an architectural decision" phrasing. Also drops the "another skill needs to maintain the domain model" caveat, since that's the invoking skill's job to state explicitly, not this description's.
+
+- [#911](https://github.com/mattpocock/skills/pull/911) [`4f28947`](https://github.com/harisjavaid85/ai-agent-skills/commit/4f289474bad013fe2be8f8769d733f59d9103d6b) Thanks [@mattpocock](https://github.com/mattpocock)! - Quote the `description` front matter in `to-spec`, `code-review`, `setup-matt-pocock-skills`, `writing-fragments`, `writing-shape`, and `wait-what`. An unquoted colon-space left over from the em-dash sweep in [#905](https://github.com/harisjavaid85/ai-agent-skills/issues/905) made each block invalid YAML, so `skills.sh` skipped all six during discovery and they couldn't be listed or installed via `npx skills`.
+
+- [`4c96f7c`](https://github.com/harisjavaid85/ai-agent-skills/commit/4c96f7cc1c7ebc71408e1658c168b20219fa7a16) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Drop two fork divergences upstream had already settled: the out-of-scope path and the word PRD.
+
+  `triage` emits its rejected-request knowledge base at `.out-of-scope/` again, upstream's location, across `SKILL.md`, `OUT-OF-SCOPE.md`, `AGENT-BRIEF.md`, `setup-repo-skills/domain.md` and the `triage` docs page. This repo's own records already lived there, so nothing on disk moves; only the path the skill writes into a consumer repo changes.
+
+  `to-spec` no longer glosses a spec as "you may know this document as a PRD", matching upstream. `CONTEXT.md` has told this repo to avoid the term since the spec lifecycle landed, so the remaining fork-authored uses follow: `cross-check-with-codex`'s review instructions, two example descriptions in `write-a-skill`'s `FORMAT.md`, and `to-done`'s full reviewer reference, which also picks up the `SPEC_LABEL` and `kind:spec` names the loop actually passes.
+
+- [`5d42c8a`](https://github.com/harisjavaid85/ai-agent-skills/commit/5d42c8af6e47f8155a1296fc9498e4796e61e1f0) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Stop the GitHub tracker profile prescribing `gh api --method POST` for sub-issues and blocking edges.
+
+  `/setup-repo-skills` wrote a profile telling agents to wire dependency and sub-issue links through `gh api --method POST`, which `/setup-claude-code`'s own guardrail hook denies. Two skills in this repo therefore contradicted each other, and any agent following the profile on a machine set up here stalled at the blocking step, every time. `gh issue create --parent`/`--blocked-by` and `gh issue edit --parent`/`--add-blocked-by` do the same work, take the `#number` or the issue URL rather than the internal database id, and clear the hook. Repos whose `docs/agents/issue-tracker.md` was written from the old profile need `/setup-repo-skills` re-run to pick this up.
+
+- [#879](https://github.com/mattpocock/skills/pull/879) [`d419977`](https://github.com/harisjavaid85/ai-agent-skills/commit/d419977fe07d9e1607d3523f3579310bbb076b93) Thanks [@mattpocock](https://github.com/mattpocock)! - grilling: remove em-dashes from `SKILL.md`, replacing them with colons and semicolons so the instructions read as plain text.
+
+- [`cd5bdc9`](https://github.com/harisjavaid85/ai-agent-skills/commit/cd5bdc929cea8d684a2e46846545836a6b6f3236) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Remove em-dashes from fork-authored prose, adopting the rule the upstream sync brought in.
+
+  `CLAUDE.md` has carried "no em-dashes anywhere in this repo's prose" since the sync, while 567 of them remained across 49 files. Each was rewritten to the punctuation the sentence wanted (a colon, comma, semicolon, parentheses, or a conjunction) rather than swapped for a single replacement character. `CHANGELOG.md` is left alone as a historical record of released versions.
+
+  Also fixes a regression from the same sync: `to-tickets` now heads a local ticket file `# <NN>: <Title>` where it used to separate the number and title with a dash, and `to-done`'s loop stripped only the dash form, so every ticket title parsed out of a new queue kept its number. The loop now accepts both, since queues written under the old convention are still on disk.
+
+- [#905](https://github.com/mattpocock/skills/pull/905) [`e6e9577`](https://github.com/harisjavaid85/ai-agent-skills/commit/e6e957797d8cceb5b351c0dc840369523f9fb8fb) Thanks [@mattpocock](https://github.com/mattpocock)! - Remove every em-dash from the repo's prose (docs, `SKILL.md` files, ADRs, `README.md`, scripts, JSON/YAML metadata), hand-rewriting each sentence with a comma, colon, period, parentheses, or conjunction rather than mechanically substituting the character. `CLAUDE.md`/`AGENTS.md` now says not to reintroduce them.
+
+- [#878](https://github.com/mattpocock/skills/pull/878) [`e3e547b`](https://github.com/harisjavaid85/ai-agent-skills/commit/e3e547b57d549110a0aa6ff40fd7b871c01c76c9) Thanks [@mattpocock](https://github.com/mattpocock)! - Standardize cross-skill invocation on an explicit "call the Skill tool" instruction instead of bare `/skill`-style prose, across `code-review`, `diagnosing-bugs`, `grill-with-docs`, `grill-me`, `improve-codebase-architecture`, `tdd`, `to-spec`, `to-tickets`, `triage`, and `wayfinder`.
+
+  - A skill that names another skill in prose ("run the `/grilling` skill") does not reliably cause it to load. This is the documented rough edge behind `grill-with-docs`'s most-reported problem. Naming the tool directly (`Call the Skill tool with "grilling"`) is intended to raise the hit rate. Dropping the leading `/` also makes the instruction harness-neutral rather than less: it no longer assumes Claude Code's trigger syntax.
+  - A step needing more than one skill now says so as multiple calls ("Call the Skill tool twice, for `grilling` and `domain-modeling`"), not one call carrying two names.
+  - Documents the convention in `.agents/invocation.md` for future skills to follow.
+
+- [`c6b9d70`](https://github.com/harisjavaid85/ai-agent-skills/commit/c6b9d707b0741c78706e3a824f8f46577b82e06f) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Tighten comment discipline at both ends: what a comment may cite, and a pass that trims them.
+
+  The emitted `coding-standards.md` said where an over-long comment should go but never what a comment may point at, so the routing rules read one way only: `domain.md`'s `KNOWLEDGE.md` template links out to code, and nothing said whether code links back. Left open, the model's default is to sprinkle `see KNOWLEDGE.md` pointers. A new `## Comments` bullet closes it in the direction the existing rules already imply. A glossary term needs no pointer because the identifier that names it is the pointer. A `KNOWLEDGE.md` entry exists only because no declaration owns its fact, so a pointer to it has no honest home and is a second copy that goes stale on its own; where a specific site would go wrong, the neighbouring bullet already says to leave behind what is true at that line. An ADR is the carve-out, holding rationale among rejected alternatives that provably is not in the code, so citing it is correct where inlining the tradeoff would not be.
+
+  `implement` ran `/code-review`, remediated, and verified, and nothing in that sequence looked at the comments the implementation and the remediation had just written. By then the agent's picture of them is a summary rather than the text, so verbose comments survived to handoff. Step 4 now re-reads every comment in the touched files from the files, cuts what step 2's binding guidance would not have earned, then verifies. Its completion criterion names the sweep, so skipping it no longer counts as done.
+
+- [`a6577d2`](https://github.com/harisjavaid85/ai-agent-skills/commit/a6577d21289a59f77a4c4ac7f829255617dafc4f) Thanks [@harisjavaid85](https://github.com/harisjavaid85)! - Stop `/to-tickets` writing a `Blocked by` body section where the tracker links blockers natively.
+
+  On a tracker with native dependencies the link is the canonical, UI-rendered record, and a body copy beside it is a second place for the two to disagree, and a reader trusts whichever they see first. The section is now written only where the platform has no native relationship, which is also the only case in which anything downstream has to parse it. Local file trackers are unchanged.
+
+- [#880](https://github.com/mattpocock/skills/pull/880) [`1dab982`](https://github.com/harisjavaid85/ai-agent-skills/commit/1dab98299c3b81f560026c01b7ebf55ed5d91373) Thanks [@mattpocock](https://github.com/mattpocock)! - Stop skills from trying to reach user-invoked skills through the Skill tool: fix cross-skill references that violated the "no other skill can call it" invariant in `.agents/invocation.md`, in `to-spec`, `wayfinder`, `to-tickets`, `triage`, `code-review`, and `diagnosing-bugs`.
+
+  - `to-spec`, `wayfinder`, `to-tickets`, `triage`, and `code-review` each carried a precondition ("...run `/setup-matt-pocock-skills` if not") that PR [#878](https://github.com/harisjavaid85/ai-agent-skills/issues/878) rewrote into a literal `Call the Skill tool with "setup-matt-pocock-skills"` instruction. `setup-matt-pocock-skills` is user-invoked, so none of these skills (user-invoked or model-invoked) can call it. Reworded all five as instructions for the agent to tell the human to run it instead.
+  - `diagnosing-bugs`'s Phase 6 post-mortem hand off to `improve-codebase-architecture` (also user-invoked) the same way, from an autonomous, often-unattended bug-fixing flow with no human in the loop to catch the failed call. Removed the hand-off outright rather than softening it, since it rarely fired in practice. Phase 6 is now "Cleanup" only; the mechanical checklist is untouched.
+  - Added a carve-out paragraph to `.agents/invocation.md`'s "Dependencies between them" section: the `Call the Skill tool with "name"` convention only applies when the named skill is model-invoked. This is the section PR [#878](https://github.com/harisjavaid85/ai-agent-skills/issues/878) introduced without reconciling it against the user-invoked/model-invoked invariant stated eight lines above it; the gap is most of why this bug reached six call sites instead of one.
+
+  Fixes [#453](https://github.com/harisjavaid85/ai-agent-skills/issues/453).
+
+- [#904](https://github.com/mattpocock/skills/pull/904) [`594f0f8`](https://github.com/harisjavaid85/ai-agent-skills/commit/594f0f83188921a60d45d63d6cdac509de20df2c) Thanks [@mattpocock](https://github.com/mattpocock)! - wait-what: follow `CONTEXT-MAP.md` to the right `CONTEXT.md` when a repo indexes multiple contexts that way instead of keeping a single root `CONTEXT.md`.
+
 ## 1.2.3
 
 ### Patch Changes
