@@ -45,7 +45,7 @@ Step 2's output becomes findings only once classed, and the class decides which 
 | --- | --- | --- |
 | `DEFECTS` | nothing, the check settled it | defect |
 | `FOR JUDGMENT`, bare `[key]` | is the claim thesis-level? | thesis-level: fine. Anything specific (number, result, quote, figure): **defect**, and the fix is a locator |
-| `FOR JUDGMENT`, unstored image link | does the entry's `citing` record that these figures were never fetched? | recorded: fine. Unrecorded: **defect**, and the fix is to fetch the figures or record the omission |
+| `FOR JUDGMENT`, unstored image link | does the entry's `citing` record that these figures were never fetched? | recorded: fine. Unrecorded: **defect**, and the fix is to fetch the figures with `curl` or record the omission |
 | `OPEN MARKERS`, each site | subject claim or source claim, per the [citation contract](../kb-builder/reference/citation.md)'s marker invariant | subject: **open marker**; source: a false marker, which is a **defect** |
 | `HYGIENE` | nothing, report it as it stands | hygiene |
 

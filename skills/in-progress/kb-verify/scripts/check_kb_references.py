@@ -49,7 +49,7 @@ HTML_IMAGE = re.compile(r"<img[^>]+src=[\"']([^\"']+)[\"']", re.I)
 DATE_STAMP = re.compile(r"\d{4}-\d{2}-\d{2}:")
 STATUSES = ("candidate", "integrated", "declined")
 REMOTE = ("http://", "https://", "//", "data:", "mailto:")
-DROPPED_PASSES = 4
+DROPPED_WORDS = 100
 
 
 def scan(path):
@@ -193,17 +193,20 @@ def check_source_images(root, key):
 
 
 def read_registry(sindex, hygiene):
-    """Parse sources/index.md into (statuses, status details, all fields).
+    """Parse sources/index.md into (statuses, status details, all fields, stamps).
 
     A field's value continues onto an indented line and ends at the first blank
     one, so loose prose never glues onto the last field. A status of None means
     the entry declares none: status is required, and a missing one is a
     hand-edit gone wrong rather than a case to default. detail holds whatever
-    follows the status word, a decline's reason and date.
+    follows the status word, a decline's reason and date. stamps counts the
+    lines of an entry's dropped that open with a date, read before joining: the
+    contract keeps a date off the start of a wrapped line, so each one opens a
+    value, and a date quoted mid-reason opens none.
     """
-    keys, detail, fields, seen_at, current, field = {}, {}, {}, {}, None, None
+    keys, detail, fields, stamps, seen_at, current, field = {}, {}, {}, {}, {}, None, None
     if not os.path.exists(sindex):
-        return keys, detail, fields
+        return keys, detail, fields, stamps
     with open(sindex, encoding="utf-8") as fh:
         for n, line in enumerate(fh, 1):
             if m := KEY_HEADING.match(line):
@@ -221,6 +224,8 @@ def read_registry(sindex, hygiene):
             elif m := FIELD_BULLET.match(line):
                 field = m.group(1).strip().lower()
                 fields[current][field] = m.group(2).strip()
+                if field == "dropped" and DATE_STAMP.match(m.group(2).strip()):
+                    stamps[current] = stamps.get(current, 0) + 1
                 if field == "status":
                     word = m.group(2).split(None, 1)
                     keys[current] = word[0].lower() if word else None
@@ -229,7 +234,9 @@ def read_registry(sindex, hygiene):
                 field = None
             elif field and line[:1].isspace():
                 fields[current][field] += " " + line.strip()
-    return keys, detail, fields
+                if field == "dropped" and DATE_STAMP.match(line.strip()):
+                    stamps[current] = stamps.get(current, 0) + 1
+    return keys, detail, fields, stamps
 
 
 def main(root):
@@ -245,7 +252,7 @@ def main(root):
             if name.endswith(".md"):
                 notes[name[:-3]].append(os.path.join(dirpath, name))
 
-    keys, detail, fields = read_registry(sindex, hygiene)
+    keys, detail, fields, stamps = read_registry(sindex, hygiene)
 
     cited, counts, cite_count, marker_sites = set(), defaultdict(int), defaultdict(int), []
     for name in sorted(notes):
@@ -312,14 +319,19 @@ def main(root):
             hygiene.append(f"sources/index.md  [{key}] has no citing: every entry needs one")
         if status == "integrated" and not entry.get("dropped"):
             hygiene.append(f"sources/index.md  integrated [{key}] has no dropped: say what "
-                           "the integration left behind, or that it left nothing")
-        # The 80-word cap governs a line, nothing governs the field. Count date
-        # stamps, not lines: read_registry joined the value with spaces already.
-        passes = len(DATE_STAMP.findall(entry.get("dropped") or ""))
-        if passes >= DROPPED_PASSES:
-            hygiene.append(f"sources/index.md  [{key}]'s dropped records {passes} integrate "
-                           "passes: append-only and uncapped as a field, so it grows without "
-                           "bound and is now long enough to read whole before writing")
+                           "integration has not taken from this source, or that it took it all")
+        # dropped is one dated value, the latest set, rewritten by every pass.
+        # More than one is a per-pass log, the pre-rewrite contract.
+        if stamps.get(key, 0) > 1:
+            hygiene.append(f"sources/index.md  [{key}]'s dropped carries {stamps[key]} dated "
+                           "values: it holds one, the latest set")
+        # The word count is a target, not a cap: listed so the long ones get a
+        # periodic cleanup, never a reason to omit an item.
+        words = len((entry.get("dropped") or "").split())
+        if words > DROPPED_WORDS:
+            hygiene.append(f"sources/index.md  [{key}]'s dropped runs {words} words, over "
+                           f"the {DROPPED_WORDS}-word target: coarsen the list, omitting "
+                           "no item")
         if status == "declined":
             # A decline deletes the source's files. Every citation defect
             # reported for a declined key rests on that, unchecked until now.

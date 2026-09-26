@@ -18,7 +18,7 @@ Two request shapes enter the KB by different doors:
 - A **question** ("how does X work", "why does Y"). Enter via `knowledge/index.md`, the topic map. → §3.
 - A **source-scoped summary** ("summarize the QSparse paper", "what does source X say"). Enter via `sources/index.md` to resolve the source to its key. → §4.
 
-A request for *what the KB took from* a source ("what did we take from X") is a question scoped to that `[key]`: answer it via §3 from the notes that cite the key, which are the record of what was taken. The entry's `dropped` names what a pass **deliberately** left behind and cannot show what a pass simply missed, so give it as that record and never as a full account of what the source held. Done when you have chosen the door.
+A request for *what the KB took from* a source ("what did we take from X") is a question scoped to that `[key]`: answer it via §3 from the notes that cite the key, which are the record of what the KB still holds from it. The entry's `dropped` names what integration **deliberately** did not take from the source. It cannot show what a pass simply missed, nor what a later pass superseded, so give it as that record and never as a full account of what the source held. Done when you have chosen the door.
 
 ## 3. Answer a question
 

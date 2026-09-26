@@ -36,15 +36,17 @@ Fold each named source's insights into the topic notes under `knowledge/` per th
 Then, on each key integrated:
 
 - Set `status: integrated`.
-- **Append** one dated entry to `dropped`, in the citation contract's shape: what this pass deliberately left behind and why, or `nothing`.
+- **Rewrite** `dropped` in place, per the [citation contract](../kb-builder/reference/citation.md)'s registry schema.
 
-Done when the touched notes carry their new citations, every `damaged:` pointer ended in a citation, a marker, or a `dropped` line, and each key's `status` and `dropped` record what this pass took.
+Done when the touched notes carry their new citations, every `damaged:` pointer ended in a citation, a marker, or a `dropped` item, and each key reads `status: integrated` with a `dropped` that states what integration has not taken from the source.
 
 ## 4. Re-ground open markers
 
 Run the re-ground sweep from the [distillation contract](../kb-builder/reference/distillation.md). It is KB-wide, and it includes the markers §3 just wrote, in this same invocation.
 
-This is also where a false marker gets rewritten, which `kb-verify` can mark as a defect but never fix. Done when every open marker has been judged and, where it belongs, re-attempted.
+This is also where a false marker gets rewritten, which `kb-verify` can mark as a defect but never fix.
+
+Where re-grounding a marker cites a part of a source whose `dropped` lists it, rewrite that key's `dropped` without it. Done when every open marker has been judged and, where it belongs, re-attempted, and every `dropped` listing a part it cited has been rewritten.
 
 ## 5. Update the index
 
@@ -59,7 +61,7 @@ Otherwise confirm before deleting: report the key, the files under `sources/<key
 On confirmation, two writes happen, and both must happen or neither:
 
 1. Delete `sources/<key>/`: the normalized `.md`, the kept originals, and the figures.
-2. Rewrite the registry entry to `declined`, in the shape the [citation contract](../kb-builder/reference/citation.md) gives that status, using the reason the user gave rather than your own judgment of the source, and **remove its `files` field**: a declined entry carries none, and the check flags one that does.
+2. Rewrite the registry entry to `declined`, in the shape the [citation contract](../kb-builder/reference/citation.md) gives that status, using the reason the user gave rather than your own judgment of the source, and **remove its `files` and `dropped` fields**: a declined entry carries neither, and the check flags a `files` it still holds.
 
 `knowledge/` is untouched either way: the refusal above has already established that nothing in it cites the key.
 
@@ -67,6 +69,6 @@ Done when the entry records the rejection and no file of that source remains, or
 
 ## 7. Report
 
-List the notes touched, the keys integrated and what each `dropped`, the keys declined with their reasons, the markers cleared this run, the false ones rewritten, and those still open. Say plainly that these writes are unaudited, and that verifying them is `kb-verify`'s job.
+List the notes touched, the keys integrated and what each `dropped`, any earlier drop this run took, the keys declined with their reasons, the markers cleared this run, the false ones rewritten, and those still open. Say plainly that these writes are unaudited, and that verifying them is `kb-verify`'s job.
 
 Done when the user can see what entered the knowledge, what was rejected, and what is still ungrounded.

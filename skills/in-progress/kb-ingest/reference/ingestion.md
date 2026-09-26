@@ -10,6 +10,8 @@ Each source owns a directory `sources/<key>/` holding its normalized `.md`, its 
 
 **Convert the form the document was authored in**, when it is published more than one way and the user has not named one. Papers, preprints, and reports: the PDF, which carries the authoritative tables and figures and is the only form giving page numbers for a citation to point at. Web-native articles (blog posts, distill-style pages, hosted demos): the HTML, whose PDF is an export of it.
 
+**Fetch with `curl`, never WebFetch.** The wrappers below take a URL directly; any other fetch runs `curl -fsSL -o <file> "<url>"`. WebFetch returns a summary, not the source. A source `curl` cannot fetch in full is un-fetchable under the fidelity guard.
+
 One wrapper per converted route, same argument order, same output layout: `<key>.md` directly under `sources/<key>/`, with `artifacts/` beside it when the conversion produced figures. Both place docling's output themselves, so what lands on disk is decided by the wrapper and not by docling. Both run docling under a local-disk `TMPDIR`, because on NFS it exits 1 *after* writing a correct `.md`. Both refuse a conversion that produced almost no text, which docling itself misses.
 
 **PDF, office, images.** `<source>` is a local path or a URL:
@@ -44,7 +46,7 @@ Trailing arguments to either wrapper pass through to docling.
 
 Add the source's key to `sources/index.md` (creating it if absent) per the schema in [citation.md](../../kb-builder/reference/citation.md), with **`status: candidate`**. `kb-integrate` moves it on from there.
 
-On a **first** ingest, fill the entry's `citing` from this conversion and the sanity check below. It is the only channel by which a conversion caveat reaches a later pass. A reopen re-converts, so it rewrites `citing`; any other re-ingest leaves it alone.
+On a **first** ingest or a reopen, the two paths that convert, fill the entry's `citing` from this conversion and the sanity check below. It is the only channel by which a conversion caveat reaches a later pass.
 
 **Write `citing` from the conversion alone:** every line states something learned by comparing the `.md` to the source it came from. A fact that would still be true had the conversion been perfect is subject matter, and belongs in the note that owns it.
 
