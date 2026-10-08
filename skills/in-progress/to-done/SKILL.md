@@ -120,7 +120,7 @@ The PR's labels say which of the two it is, and the loop verifies both states ra
 
 | Labels | Means |
 | --- | --- |
-| `spec:<slug>` + `needs-info` | The loop stopped early, or the review did not finish. Unstick it; do not review yet |
+| `spec:<slug>` + `needs-info` | The loop stopped early, or the review did not finish. Unstick it; do not review yet. A `Cross-check: unavailable` verdict names what to fix before re-running the `review` phase |
 | `spec:<slug>` + `ready-for-human` | Drained and reviewed. Yours to look at |
 
 It is assigned to the token owner either way. Repeat any "missing" line the loop prints, because a draft PR with no label looks exactly like one still being worked on.

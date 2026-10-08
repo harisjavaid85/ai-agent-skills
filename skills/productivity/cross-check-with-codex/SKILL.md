@@ -75,7 +75,7 @@ Run the bundled script from the repository root:
   --output .claude/codex-reviews/<review-slug>/review-1.md
 ```
 
-The script uses the configured Codex defaults unless the user explicitly requests `--model` or `--reasoning`. It combines the complete initial instructions or compact revision instructions with the round packet, preserves the exact result as `prompt-N.md`, runs Codex in a read-only sandbox, captures the resumable thread ID, validates mechanical output invariants, and prints a small summary.
+The script uses the configured Codex defaults unless the user explicitly requests `--model` or `--reasoning`. It combines the complete initial instructions or compact revision instructions with the round packet, preserves the exact result as `prompt-N.md`, runs Codex read-only, captures the resumable thread ID, validates mechanical output invariants, and prints a small summary.
 
 ### 4. Validate And Classify Findings
 
@@ -139,6 +139,8 @@ Stop when:
 - Codex cannot complete a valid review after one operational retry.
 
 When the budget is exhausted with unresolved findings, treat the disagreement as requiring a user decision. Present Codex's evidence, Claude's rationale, Claude's recommendation, and the consequences of accepting or rejecting the finding. Claude must not unilaterally declare approval.
+
+A reviewer sandbox that cannot start, or a review that changed the repository, is not an operational retry: report it as the blocker. The script has already undone any such change and lists it.
 
 If Codex fails twice because of authentication, command failure, timeout, or malformed output, preserve the failure record and report the blocker. Claude may still present the artifact, clearly marked as not cross-checked.
 

@@ -132,11 +132,14 @@ mkdirSync(LOG_DIR, { recursive: true });
  * Built per phase launch, not once per run: the codex credential is a live file
  * with an expiry, and a drain runs for hours, so a provider made at startup
  * would hand the last phase a stale read.
+ *
+ * CROSS_CHECK_REVIEWER_SANDBOX=external: the container, not Codex's own
+ * sandbox, keeps the cross-check read-only; see ADR-0006.
  */
 const phaseSandbox = (codex = resolveCodexCredential()) =>
   docker({
     imageName: IMAGE_NAME,
-    env: { CI: "true", ...sandboxEnv, ...codex.env },
+    env: { CI: "true", CROSS_CHECK_REVIEWER_SANDBOX: "external", ...sandboxEnv, ...codex.env },
   });
 
 /**
@@ -882,7 +885,8 @@ function reviewPostcondition(number: number): string | undefined {
   const missing: string[] = [];
   if (pr && pr.headRefOid !== git(`rev-parse ${BRANCH}`)) missing.push("the branch tip");
 
-  const verdict = comments.find((c) => c.body.includes(REVIEW_MARKER));
+  // The reviewer posts a new verdict on every run, so the newest one decides.
+  const verdict = comments.findLast((c) => c.body.includes(REVIEW_MARKER));
   if (!verdict) missing.push("a verdict comment");
   else {
     // The verdict comment is the only place the loop can observe the cross-check:
