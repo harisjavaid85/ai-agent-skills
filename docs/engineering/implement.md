@@ -28,9 +28,20 @@ After implementation, `implement` runs [code-review](https://github.com/harisjav
 
 The terminal report ends in `COMPLETE` or `BLOCKED` and leaves issue state, PR state, and Git history untouched. Use [commit](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/commit.md) when you are ready to turn the working tree into history; use [cross-check-with-codex](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/productivity/cross-check-with-codex.md) separately when the implementation warrants an independent second-model review.
 
+## Common questions
+
+**Does it read the ticket's comments?**
+
+Yes. A comment is how you change or clarify a ticket without rewriting it: a human comment amends the body, and the later of two conflicting ones wins. Comments an agent posted only tell the next run what was already tried, because a bail-out's suggested fix is an unreviewed guess and should not become a requirement. An agent brief, such as the one [triage](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/triage.md) posts, is the exception: it is the specification.
+
+**Does it read the parent spec?**
+
+Yes, when the ticket belongs to one. The spec is context; the ticket is the work. Where they disagree the ticket wins, as the narrower and later decision, and the report names the conflict. A ticket with no findable parent proceeds on its own.
+
 ## It's working if
 
 - Exactly one explicit work item defines the scope.
+- A clarifying comment on the ticket shows up in what gets built.
 - Behaviour is built in red-green slices through public seams.
 - One Standards + Spec review is remediated before final verification.
 - The terminal reports `COMPLETE` or a concrete `BLOCKED` reason.

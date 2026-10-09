@@ -18,6 +18,14 @@ Use the source named by the invocation:
 
 Do not search for or guess a work item. If the source is a lifecycle slug, an unresolved collection, or absent from both the invocation and conversation, emit the final `BLOCKED` report and stop.
 
+An issue or ticket is its body plus its comments, read in order:
+
+- A human comment amends the body. Where a later human comment conflicts with the body or an earlier comment, the later one wins.
+- An **agent report**, a comment an agent posted to report on the work, is context, not a requirement. Use it to learn what was tried, ruled out, or already landed, so dead ends are not repeated; it never adds to or changes what to build. It carries an AI disclaimer; where it has none, tell it by its content.
+- An **agent brief**, a comment written as the specification for an agent to work from, is the specification itself: the body and earlier discussion are context to it, and a later human comment still amends it.
+
+When the ticket belongs to a spec, also read the parent spec and its comments through the repository's documented issue-tracker workflow. The spec is context; the ticket is the work item. Where the ticket or its comments conflict with the spec, the ticket wins, and the conflict goes under Assumptions or blockers in the final report. A ticket with no parent, or whose parent cannot be found, proceeds on the ticket alone.
+
 **Complete when:** one authoritative work item and any explicit overrides are identified.
 
 ## 2. Establish the baseline
@@ -48,7 +56,7 @@ Apply the verification instructions identified in step 2. When none exist, use a
 Run the `/code-review` skill exactly once. Pass it:
 
 - The fixed point from step 2.
-- The exact work source and explicit overrides from step 1.
+- The exact work source and explicit overrides from step 1, with the requirements as its comments amended them.
 - Any paths excluded in step 2.
 
 Judge every finding. A finding that demonstrates a breach of the work source or binding repository guidance is valid and must be fixed. Fix other findings that are valid for the work item and record a concise rationale for each declined finding. Do not rerun `/code-review`.

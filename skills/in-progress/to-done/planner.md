@@ -15,7 +15,6 @@ Apply these signals in order:
 2. **Cross-layer**: touches several layers at once. Front-load it to surface integration bugs early.
 3. **Unknown**: new external integration, new dependency, security- or performance-sensitive path. Retire uncertainty early.
 4. **Other**: any other signal the body surfaces. Use judgment.
-5. **`priority:p*` marker**: human override; trumps everything above.
 
 Within one bucket, keep creation order.
 

@@ -123,6 +123,8 @@ The PR's labels say which of the two it is, and the loop verifies both states ra
 | `spec:<slug>` + `needs-info` | The loop stopped early, or the review did not finish. Unstick it; do not review yet. A `Cross-check: unavailable` verdict names what to fix before re-running the `review` phase |
 | `spec:<slug>` + `ready-for-human` | Drained and reviewed. Yours to look at |
 
+To ask for changes on a reviewed PR, leave a top-level comment (inline diff comments are not read), then re-run the `review` phase. A ticket comment counts only if it is there when that ticket is dispatched: on `github`, on the ticket; on `local`, committed to the shared branch `agent/<slug>`.
+
 It is assigned to the token owner either way. Repeat any "missing" line the loop prints, because a draft PR with no label looks exactly like one still being worked on.
 
 When a run leaves unfinished tickets, the PR's **Stuck work** section names each stuck ticket and its one remote branch `agent/<slug>-wip-<N>`, which holds that ticket's latest attempt. Every attempt's work stays in the local repo as `agent/<slug>-wip-<N>-<k>`. None of it is merged: take what is useful by hand.

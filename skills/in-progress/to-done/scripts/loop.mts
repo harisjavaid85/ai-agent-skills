@@ -12,8 +12,9 @@ import { publishStuckBranches, saveBailOut, type Save, type SaveCtx } from "./sa
 
 // Drains a spec's agent-ready tickets to a reviewed draft PR:
 //   plan → implement one ticket → re-plan → … → compose PR → review
-// Each phase is a fresh container. Agents own tracker mutations; this script
-// owns the verdicts, limits, and branch sequencing.
+// Each phase is a fresh container. Agents own the tracker mutations that carry
+// content; this script owns the verdicts, limits, and branch sequencing, plus
+// any tracker state no agent is there to set.
 
 // Per-repo tuning, before anything reads it. Credentials go through resolveCredentials().
 loadConfig();
@@ -796,6 +797,7 @@ async function runPrReviewer(pr: number): Promise<void> {
       promptFile: promptPath("pr-reviewer.md"),
       promptArgs: {
         SPEC_SLUG: slug,
+        TRACKER,
         BRANCH,
         PR: String(pr),
         REVIEW_MARKER,
@@ -1539,6 +1541,16 @@ async function main(): Promise<void> {
     case "review": {
       const pr = findPr();
       if (!pr) fail(`No open pull request for ${BRANCH}.`);
+      // A handed-over PR is stalled again first, so a review that dies or comes
+      // back unavailable does not leave it claiming ready.
+      if (hasLabel(pr!, LABELS.readyForHuman)) {
+        await withRetry("re-stall PR", () =>
+          sh(
+            `gh pr edit ${pr!.number} --add-label "${LABELS.needsInfo}"` +
+              ` --remove-label "${LABELS.readyForHuman}"`,
+          ),
+        );
+      }
       await runPrReviewer(pr!.number);
       const missing = reviewPostcondition(pr!.number);
       if (missing) fail(missing);
