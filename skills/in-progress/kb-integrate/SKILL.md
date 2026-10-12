@@ -1,25 +1,26 @@
 ---
 name: kb-integrate
-description: "Fold a registered source's insights into a named file-based knowledge base as cited claims in its topic notes, and re-ground its open markers. Use when the user asks to integrate or fold a reviewed source into a specific KB, decline a candidate they have rejected, or re-ground that KB's open markers."
+description: "Fold a registered source's insights into a named file-based knowledge base as cited claims in its topic notes, and re-ground its open markers. Use when the user asks to integrate or fold a reviewed source into a specific KB, decline a candidate they have rejected, re-ground that KB's open markers, or split a note that has outgrown its index entry."
 ---
 
 # KB Integrate
 
-Make a registered source's insights part of the knowledge: fold into `knowledge/`, re-ground, index. Writes to the KB; never invents. Operates on keys `kb-ingest` has already registered.
+Make a registered source's insights part of the knowledge: fold into `knowledge/`, re-ground, index. Writes to the KB; never invents. Operates on keys `kb-ingest` has already registered, and on notes for a split.
 
 ## 1. Resolve the KB
 
 Resolve which KB to operate on per [registry.md](../kb-builder/reference/registry.md). Done when you have its absolute root path.
 
-## 2. Route by verdict
+## 2. Route by invocation
 
-An invocation takes one of three shapes:
+An invocation takes one of four shapes:
 
 - **`<key>`**, optionally scoped to part of the source. Accept. → §3.
 - **`decline <key>: <reason>`.** Reject. → §6.
+- **`split <note>`.** Split an oversized note. → §7.
 - **No key.** A re-ground sweep. It integrates no `candidate`: integrating one always requires naming it, so a later broad command cannot push a source still under review into `knowledge/`. → §4.
 
-Resolve each named key in `sources/index.md` first. A key that is not registered, or whose files are missing, stops the run: say so rather than integrating from nothing. Done when every named key resolves and the path is chosen.
+Resolve each named key in `sources/index.md`, or the named note under `knowledge/`, first. A key that is not registered or whose files are missing, or a note that does not exist, stops the run: say so rather than working from nothing. Done when every named key or note resolves and the path is chosen.
 
 ## 3. Integrate insights
 
@@ -50,7 +51,9 @@ Where re-grounding a marker cites a part of a source whose `dropped` lists it, r
 
 ## 5. Update the index
 
-Update `knowledge/index.md` per the [distillation contract](../kb-builder/reference/distillation.md): every note under `knowledge/` is listed in it, including any this pass created. Done when the topic map lists them all.
+Update `knowledge/index.md` per the [distillation contract](../kb-builder/reference/distillation.md)'s *The index*: an index entry for each note this pass created, and each index entry and cross-cutting line whose note this pass changed in scope. Record each note whose index entry runs over the cap as an oversized note for §8.
+
+Done when every note under `knowledge/` has exactly one index entry, each touched note's index entry names all of its content sections, and every cross-cutting line follows the contract.
 
 ## 6. Decline a source
 
@@ -67,8 +70,25 @@ On confirmation, two writes happen, and both must happen or neither:
 
 Done when the entry records the rejection and no file of that source remains, or the refusal is reported.
 
-## 7. Report
+## 7. Split a note
 
-List the notes touched, the keys integrated and what each `dropped`, any earlier drop this run took, the keys declined with their reasons, the markers cleared this run, the false ones rewritten, and those still open. Say plainly that these writes are unaudited, and that verifying them is `kb-verify`'s job.
+Read the note and its index entry. Propose the split and ask:
 
-Done when the user can see what entered the knowledge, what was rejected, and what is still ungrounded.
+- the new notes, and which `##` sections go to each,
+- each new note's index entry and group,
+- the cross-cutting lines that change,
+- the notes whose `[[note]]` links will be repointed.
+
+On confirmation:
+
+1. Write the new notes, moving each section whole. Citations move with their claims unchanged.
+2. Repoint every `[[old-note]]` link whose concept moved, and remove the old note unless the split keeps its name.
+3. Update the index per §5: the new notes' index entries replace the old one.
+
+Done when every moved section lives in exactly one new note, no `[[link]]` points at a concept that moved away, and the index lists the new notes.
+
+## 8. Report
+
+List the notes touched, the keys integrated and what each `dropped`, any earlier drop this run took, the keys declined with their reasons, the markers cleared this run, the false ones rewritten, and those still open. List each oversized note, to trim or split with `kb-integrate split <note>`, and for a split, the notes created and the links repointed. Say plainly that these writes are unaudited, and that verifying them is `kb-verify`'s job.
+
+Done when the user can see what entered the knowledge, what was rejected, what was restructured, and what is still ungrounded.

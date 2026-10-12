@@ -22,7 +22,8 @@ A request for *what the KB took from* a source ("what did we take from X") is a 
 
 ## 3. Answer a question
 
-- Read `knowledge/index.md`, then open only the notes relevant to the question. If it is absent or empty, tell the user the KB has no knowledge yet.
+- Read `knowledge/index.md` (shape per the [distillation contract](../kb-builder/reference/distillation.md)'s *The index*). If it is absent or empty, tell the user the KB has no knowledge yet.
+- Pick the notes whose index entries' scopes match the question. For a question spanning several notes, find its cross-cutting concept and open each note named for the aspects asked about. Open those notes, and answer from them: the index holds scopes, never facts.
 - Give the takeaway first, concrete and quantitative, each claim carrying its citation with a locator wherever the claim is specific.
 - Where a relevant claim is marked `[UNVERIFIED]` or `[DRIFTED]`, say so rather than presenting it as established.
 - Where the KB does not support an answer, say so: admit uncertainty rather than invent, per the [citation contract](../kb-builder/reference/citation.md).

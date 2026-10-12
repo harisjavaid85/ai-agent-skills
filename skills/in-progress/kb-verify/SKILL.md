@@ -19,7 +19,7 @@ Run [check_kb_references.py](./scripts/check_kb_references.py) against the KB ro
 python3 <kb-verify>/scripts/check_kb_references.py "<kb-root>"
 ```
 
-It resolves what is mechanical: `[key]` and each entry's required fields against `sources/index.md` per the [citation contract](../kb-builder/reference/citation.md), each entry's `files` against `sources/<key>/` on disk, each source body's image links against that same directory, `[[note]]` links and index listing against `knowledge/` per the [distillation contract](../kb-builder/reference/distillation.md). It also reports an entry declared twice, where the later one silently wins, and a note name declared twice, where a `[[link]]` to it resolves to neither file in particular.
+It resolves what is mechanical: citations and the registry against `sources/` per the [citation contract](../kb-builder/reference/citation.md), and `[[note]]` links and the index against `knowledge/` per the [distillation contract](../kb-builder/reference/distillation.md).
 
 Two things it can spot but not settle go to `FOR JUDGMENT`: a bare `[key]`, and an image link resolving to nothing with no such file stored anywhere under the key. Step 4 resolves both.
 
@@ -47,7 +47,7 @@ Step 2's output becomes findings only once classed, and the class decides which 
 | `FOR JUDGMENT`, bare `[key]` | is the claim thesis-level? | thesis-level: fine. Anything specific (number, result, quote, figure): **defect**, and the fix is a locator |
 | `FOR JUDGMENT`, unstored image link | does the entry's `citing` record that these figures were never fetched? | recorded: fine. Unrecorded: **defect**, and the fix is to fetch the figures with `curl` or record the omission |
 | `OPEN MARKERS`, each site | subject claim or source claim, per the [citation contract](../kb-builder/reference/citation.md)'s marker invariant | subject: **open marker**; source: a false marker, which is a **defect** |
-| `HYGIENE` | nothing, report it as it stands | hygiene |
+| `HYGIENE` | nothing, report it as it stands | hygiene. An index entry over the word cap marks an oversized note: the user trims the entry or runs `kb-integrate split <note>` |
 
 **Open markers are not defects.** They are what makes a KB **not current**, which is the golden rule working. But **the count you report is the check's tally minus the false markers**, which are defects instead. The check counts and locates markers without judging them, so its tally is a raw count and never the verdict.
 

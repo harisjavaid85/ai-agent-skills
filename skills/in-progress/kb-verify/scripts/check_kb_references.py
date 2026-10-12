@@ -4,9 +4,12 @@
 Resolves `[key]` and each entry's required fields against sources/index.md,
 each entry's `files` against sources/<key>/ on disk, each source body's image
 links against sources/<key>/, and `[[note]]` links and index listing against
-knowledge/. Also reports an entry or a note name declared twice. A KB with no
-knowledge/ yet is a KB holding only candidates: the note-side checks are
-skipped, the registry ones still run.
+knowledge/. Also reports an entry or a note name declared twice, and checks the
+index's shape per the distillation contract: one `- [[note]]: <scope>` entry per
+note, its scope within the word cap, and each cross-cutting line spanning three
+notes with every aspect naming one. A KB with no knowledge/ yet is a KB
+holding only candidates: the note-side checks are skipped, the registry ones
+still run.
 
 Two findings it can spot but not settle go to FOR JUDGMENT: a bare `[key]`,
 legal on a thesis-level claim and a defect on anything more specific, and an
@@ -50,6 +53,13 @@ DATE_STAMP = re.compile(r"\d{4}-\d{2}-\d{2}:")
 STATUSES = ("candidate", "integrated", "declined")
 REMOTE = ("http://", "https://", "//", "data:", "mailto:")
 DROPPED_WORDS = 100
+BULLET = re.compile(r"^[-*]\s+")
+ENTRY = re.compile(r"^\[\[([^\]]+)\]\]\s*(.*)$")
+CROSS_HEADING = "cross-cutting concepts"
+CROSS_MIN = 3
+ENTRY_WORDS = 40
+# Any separator, so an entry written in another form is still held to the cap.
+SEPARATOR = re.compile(r"^\W+")
 
 
 def scan(path):
@@ -87,6 +97,82 @@ def scan(path):
                     continue
                 found.append((n, "cite" if m.group(2) else "bare", m.group(1)))
     return found
+
+
+def index_items(path):
+    """Return (lineno, text, cross) for each top-level bullet of the index.
+
+    An indented line continues the bullet above it, so a wrapped entry is read
+    whole. `cross` is true under `## Cross-cutting concepts`. Fenced and inline
+    code are skipped, as in scan.
+    """
+    items, fenced, cross, current = [], False, False, None
+    with open(path, encoding="utf-8") as fh:
+        for n, raw in enumerate(fh, 1):
+            if raw.lstrip().startswith("```"):
+                fenced, current = not fenced, None
+                continue
+            if fenced:
+                continue
+            line = INLINE.sub(" ", raw.rstrip("\n"))
+            heading = re.match(r"^#{1,6}\s+(.*)$", line)
+            if heading:
+                cross = heading.group(1).strip().lower() == CROSS_HEADING
+                current = None
+            elif BULLET.match(line):
+                current = [n, BULLET.sub("", line, count=1), cross]
+                items.append(current)
+            elif line.strip() and line[0].isspace() and current:
+                current[1] += " " + line.strip()
+            else:
+                current = None
+    return [tuple(i) for i in items]
+
+
+def check_index(path, hygiene):
+    """Check knowledge/index.md's shape; return the notes its index entries list.
+
+    Only an index entry lists a note: a mention in a cross-cutting line does not.
+    """
+    listed = {}
+    for n, text, cross in index_items(path):
+        where = f"knowledge/index.md:{n}"
+        if cross:
+            concept, sep, rest = text.partition(":")
+            if not sep:
+                hygiene.append(f"{where}  cross-cutting line lacks the `: ` after its "
+                               "concept: write `- <Concept>: <aspect> → [[note]]; …`")
+                continue
+            where, names = f"{where}  {concept.strip()}:", []
+            for aspect in rest.split(";"):
+                targets = [m.group(1).strip() for m in WIKI.finditer(aspect)]
+                if not targets and aspect.strip():
+                    hygiene.append(f"{where} aspect '{aspect.strip()}' names no [[note]]")
+                names += targets
+            for name in sorted({x for x in names if names.count(x) > 1}):
+                hygiene.append(f"{where} [[{name}]] appears more than once")
+            if len(set(names)) < CROSS_MIN:
+                hygiene.append(f"{where} spans {plural(len(set(names)), 'note')}, under "
+                               f"{CROSS_MIN}: drop the line")
+            continue
+        m = ENTRY.match(text)
+        if not m:
+            continue
+        name, rest = m.group(1).strip(), m.group(2)
+        if name in listed:
+            hygiene.append(f"{where}  duplicate index entry for [[{name}]], first at "
+                           f"knowledge/index.md:{listed[name]}: every note has one")
+            continue
+        listed[name] = n
+        if not rest.startswith(":"):
+            hygiene.append(f"{where}  [[{name}]]'s entry lacks the `: ` separator: "
+                           f"write `- [[{name}]]: <scope>`")
+        words = len(SEPARATOR.sub("", rest).split())
+        if words > ENTRY_WORDS:
+            hygiene.append(f"{where}  [[{name}]]'s entry runs {words} words, over the "
+                           f"{ENTRY_WORDS}-word cap: trim the entry, or run "
+                           f"kb-integrate split {name}")
+    return set(listed)
 
 
 def plural(n, word):
@@ -215,7 +301,7 @@ def read_registry(sindex, hygiene):
                 # re-ingest that appends instead of updating produces exactly
                 # that: a report describing a registry the file does not hold.
                 if current in seen_at:
-                    hygiene.append(f"sources/index.md:{n}  duplicate entry [{current}], "
+                    hygiene.append(f"sources/index.md:{n}  duplicate registry entry [{current}], "
                                    f"first at line {seen_at[current]}: the later one wins")
                 seen_at[current] = n
                 keys[current], fields[current] = None, {}
@@ -289,8 +375,7 @@ def main(root):
         if not os.path.exists(index):
             hygiene.append("knowledge/index.md is missing: no note is listed")
         else:
-            with open(index, encoding="utf-8") as fh:
-                listed = {m.group(1).strip() for m in WIKI.finditer(fh.read())}
+            listed = check_index(index, hygiene)
             for name in sorted(notes):
                 if name != "index" and name not in listed:
                     hygiene.append(f"knowledge/{name}.md  not listed in knowledge/index.md")

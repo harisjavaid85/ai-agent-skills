@@ -62,7 +62,7 @@ One exception is worth a second attempt before reporting the skip: where the sou
 
 Some defects survive conversion instead of failing it, so a clean exit is not a clean `.md`. After every conversion, check the produced `.md` against the source and record what you find in the entry's `citing`, per the [citation contract](../../kb-builder/reference/citation.md), which governs which field each finding belongs in. Detection only: never edit the `.md`. The wrapper's counts seed that entry. Investigate every mismatch they show, **and every line printed beneath them**: agreement across the counts is not a clean reading on its own, and a `caption gap:` line names a loss they agree straight through.
 
-Where to look, and what each place catches, all of it observed in this KB's corpus:
+Where to look, and what each place catches, all of it observed in converted sources:
 
 - **Every table, and the 40 lines after it.** A table spanning a page break arrives shredded: row labels become headings, cell values a flat list, the last column loose paragraphs, so the remnant is no longer a table at all. A row-label column also collapses on its own, values staying in row order against merged or empty labels.
 - **Every figure, its caption, and the sentences either side.** Captions detach from their figure or splice mid-sentence; figure content that exists only inside the image reaches the `.md` as nothing at all.

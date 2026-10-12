@@ -1,13 +1,13 @@
 # Distillation contract
 
-What a note may **say**: folding a source's insights into `knowledge/`, re-grounding open markers, and the topic map. Shared by `kb-integrate` (writing notes) and `kb-verify` (auditing them).
+What a note may **say**: folding a source's insights into `knowledge/`, re-grounding open markers, and the topic map's shape. Shared by `kb-integrate` (writing notes) and `kb-verify` (auditing them).
 
 How a claim connects to its source, which covers citations, grounding markers, the registry schema, and the never-fabricate rule, is a separate question, governed by [citation.md](./citation.md).
 
 1. **Integrate, don't summarize.** Fold each source's durable, load-bearing insights into existing notes: add a `[key: locator]`, deepen an explanation, or reconcile/supersede a prior claim. Never write a per-paper summary.
 2. **Terse but self-sufficient.** Each insight stands alone: a reader at the KB's audience level understands it without opening the citation. Terse: no filler, no re-teaching what the audience already knows, but not cryptic pointers.
 3. **Insight-first & audience-calibrated.** Lead with the takeaway. Calibrate depth to the KB's audience/expertise knob (declared in the KB's `AGENTS.md`): cite-don't-reteach what the reader knows, explain fully what they're learning.
-4. **Prune, don't append duplicates.** Correct or supersede stale entries in place. Across notes, the topic note that owns the subject states the fact once; every other note names it with `[[note]]` and adds only what is true at that site. The same fact written in two notes is a defect, not redundancy, because the two copies drift.
+4. **Prune, don't append duplicates.** Correct or supersede stale claims in place. Across notes, the topic note that owns the subject states the fact once; every other note names it with `[[note]]` and adds only what is true at that site. The same fact written in two notes is a defect, not redundancy, because the two copies drift.
 5. **Scope every claim to what its source supports.** The KB records what its sources say, never what they omit: write the bound into the claim rather than the omission that implies it. Worked through under *Scoping a claim* below.
 
 ## Scoping a claim
@@ -37,9 +37,42 @@ Two things go wrong in the first version. The marker is false, because the claim
 Start coarse; subdivide under pressure.
 
 - **Default:** one file per topic, `knowledge/<topic>.md`, with concepts as `##` sections that accrete across sources.
-- **Subdivide** to `knowledge/<topic>/<concept>.md` only when a topic file outgrows a single read or sprouts several heavy concepts.
-- After writing, update `knowledge/index.md` (the topic map, navigation only), creating it if absent, to list the topics, and the concepts once a topic is split. Every note is **listed** in it, flatly and directly; a note reachable only through another note is not listed and `kb-verify` reports it.
+- **Subdivide** to `knowledge/<topic>/<concept>.md` or sibling notes only when a topic file outgrows a single read or sprouts several heavy concepts, and only as a named `kb-integrate split <note>`.
+- After writing, update `knowledge/index.md` (the topic map, navigation only), creating it if absent, per *The index* below.
 - **Cross-link** notes as `[[note-name]]`, the target's filename without `.md`, resolved inside `knowledge/`. `[[…]]` navigates within the KB; `[key: locator]` points out to a source.
+
+## The index
+
+`knowledge/index.md` holds scopes, never facts. Its vocabulary:
+
+- A **group** is a `##` heading of the index that partitions the notes by area. Every note sits in exactly one group.
+- An **index entry** is a note's line in the index, under the note's group, stating the note's scope.
+- A **cross-cutting concept** is a line under `## Cross-cutting concepts` mapping each aspect of a concept to the notes that hold it.
+- An **oversized note** is a note whose index entry runs over the cap. Trim the entry, or split the note per *Where knowledge lives*.
+
+### Index entries
+
+- Form: `- [[note]]: <scope>`. An entry may wrap; indented continuation lines belong to it.
+- Every note is **listed** by exactly one index entry. A note reachable only through another note or a cross-cutting concept is unlisted, and `kb-verify` reports it.
+- The scope names what the note covers: no measured values, named results, or comparative findings. Concept and release names stay (`6ND`, `FP8`, `GLM-5.3`).
+- One phrase per content section (every `##` except `## See also`), naming the section's subject and nothing it found. Related sections may share a phrase (e.g. "prefill vs decode and append-prefill"). Every content section is named by some phrase.
+- Cap: **40 words** of scope text, split on whitespace. Write the honest scope even when it runs over: the overrun marks an oversized note, which `kb-verify` reports.
+- Edit an entry only when its note's scope changes: a section added, removed, or split. Claims added to an existing section leave the entry as it is.
+
+A nine-section note, 29 words:
+
+```
+- [[llm-inference]]: prefill vs decode and serving metrics, append-prefill, why decode is
+  bandwidth-bound, the serving formulas, the latency-throughput Pareto curve, the KV cache,
+  sharding for inference, a worked serving example, node boundaries and topology.
+```
+
+### Cross-cutting concepts
+
+- Form: `- <Concept>: <aspect> → [[note]]; <aspect> → [[note]], [[note]]`. Aspects are `;`-separated and hold no facts.
+- A line exists only for a concept spanning three or more distinct notes.
+- Every aspect names at least one `[[note]]`, and each note appears at most once per line.
+- Update a line when a note gains or loses its concept; add one when a concept first reaches three notes.
 
 ## Note shape
 
