@@ -39,6 +39,7 @@ A citation lets a reader verify or drill down; it is not needed to understand th
 
 - Form: `[key: locator]`. `[key]` resolves in the KB's `sources/index.md`.
 - A **locator is required for any specific claim** (a number, result, quote, figure); a bare `[key]` is allowed only for a source's central thesis.
+- Scope: a citation covers the run of consecutive sentences before it that rest on the same locator, back to the previous citation or the start of its paragraph, bullet, or table cell. Place it at the end of the run. A claim resting on a different locator ends the run and takes its own citation. A marker sits on the sentence it applies to, not on the run, and relocating one sentence's locator splits it out of the run.
 
 Locator grammar:
 
