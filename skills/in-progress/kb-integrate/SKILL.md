@@ -15,7 +15,7 @@ Resolve which KB to operate on per [registry.md](../kb-builder/reference/registr
 
 An invocation takes one of four shapes:
 
-- **`<key>`**, optionally scoped to part of the source. Accept. → §3.
+- **`<key>`**, optionally with a **must-take**: insights the user names as ones that must land, as one free-text list for the whole invocation. The rest is judged per distillation rule 1 as usual. Accept. → §3.
 - **`decline <key>: <reason>`.** Reject. → §6.
 - **`split <note>`.** Split an oversized note. → §7.
 - **No key.** A re-ground sweep. It integrates no `candidate`: integrating one always requires naming it, so a later broad command cannot push a source still under review into `knowledge/`. → §4.
@@ -32,7 +32,9 @@ Read each key's `citing` before writing from it: it records how the source was c
 - **It does not, or the entry kept none.** Write the claim and mark it `[UNVERIFIED]`, which §4 re-attempts in this same run.
 - **The content does not earn a claim** under distillation rule 1. Record it in `dropped` with its reason, so the skip is on the record rather than silent.
 
-Fold each named source's insights into the topic notes under `knowledge/` per the [distillation contract](../kb-builder/reference/distillation.md) (note shape, its rules, scoping a claim) and [citation contract](../kb-builder/reference/citation.md) (citations, markers, registry schema). Where the invocation named only part of a source, take only those parts.
+Fold each named source's insights into the topic notes under `knowledge/` per the [distillation contract](../kb-builder/reference/distillation.md) (note shape, its rules, scoping a claim) and [citation contract](../kb-builder/reference/citation.md) (citations, markers, registry schema).
+
+Land each must-take item even where distillation rule 1 would leave it out; every other rule still applies. Where the named sources do not say it, write nothing and report it as not found, with the reason. Where a note already holds it from another source, add this source's citation to that claim.
 
 Then, on each key integrated:
 
@@ -89,6 +91,6 @@ Done when every moved section lives in exactly one new note, no `[[link]]` point
 
 ## 8. Report
 
-List the notes touched, the keys integrated and what each `dropped`, any earlier drop this run took, the keys declined with their reasons, the markers cleared this run, the false ones rewritten, and those still open. List each oversized note, to trim or split with `kb-integrate split <note>`, and for a split, the notes created and the links repointed. Say plainly that these writes are unaudited, and that verifying them is `kb-verify`'s job.
+List the notes touched, the keys integrated and what each `dropped`, each must-take item with the note it landed in or why it was not found, any earlier drop this run took, the keys declined with their reasons, the markers cleared this run, the false ones rewritten, and those still open. List each oversized note, to trim or split with `kb-integrate split <note>`, and for a split, the notes created and the links repointed. Say plainly that these writes are unaudited, and that verifying them is `kb-verify`'s job.
 
 Done when the user can see what entered the knowledge, what was rejected, what was restructured, and what is still ungrounded.
