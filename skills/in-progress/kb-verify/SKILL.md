@@ -53,11 +53,12 @@ Step 2's output becomes findings only once classed, and the class decides which 
 
 **Hygiene** covers the registry's own consistency and the notes' navigation. It never takes an inline mark: grounding markers apply to claims, and neither a registry gap nor a broken link is an ungrounded claim.
 
-**Three defects the check cannot see at all.** All turn up in step 3's read rather than in the check's output:
+**Four defects the check cannot see at all.** All turn up in step 3's read rather than in the check's output:
 
 - **A claim miscited from a damaged conversion.** Where `citing`'s `locators:` marks that form `✗`, or its `damaged:` names the content the locator points into, the citation never held, so `[DRIFTED]` is the wrong mark and relocating within the `.md` is the wrong fix. The kept original is.
 - **A sentence recording what a source omits.** Judge it against the [distillation contract](../kb-builder/reference/distillation.md)'s rule 5, which carves out the two cases that only look like one.
-- **The same fact stated in two notes.** The check reports a note *name* declared twice, never a fact written twice. Judge it against that contract's rule 4.
+- **A fact given its full account in two notes.** The check reports a note *name* declared twice, never a fact written twice. Judge it against that contract's rule 4. The fix for a re-derivation cuts it back to what the non-owner's sentence needs, never to a bare link.
+- **A restatement out of step with its owner.** Where a claim in scope restates a claim another note owns, or draws a conclusion from one, open that note and compare. A bare `[[link]]` is no reason to. A disagreement is a defect: settle it against the sources, never against the owner's word.
 
 **Prescribe every fix; apply none.** Rewriting a claim, rescoping one, and re-grounding a marker are all fixes, and step 3's `[DRIFTED]` mark is the only write this skill makes to a note. The prescriptions are for the user: a later `kb-integrate` finds work by reading the notes' markers, never by reading this report.
 
@@ -78,4 +79,4 @@ last-full-sweep: <YYYY-MM-DD>
 
 Finally, report the findings led by the open-marker count: each defect and open marker with its fix, each claim step 3 marked `[DRIFTED]`, and each hygiene item with the repair it needs, the note to repoint or the index entry to add.
 
-Close with two independent verdicts: **current** (no open markers, so nothing in the KB is ungrounded) and **clean** (no defects and no hygiene). A KB is often one without the other; name whichever is missing and why. Name step 3's scope alongside them: a scoped pass checked locators, and could meet the three defects the check cannot see, in those keys' claims alone. Done when the re-check's findings are classed, the pass is recorded, and the report is given.
+Close with two independent verdicts: **current** (no open markers, so nothing in the KB is ungrounded) and **clean** (no defects and no hygiene). A KB is often one without the other; name whichever is missing and why. Name step 3's scope alongside them: a scoped pass checked locators, and could meet the four defects the check cannot see, in those keys' claims alone. Done when the re-check's findings are classed, the pass is recorded, and the report is given.

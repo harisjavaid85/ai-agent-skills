@@ -34,14 +34,16 @@ Read each key's `citing` before writing from it: it records how the source was c
 
 Fold each named source's insights into the topic notes under `knowledge/` per the [distillation contract](../kb-builder/reference/distillation.md) (note shape, its rules, scoping a claim) and [citation contract](../kb-builder/reference/citation.md) (citations, markers, registry schema).
 
-Land each must-take item even where distillation rule 1 would leave it out; every other rule still applies. Where the named sources do not say it, write nothing and report it as not found, with the reason. Where a note already holds it from another source, add this source's citation to that claim.
+To correct or supersede a claim, find every note that restates or relies on it, in any form it takes: a value in other units, rounded, or folded into a derived figure; a mechanism or finding in other words; and any conclusion drawn from it. Notes linking `[[<owner>]]` and the owner's cross-cutting lines in `knowledge/index.md` are where to start, not the whole set.
+
+Land each must-take item even where distillation rule 1 would leave it out; every other rule still applies. Where the named sources do not say it, write nothing and report it as not found, with the reason. Where a note already holds it from another source, add this source's citation to the owning note's claim.
 
 Then, on each key integrated:
 
 - Set `status: integrated`.
 - **Rewrite** `dropped` in place, per the [citation contract](../kb-builder/reference/citation.md)'s registry schema.
 
-Done when the touched notes carry their new citations, every `damaged:` pointer ended in a citation, a marker, or a `dropped` item, and each key reads `status: integrated` with a `dropped` that states what integration has not taken from the source.
+Done when the touched notes carry their new citations, every `damaged:` pointer ended in a citation, a marker, or a `dropped` item, and each key reads `status: integrated` with a `dropped` that states what integration has not taken from the source, and every claim this pass corrected or superseded is corrected in each note that restates or relies on it.
 
 ## 4. Re-ground open markers
 
