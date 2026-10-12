@@ -25,9 +25,9 @@ const model = (phase: string, fallback: string): string =>
 
 const MODELS = {
   planner: model("PLANNER", "claude-sonnet-5"),
-  implementer: model("IMPLEMENTER", "claude-opus-5"),
+  implementer: model("IMPLEMENTER", "claude-opus-5-5"),
   prComposer: model("PR_COMPOSER", "claude-sonnet-5"),
-  prReviewer: model("PR_REVIEWER", "claude-opus-5"),
+  prReviewer: model("PR_REVIEWER", "claude-opus-5-5"),
 };
 
 const COMPLETION_SIGNAL = "<promise>COMPLETE</promise>";
