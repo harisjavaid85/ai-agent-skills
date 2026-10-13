@@ -27,20 +27,20 @@ Callers may also supply an **extra markdown block** (see **Caller extra block**)
 
 1. **Preflight.** Confirm a GitHub remote exists and `gh` is authenticated (`git remote -v`, `gh auth status`). If either fails, report the blocker and stop, because a PR is impossible. Both modes.
 2. **Check the branch.** Resolve the base (see **Base**). Then:
-   - HEAD **is** the base/default branch → refuse; a branch can't PR itself. Tell the user to branch first.
+   - HEAD **is** the resolved base → refuse; a branch can't PR itself. Tell the user to branch first.
    - No commits ahead of base (`git log <base>..HEAD` empty) → report "nothing to PR" and stop.
    - Working tree **dirty** → _Review:_ stop, "uncommitted changes; run `/commit` first" (approval is not a license to commit them). _Auto:_ push only committed work and report what was left uncommitted.
-3. **Detect an existing PR:** `gh pr list --head <branch> --json number,url --limit 1`. Capture the number if one exists: this is the update path.
+3. **Detect an existing PR:** `gh pr list --head <branch> --base <base> --json number,url --limit 1`. Capture the number if one exists: this is the update path.
 4. **Compose** the title and body per **Format**.
 5. **Build the plan:** title, base, draft/ready, body preview, and any warnings (dirty tree, ambiguous tag, suspected non-default base). In Review, wait for approval; in Auto, print it as a trail and proceed.
-6. **Push:** `git push -u origin <branch>` (idempotent; sets upstream if unset). Pushing new commits refreshes the PR's diff on its own.
+6. **Push:** `git push -u origin <branch>` (sets upstream if unset). Pushing new commits refreshes the PR's diff on its own. Skip the push when the branch already matches `origin/<branch>`. A **Long-lived branch** with new commits to push stops the run, both modes.
 7. **Create or update:**
    - **No PR exists:** `gh pr create --base <base> --head <branch> --title "<title>" --body-file <body>` (add `--draft` when `draft` is set). Write the body with the `Write` tool to `<tmpdir>/pr-body-<branch-slug>.md`, resolving `<tmpdir>` from `$TMPDIR` and falling back to `/tmp`, then pass it via `--body-file`. It lives outside the repo, so the working tree stays clean.
    - **PR exists:** `gh pr edit <number> --body-file <body>` (and `--title` if it changed). See **Re-run** for body handling. **Never** change the existing PR's draft/ready state.
 
 ## Re-run (existing PR)
 
-Always push. Then refresh the body:
+Push per Workflow step 6. Then refresh the body:
 
 - **Review:** compose the fresh body and compare it to the live PR body. If they diverge, show the diff and ask: keep / replace / merge. The diff surfaces any hand-edit before it's overwritten; there is no pre-set default.
 - **Auto:** regenerate and overwrite unconditionally.
@@ -49,7 +49,18 @@ Draft/ready is set only at create time. A re-run never toggles it.
 
 ## Base
 
-Default to GitHub's default branch: `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`. `base=<branch>` overrides. In Review, if the branch's tracking info or merge-base points at a non-default base, surface it and ask; in Auto, use the default silently. The change list derives from `git log <base>..HEAD`, so the body stays consistent with the chosen base.
+Resolve in order: `base=<branch>`; then the base of the branch's open PR (`gh pr list --head <branch> --json number,baseRefName`); then GitHub's default branch (`gh repo view --json defaultBranchRef -q .defaultBranchRef.name`). When the branch has more than one open PR and no `base=` is given, Review asks which; Auto stops and reports them. When resolution falls through to the default: in Review, if the branch's tracking info or merge-base points at a non-default base, surface it and ask; in Auto, use the default silently. The change list derives from `git log <base>..HEAD`, so the body stays consistent with the chosen base.
+
+## Long-lived branch
+
+A branch other branches merge into by PR. Treat a branch as long-lived when any of these holds:
+
+1. It is the repo's default branch (`gh repo view --json defaultBranchRef`).
+2. The target repo's agent instructions name it as long-lived.
+3. GitHub protects it: `gh api repos/{owner}/{repo}/branches/<b> --jq .protected`, or `gh api repos/{owner}/{repo}/rules/branches/<b>` returns any rule. A lookup that errors (plans without rulesets answer 403 or 404) gives no signal either way.
+4. It has been the base of a merged PR: `gh pr list --base <b> --state merged --limit 1` is non-empty.
+
+Every other branch is short-lived. A long-lived branch never takes new commits by a direct push (they need their own branch and PR) and is never deleted.
 
 ## Slug enrichment
 
@@ -66,6 +77,10 @@ Then list the completed tickets for whichever answered:
 - **Local**: `git ls-tree --name-only HEAD .scratch/<slug>/issues/`, then `git show HEAD:<path>` for each. A ticket counts as completed when its `Status:` line reads `closed`, bolding optional (`**Status:** closed`); its title is the file's first heading.
 
 If neither probe answers, do **not** fail. Warn, skip enrichment, and open the standalone PR. Review notes it in the plan; Auto proceeds and reports.
+
+## PR stack
+
+A branch is a PR stack when every first-parent commit in `<base>..HEAD` (`git log --first-parent`) is the commit GitHub recorded for merging a PR, whatever its subject: `gh api repos/{owner}/{repo}/commits/<sha>/pulls` returns a merged PR whose `merge_commit_sha` is that commit. Its PRs were already reviewed one by one, so the body lists them rather than their commits.
 
 ## Caller extra block
 
@@ -91,6 +106,8 @@ The body is read by people who have only the repository and this PR: the branch 
 
 Review asks when the commits' tags are genuinely mixed or ambiguous; Auto picks the dominant silently.
 
+A **PR stack** takes the `Merge` tag, resolved through the same tag source, and the summary `Merge <head> branch into <base>`: `[Merge] Merge <head> branch into <base>` under the default template, or the summary alone when the repo has no tags.
+
 ### Body
 
 Compose the sections in the following order, with these conditions:
@@ -115,7 +132,7 @@ A local permalink pins the commit (`<repo-url>/blob/<sha>/<path>` for the file t
 
 ## Summary
 
-<2-3 sentences: what changed and why, drawn from the diff and commits, not from local planning context>
+<2-3 sentences: what changed and why, drawn from the diff and commits or from PRs of a PR stack, not from local planning context>
 
 ## Spec
 
@@ -123,7 +140,8 @@ A local permalink pins the commit (`<repo-url>/blob/<sha>/<path>` for the file t
 
 ## Changes
 
-<3-6 thematic bullets grouped by logical change, not one per commit. Derive from `git log <base>..HEAD` and the diff, but curate: merge WIP/fixup commits into the change they serve.>
+<Commits: 3-6 thematic bullets grouped by logical change, not one per commit. Derive from `git log <base>..HEAD` and the diff, but curate: merge WIP/fixup commits into the change they serve.
+PR stack: one bullet per PR, oldest first, as `#<n> <PR title>` (title from `gh pr view <n> --json title`).>
 
 - <change>
 - ...

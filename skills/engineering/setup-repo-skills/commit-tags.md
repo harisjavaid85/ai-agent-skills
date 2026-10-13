@@ -10,7 +10,7 @@ The `commit` skill prefixes each commit subject with a tag. This file maps the e
 | `Refactor`    | `Refactor`       | behavior-preserving restructure, including `perf` and `style` |
 | `Test`        | `Test`           | tests                                                         |
 | `Chore`       | `Chore`          | non-code housekeeping: deps, build, ci, config, tooling       |
-| `Merge`       | `Merge`          | manual merge resolution                                       |
+| `Merge`       | `Merge`          | one branch merged into another                                |
 | `Revert`      | `Revert`         | manually backing out a previous change                        |
 
 **Subject template:** `[<tag>] <summary>`

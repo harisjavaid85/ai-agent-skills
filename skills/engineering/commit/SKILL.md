@@ -54,7 +54,7 @@ The canonical vocabulary and message style.
 | `Refactor` | behavior-preserving restructure, including `perf` and `style` |
 | `Test`     | tests                                                         |
 | `Chore`    | non-code housekeeping: deps, build, ci, config, tooling       |
-| `Merge`    | manual merge resolution                                       |
+| `Merge`    | one branch merged into another                                |
 | `Revert`   | manually backing out a previous change                        |
 
 ### Message style
