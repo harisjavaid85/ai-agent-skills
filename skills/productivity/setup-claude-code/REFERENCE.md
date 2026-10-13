@@ -199,6 +199,7 @@ Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regene
 - git push to main/master (other branches allowed)
 - git push --force / -f (any branch)
 - git reset --hard, git clean -f, git branch -D, git checkout .
+- git --no-verify (any git command), git commit -n
 - ...
 ```
 

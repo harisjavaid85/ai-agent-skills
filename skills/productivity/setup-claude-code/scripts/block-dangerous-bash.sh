@@ -21,6 +21,9 @@ GIT_PATTERNS=(
   '(^|[;&|"'"'"'[:space:]])git[[:space:]]+(checkout|restore)[[:space:]]+\.'
   '(^|[;&|"'"'"'[:space:]])git[[:space:]]+push.*--force\b'
   '(^|[;&|"'"'"'[:space:]])git[[:space:]]+push.*-f\b'
+  # skipping client-side hooks: --no-verify on any git command, and commit's short form -n
+  '(^|[;&|"'"'"'[:space:]])git[[:space:]].*--no-verify\b'
+  '(^|[;&|"'"'"'[:space:]])git[[:space:]]+commit([[:space:]]+[^[:space:]]+)*[[:space:]]+-[[:alnum:]]*n[[:alnum:]]*\b'
 )
 
 # git push to main/master (other branches allowed)
