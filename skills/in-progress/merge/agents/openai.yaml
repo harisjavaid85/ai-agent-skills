@@ -1,0 +1,3 @@
+interface:
+  display_name: "Merge"
+  short_description: "Land a branch on its base through its pull request"

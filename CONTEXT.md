@@ -43,6 +43,10 @@ _Avoid_: style guide (the external source, not this repo's binding to it), linti
 A condensation of one external source (an article, paper, or document), produced by `summarize`.
 _Avoid_: summary (the everyday word for the act, not the artifact), digest, brief
 
+**Long-lived branch**:
+A branch other branches merge into by PR, never pushed to or deleted by an agent.
+_Avoid_: protected branch (GitHub's enforcement feature, which many repos lack), environment branch
+
 Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **leading word**, **completion criterion**) are defined in [`skills/productivity/writing-for-agents/SKILL.md`](./skills/productivity/writing-for-agents/SKILL.md), not here.
 
 ## Relationships
@@ -59,3 +63,4 @@ Skill-authoring terms (**steps**, **reference**, **progressive disclosure**, **l
 - "backlog" was previously used to mean both the *tool* hosting issues and the *body of work* inside it. Resolved: the tool is the **Issue tracker**; "backlog" is no longer used as a domain term.
 - "backlog backend" / "backlog manager". Resolved: collapsed into **Issue tracker**.
 - "summary", "overview" and "brief" all named a condensation. Resolved: the artifact `summarize` produces is an **Overview**; **brief** stays `loop-me`'s term for a decision-ready recap of work an agent produced.
+- "ship" already meant the whole main flow (`ask-author`'s "idea → ship") and distributing the plugin (ADR 0002), and readers hear it as a production deploy. Resolved: the skill that lands a PR on its base is `merge`; "ship" names no skill.
