@@ -210,14 +210,14 @@ _(Claude Code only)_ **Memory**: the harness surfaces this project's memory inde
 | What you have | Goes to |
 | --- | --- |
 | a term / domain concept | glossary: `CONTEXT.md` |
-| a decision + its tradeoffs | an ADR in `docs/adr/`, format per `docs/agents/domain.md` |
+| a decision + its tradeoffs | an ADR in `docs/adr/` |
 | a rule for how the agent should work | operational policy: this file |
 | a fact about how the system behaves | a comment at its **arrival site**: the one declaration every reader of the fact passes through |
 | the same fact but where those readers share no declaration | knowledge: `KNOWLEDGE.md` |
 
 **The code is the source of truth**: a written fact is a cache of it, worth keeping only when reading the code would not have shown it. When your change invalidates one, fix it in the same change. Agent memory is **not** on this list: it holds cross-project working style, not facts about this repo.
 
-Full routing rules (register, arrival sites, the cache gate): `docs/agents/domain.md`. Note anything you add in your summary to the user.
+Full routing rules and each document's format (register, arrival sites, the cache gate): `docs/agents/domain.md`. Note anything you add in your summary to the user.
 
 - **Domain docs**: read before exploring: `docs/agents/domain.md`.
 
