@@ -103,7 +103,7 @@ Delete the head only when it is short-lived and no open PR uses it as a base (`g
 1. **Local** first, while `origin/<head>` still exists for `git branch -d` to check against: when the head is checked out, switch to the base and `git pull --ff-only`. Then `git branch -d <head>`. When git refuses, or the branch is checked out in another worktree, keep it and say why.
 2. **Remote**: `git push origin --delete <head>`, skipped when the branch is already gone. It stays restorable from the PR page.
 
-Keep every other head. Finish on the starting branch when it still exists, otherwise on the base.
+Leave every other branch in place, local or remote, including a local copy this run created. Finish on the starting branch when it still exists, otherwise on the base.
 
 **Complete when:** the head is deleted or kept with a stated reason, and the working copy is on the starting branch or the base.
 

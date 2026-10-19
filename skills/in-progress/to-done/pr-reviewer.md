@@ -17,7 +17,7 @@ You only run after the queue drained. The PR arrives marked stalled, and clearin
 
 **Discipline**: {{DISCIPLINE}}
 
-1. **Establish the subject**: the branch diff against its base, plus the spec as the statement of intent (on `github`, the `kind:spec` parent carrying `spec:{{SPEC_SLUG}}`; on `local`, `.scratch/{{SPEC_SLUG}}/spec.md` on the branch), plus the PR's top-level comments (`gh pr view {{PR}} --comments`).
+1. **Establish the subject**: the branch diff against its base, plus the spec as the statement of intent (on `github`, the `kind:spec` parent carrying `spec:{{SPEC_SLUG}}`; on `local`, `.scratch/{{SPEC_SLUG}}/spec.md` on the branch), plus the PR's top-level comments (`gh pr view {{PR}} --json comments`).
    - A human comment is feedback to judge alongside the spec. Every one counts, old and new. A comment an earlier verdict already applied or declined stays settled, unless a later human comment reopens it.
    - A comment that carries an AI disclaimer or the verdict marker is an agent report: context, not feedback.
 2. **Review it with `/cross-check-with-codex`**, with the spec as the standard to judge it against. It owns the review rounds, the audit record, and the reconciliation. If it cannot complete a single round, stop: post the verdict with `Cross-check: unavailable (<reason>)` and nothing more, and skip every other step. A review of your own is not independent, and the stalled PR waits for a human to fix the cause and re-run the review.
