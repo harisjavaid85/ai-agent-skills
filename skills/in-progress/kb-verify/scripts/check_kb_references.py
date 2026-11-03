@@ -6,25 +6,20 @@ each entry's `files` against sources/<key>/ on disk, each source body's image
 links against sources/<key>/, and `[[note]]` links and index listing against
 knowledge/. Checks each locator's form against the citation contract's grammar
 (`malformed locator`), a pointer locator against its line in
-sources/<key>/<key>.md (`unresolved pointer`), and a quote against the lines of
-that `.md` (`unresolved quote`, `ambiguous quote`). Also reports an entry or a
-note name declared twice, and checks the index's shape per the distillation
-contract: one `- [[note]]: <scope>` entry per note, its scope within the word
-cap, and each cross-cutting line spanning three notes with every aspect naming
-one. A KB with no knowledge/ yet is a KB holding only candidates: the note-side
-checks are skipped, the registry ones still run.
+sources/<key>/<key>.md (`unresolved pointer`), a `§` locator against the
+headings of that `.md` (`unresolved section`, `ambiguous section`), and a quote
+against its lines (`unresolved quote`, `ambiguous quote`), and reports any other
+form citing a structured source (`non-pointer locator`). Also reports an
+entry or a note name declared twice, and checks the index's shape per the
+distillation contract: one `- [[note]]: <scope>` entry per note, its scope
+within the word cap, and each cross-cutting line spanning three notes with
+every aspect naming one. A KB with no knowledge/ yet is a KB holding only
+candidates: the note-side checks are skipped, the registry ones still run.
 
-Two findings it can spot but not settle go to FOR JUDGMENT: a bare `[key]`,
-legal on a thesis-level claim and a defect on anything more specific, and an
-image link resolving to nothing with no such file stored, legitimate only where
-`citing` records the figures were never fetched, which this never reads. Where
-the file *is* stored under another path the link is repointable, so that half
-is a DEFECT.
-
-Whether a locator still *supports* its claim, whether a sentence records what a
-source omits, and how any of this is classed, all stay with kb-verify: they are
-judgments, and a checker that guesses at them is worse than one that does not
-try.
+FOR JUDGMENT holds what it spots but cannot settle, a bare `[key]` and an image
+link to no stored file; kb-verify's step 4 table says how each is judged. A
+settled finding is a DEFECT or HYGIENE by kb-verify's step 4 rule, *Defect or
+hygiene*; a new message lands by it too.
 
 Prints whichever of DEFECTS, FOR JUDGMENT, and HYGIENE is non-empty, then always
 an OPEN MARKERS tally and the site of every marker counted, and finally `all
@@ -34,25 +29,37 @@ exits non-zero.
 Usage: check_kb_references.py <kb-root>
 """
 
+import html
 import json
 import os
 import re
 import sys
 import urllib.parse
 from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Optional
 
 INLINE = re.compile(r"`[^`]*`")
 WIKI = re.compile(r"\[\[([^\]]+)\]\]")
 MARKER = re.compile(r"\[(UNVERIFIED|DRIFTED)\]")
-MDLINK = re.compile(r"\[[^\]]*\]\([^)]*\)")
+# Link text holds no `[`, so a link never opens at a stray `[` or a citation's
+# own and swallows the citation: one holding a link reaches the grammar check.
+MDLINK = re.compile(r"\[[^\[\]]*\]\([^)]*\)")
 CITE = re.compile(r"\[([A-Za-z0-9][A-Za-z0-9._-]*)(:\s*[^\]]*)?\]")
 # The locator grammar in kb-builder's reference/citation.md. All but the last
 # form, the pointer, copy _LOCATOR in kb-web's backend/kb_web/citations.py, with
 # two differences until kb-web catches up: kb-web still accepts the dropped
-# `@mm:ss` timestamp, and the quote here also excludes `[`, `]`, and a backtick,
-# which kb-web cannot parse inside a citation.
-LOCATOR = re.compile(r': (?:p\.\d+|pp\.\d+-\d+|(?:fig|tbl|eq)\.\d+|§"[^"\n]+"'
+# `@mm:ss` timestamp, and here the quote also excludes `[`, `]`, and a backtick,
+# and the section name `]`, which kb-web cannot parse inside a citation.
+LOCATOR = re.compile(r': (?:p\.\d+|pp\.\d+-\d+|(?:fig|tbl|eq)\.\d+|§"[^"\]\n]+"'
                      r'|"[^"\[\]`\n]+"|/[^\]\n]+)')
+HEADING = re.compile(r"^#{1,6}(?:\s+(.*))?$")
+SELF_LINK = re.compile(r"\[([^\]]*)\]\(#[^)]*\)")
+BOLD = re.compile(r"\*\*(.+?)\*\*")
+# A closing `#` run only after whitespace, so `## Using C#` keeps its `#`.
+HEADING_TAIL = re.compile(r"(?:\s+#+|\s*¶)+\s*$")
+# A markdown backslash escape, which docling writes before `_`, `-`, and more.
+ESCAPE = re.compile(r"\\([!-/:-@\[-`{-~])")
 ARRAY_INDEX = re.compile(r"0|[1-9]\d*")
 LETTER = re.compile(r"[A-Za-z]")
 KEY_HEADING = re.compile(r"^##\s+(\S+)")
@@ -74,6 +81,16 @@ ENTRY_WORDS = 40
 SEPARATOR = re.compile(r"^\W+")
 
 
+def unfenced(lines):
+    """Yield (lineno, line) for each line outside fenced code, numbered from 1."""
+    fenced = False
+    for n, line in enumerate(lines, 1):
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+        elif not fenced:
+            yield n, line
+
+
 def scan(path):
     """Return a list of (lineno, kind, value, locator), one per finding in a note.
 
@@ -87,14 +104,9 @@ def scan(path):
     a live reference. Skipped runs are blanked to the same length, so a
     locator is read from the raw line and keeps any inline code it quotes.
     """
-    found, fenced = [], False
+    found = []
     with open(path, encoding="utf-8") as fh:
-        for n, raw in enumerate(fh, 1):
-            if raw.lstrip().startswith("```"):
-                fenced = not fenced
-                continue
-            if fenced:
-                continue
+        for n, raw in unfenced(fh):
             line = INLINE.sub(blank, raw)
             # Wikilinks first: [[x]] would otherwise read as the citation [x].
             for m in WIKI.finditer(line):
@@ -141,6 +153,13 @@ def resolves(lines, pointer):
     return False
 
 
+def pointer_problem(lines, pointer, md):
+    """Why a pointer locator fails, or None when it resolves."""
+    if resolves(lines, pointer):
+        return None
+    return f"unresolved pointer: no line of {md} opens with it"
+
+
 def quote_problem(lines, span, md):
     """Why a quote locator fails, or None when it resolves.
 
@@ -150,17 +169,74 @@ def quote_problem(lines, span, md):
     want = " ".join(span.split())
     if not want:
         return "malformed locator: an empty quote span"
-    hits, fenced = 0, False
-    for line in lines:
-        if line.lstrip().startswith("```"):
-            fenced = not fenced
-        elif not fenced and want in " ".join(line.split()):
-            hits += 1
+    hits = sum(want in " ".join(line.split()) for _, line in unfenced(lines))
     if not hits:
         return f"unresolved quote: no line of {md} outside fenced code holds it"
     if hits > 1:
         return (f"ambiguous quote: {hits} lines of {md} hold it; lengthen the span "
                 "within its line, or cite another form the source has")
+    return None
+
+
+def heading_text(raw):
+    """A heading's text as a `§` locator names it: self-link and each `**…**`
+    pair unwrapped, then a trailing `¶` or whitespace-led `#` run stripped, in
+    that order, then entities decoded, backslash escapes dropped, and
+    whitespace collapsed."""
+    text = BOLD.sub(r"\1", SELF_LINK.sub(r"\1", raw or ""))
+    text = ESCAPE.sub(r"\1", html.unescape(HEADING_TAIL.sub("", text)))
+    return " ".join(text.split())
+
+
+def section_problem(lines, name, md):
+    """Why a `§` locator fails, or None when it resolves.
+
+    Exactly one heading outside fenced code, at any level, reads as the name
+    once both pass through heading_text.
+    """
+    want = heading_text(name)
+    if not want:
+        return "malformed locator: an empty section name"
+    hits = 0
+    for _, line in unfenced(lines):
+        m = HEADING.match(line)
+        if m and heading_text(m.group(1)) == want:
+            hits += 1
+    if not hits:
+        return f"unresolved section: no heading of {md} outside fenced code reads so"
+    if hits > 1:
+        return (f"ambiguous section: {hits} headings of {md} read so; cite a quote "
+                "from the source line that supports the claim, or another form the "
+                "source has")
+    return None
+
+
+def structured(lines):
+    """Whether a source's lines are a structured source's normalized `.md`: one
+    fenced block holding only `<pointer>: <value>` lines, and nothing outside it."""
+    body = (line for line in lines if line.strip())
+    if not next(body, "").startswith("```"):
+        return False
+    rest = list(body)
+    return (len(rest) > 1 and rest[-1].startswith("```")
+            and all(line.startswith("/") and ": " in line for line in rest[:-1]))
+
+
+def locator_problem(root, key, locator, cache):
+    """Why a well-formed locator fails against sources/<key>/<key>.md, or None.
+
+    A pointer, quote, or `§` resolves in that `.md`. `p.`, `fig.`, `tbl.`, and
+    `eq.` name the original and pass, unless the `.md` is a structured source's.
+    """
+    md, lines = f"sources/{key}/{key}.md", source_lines(root, key, cache)
+    if locator.startswith(": /"):
+        return pointer_problem(lines, locator[2:], md)
+    if structured(lines):
+        return f"non-pointer locator: {md} is a structured source, which takes pointers only"
+    if locator.startswith(': "'):
+        return quote_problem(lines, locator[3:-1], md)
+    if locator.startswith(': §"'):
+        return section_problem(lines, locator[4:-1], md)
     return None
 
 
@@ -183,18 +259,17 @@ def index_items(path):
     whole. `cross` is true under `## Cross-cutting concepts`. Fenced and inline
     code are skipped, as in scan.
     """
-    items, fenced, cross, current = [], False, False, None
+    items, cross, current, last = [], False, None, 0
     with open(path, encoding="utf-8") as fh:
-        for n, raw in enumerate(fh, 1):
-            if raw.lstrip().startswith("```"):
-                fenced, current = not fenced, None
-                continue
-            if fenced:
-                continue
+        for n, raw in unfenced(fh):
+            # A gap in the numbering is a fence, which ends the bullet above it.
+            if n != last + 1:
+                current = None
+            last = n
             line = INLINE.sub(" ", raw.rstrip("\n"))
-            heading = re.match(r"^#{1,6}\s+(.*)$", line)
+            heading = HEADING.match(line)
             if heading:
-                cross = heading.group(1).strip().lower() == CROSS_HEADING
+                cross = (heading.group(1) or "").strip().lower() == CROSS_HEADING
                 current = None
             elif BULLET.match(line):
                 current = [n, BULLET.sub("", line, count=1), cross]
@@ -259,6 +334,9 @@ def plural(n, word):
 def check_files(root, key, spec):
     """Compare one entry's `files` against sources/<key>/ on disk.
 
+    Returns (defects, hygiene). An absent sources/<key>/ is the caller's to
+    report, so nothing is compared.
+
     Elements are backticked and name top-level entries of that directory, so a
     token carrying an inner slash (a URL, or a path reaching into the figure
     directory) is not one and is ignored. A trailing slash marks a directory,
@@ -272,16 +350,15 @@ def check_files(root, key, spec):
         # since it satisfies the required-field check and then skips both
         # directions of the comparison silently. Two shapes reach here: a value
         # with no backticks at all, and one listing only nested paths.
-        return [f"sources/index.md  [{key}] has a files value naming no top-level path: "
-                f"list each top-level name under sources/{key}/, in backticks"]
+        return [], [f"sources/index.md  [{key}] has a files value naming no top-level path: "
+                    f"list each top-level name under sources/{key}/, in backticks"]
     if not os.path.isdir(sdir):
-        return [f"sources/index.md  [{key}] lists {plural(len(listed), 'path')} but "
-                f"sources/{key}/ does not exist"]
+        return [], []
     on_disk = {n for n in os.listdir(sdir) if not n.startswith(".")}
-    out = [f"sources/index.md  [{key}] lists `{n}`, absent from sources/{key}/"
-           for n in sorted(listed - on_disk)]
-    out += [f"sources/{key}/{n}  on disk, unlisted in [{key}]'s files"
-            for n in sorted(on_disk - listed)]
+    defects = [f"sources/index.md  [{key}] lists `{n}`, absent from sources/{key}/"
+               for n in sorted(listed - on_disk)]
+    out = [f"sources/{key}/{n}  on disk, unlisted in [{key}]'s files"
+           for n in sorted(on_disk - listed)]
     for name, want in DIR_COUNT.findall(spec):
         d = os.path.join(sdir, name.rstrip("/"))
         if os.path.isdir(d):
@@ -289,7 +366,7 @@ def check_files(root, key, spec):
             if have != int(want):
                 out.append(f"sources/index.md  [{key}] says `{name}` holds "
                            f"{plural(int(want), 'file')}, found {have}")
-    return out
+    return defects, out
 
 
 def image_targets(line):
@@ -324,8 +401,9 @@ def stored_basenames(sdir):
 def check_source_images(root, key):
     """Resolve a source body's image links against its own directory.
 
-    Returns (defects, judgment); the module docstring gives the split. Reads no
-    `citing`, which the split does not need.
+    Returns (defects, judgment). A link whose file is stored under another path
+    is a defect, repointable; one whose file is stored nowhere is for judgment,
+    per kb-verify's step 4 table, since this never reads `citing`.
     """
     sdir = os.path.join(root, "sources", key)
     path = os.path.join(sdir, f"{key}.md")
@@ -355,51 +433,137 @@ def check_source_images(root, key):
     return defects, judgment
 
 
-def read_registry(sindex, hygiene):
-    """Parse sources/index.md into (statuses, status details, all fields, stamps).
+@dataclass
+class SourceEntry:
+    """One key's entry in sources/index.md.
 
-    A field's value continues onto an indented line and ends at the first blank
-    one, so loose prose never glues onto the last field. A status of None means
-    the entry declares none: status is required, and a missing one is a
-    hand-edit gone wrong rather than a case to default. detail holds whatever
-    follows the status word, a decline's reason and date. stamps counts the
-    lines of an entry's dropped that open with a date, read before joining: the
+    A status of None means the entry declares none: status is required, and a
+    missing one is a hand-edit gone wrong rather than a case to default. detail
+    holds whatever follows the status word, a decline's reason and date. stamps
+    counts the lines of dropped that open with a date, read before joining: the
     contract keeps a date off the start of a wrapped line, so each one opens a
     value, and a date quoted mid-reason opens none.
     """
-    keys, detail, fields, stamps, seen_at, current, field = {}, {}, {}, {}, {}, None, None
+    status: Optional[str] = None
+    detail: str = ""
+    fields: dict = field(default_factory=dict)
+    stamps: int = 0
+
+
+def read_registry(sindex, hygiene):
+    """Parse sources/index.md into {key: SourceEntry}.
+
+    A field's value continues onto an indented line and ends at the first blank
+    one, so loose prose never glues onto the last field.
+    """
+    entries, seen_at, entry, name = {}, {}, None, None
     if not os.path.exists(sindex):
-        return keys, detail, fields, stamps
+        return entries
     with open(sindex, encoding="utf-8") as fh:
         for n, line in enumerate(fh, 1):
             if m := KEY_HEADING.match(line):
-                current, field = m.group(1), None
+                key, name = m.group(1), None
                 # The reset below lets a second entry win silently, and a
                 # re-ingest that appends instead of updating produces exactly
                 # that: a report describing a registry the file does not hold.
-                if current in seen_at:
-                    hygiene.append(f"sources/index.md:{n}  duplicate registry entry [{current}], "
-                                   f"first at line {seen_at[current]}: the later one wins")
-                seen_at[current] = n
-                keys[current], fields[current] = None, {}
-            elif current is None:
+                if key in seen_at:
+                    hygiene.append(f"sources/index.md:{n}  duplicate registry entry [{key}], "
+                                   f"first at line {seen_at[key]}: the later one wins")
+                seen_at[key] = n
+                entry = entries[key] = SourceEntry()
                 continue
-            elif m := FIELD_BULLET.match(line):
-                field = m.group(1).strip().lower()
-                fields[current][field] = m.group(2).strip()
-                if field == "dropped" and DATE_STAMP.match(m.group(2).strip()):
-                    stamps[current] = stamps.get(current, 0) + 1
-                if field == "status":
-                    word = m.group(2).split(None, 1)
-                    keys[current] = word[0].lower() if word else None
-                    detail[current] = word[1].strip() if len(word) > 1 else ""
+            if entry is None:
+                continue
+            if m := FIELD_BULLET.match(line):
+                name, text = m.group(1).strip().lower(), m.group(2).strip()
+                entry.fields[name] = text
+                if name == "status":
+                    word = text.split(None, 1)
+                    entry.status = word[0].lower() if word else None
+                    entry.detail = word[1].strip() if len(word) > 1 else ""
             elif not line.strip():
-                field = None
-            elif field and line[:1].isspace():
-                fields[current][field] += " " + line.strip()
-                if field == "dropped" and DATE_STAMP.match(line.strip()):
-                    stamps[current] = stamps.get(current, 0) + 1
-    return keys, detail, fields, stamps
+                name = None
+                continue
+            elif name and line[:1].isspace():
+                text = line.strip()
+                entry.fields[name] += " " + text
+            else:
+                continue
+            if name == "dropped" and DATE_STAMP.match(text):
+                entry.stamps += 1
+    return entries
+
+
+def check_entry(root, key, entry, cite_count):
+    """Check one registry entry against its fields and sources/<key>/.
+
+    Returns (defects, judgment, hygiene); cite_count is how often the notes cite
+    the key.
+    """
+    defects, judgment, hygiene = [], [], []
+    status, fields = entry.status, entry.fields
+    # A candidate cited nowhere is registered but not yet folded in, and a
+    # declined entry is expected to be uncited: neither earns a line.
+    if status is None:
+        hygiene.append(f"sources/index.md  [{key}] has no status: every entry needs one")
+    elif status not in STATUSES:
+        hygiene.append(f"sources/index.md  [{key}] has unknown status '{status}'")
+    elif status == "integrated" and not cite_count:
+        hygiene.append(f"sources/index.md  orphan key [{key}]: cited nowhere")
+    elif status == "declined" and not entry.detail:
+        hygiene.append(f"sources/index.md  declined [{key}] records no reason")
+    elif status == "candidate" and cite_count:
+        hygiene.append(f"sources/index.md  candidate [{key}] is cited "
+                       f"{cite_count}×: status is stale")
+
+    # Fields, independent of the status chain above. Each is required, so
+    # that "nothing" is a statement and an absence is a gap worth reporting.
+    if not fields.get("citing"):
+        hygiene.append(f"sources/index.md  [{key}] has no citing: every entry needs one")
+    if status == "integrated" and not fields.get("dropped"):
+        hygiene.append(f"sources/index.md  integrated [{key}] has no dropped: say what "
+                       "integration has not taken from this source, or that it took it all")
+    # dropped is one dated value, the latest set, rewritten by every pass.
+    if entry.stamps > 1:
+        hygiene.append(f"sources/index.md  [{key}]'s dropped carries {entry.stamps} dated "
+                       "values: it holds one, the latest set")
+    # The word count is a target, not a cap: listed so the long ones get a
+    # periodic cleanup, never a reason to omit an item.
+    words = len((fields.get("dropped") or "").split())
+    if words > DROPPED_WORDS:
+        hygiene.append(f"sources/index.md  [{key}]'s dropped runs {words} words, over "
+                       f"the {DROPPED_WORDS}-word target: coarsen the list, omitting "
+                       "no item")
+    sdir = os.path.join(root, "sources", key)
+    if status == "declined":
+        # A decline deletes the source's files; leftovers are bookkeeping,
+        # since a citation of a declined key is reported as a defect anyway.
+        if fields.get("files"):
+            hygiene.append(f"sources/index.md  declined [{key}] still lists files: "
+                           "a decline drops the field along with the files")
+        if os.path.isdir(sdir):
+            n = sum(len(f) for _, _, f in os.walk(sdir))
+            held = f" holding {plural(n, 'file')}" if n else " (empty)"
+            hygiene.append(f"sources/index.md  declined [{key}]: sources/{key}/ still "
+                           f"exists{held}, which a decline deletes")
+    elif status in ("candidate", "integrated") and not os.path.isdir(sdir):
+        defects.append(f"sources/index.md  [{key}]: sources/{key}/ does not exist")
+    elif not fields.get("files"):
+        # files is the one field a checker can confirm in both directions
+        # against disk, so leaving it optional silently skips both.
+        hygiene.append(f"sources/index.md  [{key}] has no files: list what "
+                       f"sources/{key}/ holds")
+    else:
+        found, untidy = check_files(root, key, fields["files"])
+        defects.extend(found)
+        hygiene.extend(untidy)
+
+    # A decline deleted the source's files, so there is no body to open.
+    if status != "declined":
+        found, unstored = check_source_images(root, key)
+        defects.extend(found)
+        judgment.extend(unstored)
+    return defects, judgment, hygiene
 
 
 def main(root):
@@ -415,7 +579,7 @@ def main(root):
             if name.endswith(".md"):
                 notes[name[:-3]].append(os.path.join(dirpath, name))
 
-    keys, detail, fields, stamps = read_registry(sindex, hygiene)
+    entries = read_registry(sindex, hygiene)
 
     cited, counts, cite_count, marker_sites = set(), defaultdict(int), defaultdict(int), []
     bodies = {}
@@ -426,39 +590,35 @@ def main(root):
                 where = f"{rel}:{line}"
                 if kind == "wiki":
                     if value not in notes:
-                        hygiene.append(f"{where}  dangling link [[{value}]]")
+                        defects.append(f"{where}  dangling link [[{value}]]")
                 elif kind == "marker":
                     counts[value] += 1
                     marker_sites.append(f"{where}  [{value}]")
                 else:
                     cited.add(value)
                     cite_count[value] += 1
-                    if value not in keys:
+                    if value not in entries:
                         defects.append(f"{where}  unresolved key [{value}]")
-                    else:
-                        if keys[value] == "declined":
-                            defects.append(
-                                f"{where}  cites declined key [{value}]: a decline deletes the "
-                                "source, so the locator cannot be verified")
-                        if kind == "bare":
-                            judgment.append(f"{where}  bare [{value}]: thesis-level only")
-                        elif not LOCATOR.fullmatch(locator):
-                            defects.append(f"{where}  malformed locator [{value}{locator}]: "
-                                           "write one of the citation contract's forms")
-                        elif (locator.startswith(": /") and keys[value] != "declined"
-                              and not resolves(source_lines(root, value, bodies), locator[2:])):
-                            defects.append(f"{where}  unresolved pointer [{value}{locator}]: "
-                                           f"no line of sources/{value}/{value}.md opens with it")
-                        elif locator.startswith(': "') and keys[value] != "declined":
-                            problem = quote_problem(source_lines(root, value, bodies), locator[3:-1],
-                                                    f"sources/{value}/{value}.md")
-                            if problem:
-                                defects.append(f"{where}  {problem} [{value}{locator}]")
+                        continue
+                    declined = entries[value].status == "declined"
+                    if declined:
+                        defects.append(
+                            f"{where}  cites declined key [{value}]: a decline deletes the "
+                            "source, so the locator cannot be verified")
+                    if kind == "bare":
+                        judgment.append(f"{where}  bare [{value}]: thesis-level only")
+                    elif not LOCATOR.fullmatch(locator):
+                        defects.append(f"{where}  malformed locator [{value}{locator}]: "
+                                       "write one of the citation contract's forms")
+                    elif not declined:
+                        problem = locator_problem(root, value, locator, bodies)
+                        if problem:
+                            defects.append(f"{where}  {problem} [{value}{locator}]")
 
     if notes:
         for name in sorted(notes):
             if len(notes[name]) > 1:
-                hygiene.append(f"duplicate note name '{name}': " + ", ".join(
+                defects.append(f"duplicate note name '{name}': " + ", ".join(
                     os.path.relpath(p, root) for p in notes[name]))
 
         index = os.path.join(kdir, "index.md")
@@ -468,79 +628,24 @@ def main(root):
             listed = check_index(index, hygiene)
             for name in sorted(notes):
                 if name != "index" and name not in listed:
-                    hygiene.append(f"knowledge/{name}.md  not listed in knowledge/index.md")
+                    hygiene.append(f"{os.path.relpath(notes[name][0], root)}  not listed in "
+                                   "knowledge/index.md")
 
     if not os.path.exists(sindex):
         defects.append("sources/index.md is missing: no key can resolve")
-    for key, status in sorted(keys.items()):
-        # A candidate cited nowhere is registered but not yet folded in, and a
-        # declined entry is expected to be uncited: neither earns a line.
-        if status is None:
-            hygiene.append(f"sources/index.md  [{key}] has no status: every entry needs one")
-        elif status not in STATUSES:
-            hygiene.append(f"sources/index.md  [{key}] has unknown status '{status}'")
-        elif status == "integrated" and key not in cited:
-            hygiene.append(f"sources/index.md  orphan key [{key}]: cited nowhere")
-        elif status == "declined" and not detail.get(key):
-            hygiene.append(f"sources/index.md  declined [{key}] records no reason")
-        elif status == "candidate" and key in cited:
-            hygiene.append(f"sources/index.md  candidate [{key}] is cited "
-                           f"{cite_count[key]}×: status is stale")
-
-        # Fields, independent of the status chain above. Each is required, so
-        # that "nothing" is a statement and an absence is a gap worth reporting.
-        entry = fields.get(key, {})
-        if not entry.get("citing"):
-            hygiene.append(f"sources/index.md  [{key}] has no citing: every entry needs one")
-        if status == "integrated" and not entry.get("dropped"):
-            hygiene.append(f"sources/index.md  integrated [{key}] has no dropped: say what "
-                           "integration has not taken from this source, or that it took it all")
-        # dropped is one dated value, the latest set, rewritten by every pass.
-        # More than one is a per-pass log, the pre-rewrite contract.
-        if stamps.get(key, 0) > 1:
-            hygiene.append(f"sources/index.md  [{key}]'s dropped carries {stamps[key]} dated "
-                           "values: it holds one, the latest set")
-        # The word count is a target, not a cap: listed so the long ones get a
-        # periodic cleanup, never a reason to omit an item.
-        words = len((entry.get("dropped") or "").split())
-        if words > DROPPED_WORDS:
-            hygiene.append(f"sources/index.md  [{key}]'s dropped runs {words} words, over "
-                           f"the {DROPPED_WORDS}-word target: coarsen the list, omitting "
-                           "no item")
-        if status == "declined":
-            # A decline deletes the source's files. Every citation defect
-            # reported for a declined key rests on that, unchecked until now.
-            # The field going stale is untidy; the files surviving is the defect.
-            if entry.get("files"):
-                hygiene.append(f"sources/index.md  declined [{key}] still lists files: "
-                               "a decline drops the field along with the files")
-            sdir = os.path.join(root, "sources", key)
-            if os.path.isdir(sdir):
-                n = sum(len(f) for _, _, f in os.walk(sdir))
-                held = f" holding {plural(n, 'file')}" if n else " (empty)"
-                defects.append(f"sources/index.md  declined [{key}]: sources/{key}/ still "
-                               f"exists{held}, which a decline deletes")
-        elif not entry.get("files"):
-            # files is the one field a checker can confirm in both directions
-            # against disk, so leaving it optional silently skips both.
-            hygiene.append(f"sources/index.md  [{key}] has no files: list what "
-                           f"sources/{key}/ holds")
-        else:
-            hygiene.extend(check_files(root, key, entry["files"]))
-
-        # A decline deleted the source's files, so there is no body to open.
-        if status != "declined":
-            found, unstored = check_source_images(root, key)
-            defects.extend(found)
-            judgment.extend(unstored)
+    for key, entry in sorted(entries.items()):
+        found, unsettled, untidy = check_entry(root, key, entry, cite_count[key])
+        defects.extend(found)
+        judgment.extend(unsettled)
+        hygiene.extend(untidy)
 
     tally = defaultdict(int)
-    for status in keys.values():
-        tally[status or "no status"] += 1
+    for entry in entries.values():
+        tally[entry.status or "no status"] += 1
     breakdown = ", ".join(f"{n} {s}" for s, n in sorted(tally.items()))
     print(f"{plural(len(notes), 'note') if notes else 'no notes yet'}, "
-          f"{plural(len(keys), 'registered key')}"
-          f"{f' ({breakdown})' if keys else ''}, {plural(len(cited), 'key')} cited")
+          f"{plural(len(entries), 'registered key')}"
+          f"{f' ({breakdown})' if entries else ''}, {plural(len(cited), 'key')} cited")
     for label, items in (("DEFECTS", defects), ("FOR JUDGMENT", judgment), ("HYGIENE", hygiene)):
         if items:
             print(f"\n{label} ({len(items)})")

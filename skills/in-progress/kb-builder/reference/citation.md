@@ -31,7 +31,7 @@ A marker that does not belong is a defect. A **false marker** sits on a claim ab
 
 An **orphan key** (an `integrated` entry cited nowhere) is registry hygiene, not a claim defect: `kb-verify` reports it but leaves no inline mark. Likely fix: cite it or prune it. A `candidate` cited nowhere is expected, since it is registered and not yet folded in.
 
-A `declined` entry must be cited nowhere at all: `kb-integrate` deletes its files, so a surviving citation is a claim defect. Likely fix: re-ingest the source if the decline was wrong, otherwise repoint the claim. The check confirms both halves of that, the entry recording its reason and its files being in fact gone, since an undeleted decline leaves the citation rule resting on a false premise.
+A `declined` entry must be cited nowhere at all: `kb-integrate` deletes its files, so a surviving citation is a claim defect. Likely fix: re-ingest the source if the decline was wrong, otherwise repoint the claim. The check also confirms the entry records its reason and its files are gone.
 
 ## Citations are receipts
 
@@ -48,7 +48,7 @@ Locator grammar:
 | --- | --- |
 | `[key]` | whole source / thesis-level claim |
 | `[key: p.7]`, `[key: pp.7-9]` | page(s) of the original |
-| `[key: §"Heading text"]` | a section of the normalized `.md` (level-agnostic; matches heading text) |
+| `[key: §"Heading text"]` | a section of the normalized `.md`: a heading outside fenced code, at any level, whose text reads as written, whitespace and decoration aside (a self-link, `**`, an HTML entity, a backslash escape, a closing `#` run after a space, a trailing `¶`), with no other such heading reading the same; the name holds no `"` or `]` |
 | `[key: fig.3]`, `[key: tbl.2]`, `[key: eq.4]` | a figure, table, or equation. N is Arabic whatever numerals the caption uses, so a table captioned "Table IV" is `tbl.4` |
 | `[key: "verbatim span"]` | a line of the normalized `.md`: a span copied verbatim (whitespace aside) from one line outside fenced code, found on no other such line, holding no `"`, `[`, `]`, or backtick |
 | `[key: /json/pointer]` | a leaf of a structured source, one whose original parses to a data tree of maps, arrays, and scalars (JSON, YAML, TOML): its line in the normalized `.md`, or an element of an array leaf by index (`/architectures/0`). The only locator a structured source takes; the claim states the value |

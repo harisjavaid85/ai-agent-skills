@@ -39,7 +39,7 @@ Start coarse; subdivide under pressure.
 - **Default:** one file per topic, `knowledge/<topic>.md`, with concepts as `##` sections that accrete across sources.
 - **Subdivide** to `knowledge/<topic>/<concept>.md` or sibling notes only when a topic file outgrows a single read or sprouts several heavy concepts, and only as a named `kb-integrate split <note>`.
 - After writing, update `knowledge/index.md` (the topic map, navigation only), creating it if absent, per *The index* below.
-- **Cross-link** notes as `[[note-name]]`, the target's filename without `.md`, resolved inside `knowledge/`. `[[…]]` navigates within the KB; `[key: locator]` points out to a source.
+- **Cross-link** notes as `[[note-name]]`, the target's filename without `.md` or its folder, resolved inside `knowledge/`. `[[…]]` navigates within the KB; `[key: locator]` points out to a source.
 
 ## The index
 

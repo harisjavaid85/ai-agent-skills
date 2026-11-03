@@ -33,8 +33,8 @@ import urllib.parse
 
 IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]*)\)")
 HEADING = re.compile(r"^#{1,6} ", re.M)
-# The leading class strips markdown decoration, both bullet characters included:
-# docling emits captions as list items, and omitting `-` read them as lost.
+# The leading class strips markdown decoration, both bullet characters included,
+# since docling emits captions as list items.
 TABLE_CAPTION = re.compile(r"^[-#*>\s]*Table\s+(\d+)", re.M | re.I)
 FIGURE_CAPTION = re.compile(r"^[-#*>\s]*(?:Figure|Fig\.)\s*(\d+)", re.M | re.I)
 TABLE_REF = re.compile(r"\bTable\s+(\d+)", re.I)
@@ -140,7 +140,7 @@ def report(md, outdir, key):
           f"{len(targets)} images, {len(targets) - len(bad)} resolve, "
           f"{captions(FIGURE_CAPTION.findall(md))} · "
           f"{len(HEADING.findall(md))} headings")
-    # Only when non-zero, or 57 of 62 sources gain a line saying nothing.
+    # Only when non-zero: most sources have none, and a zero line says nothing.
     if html_tables:
         print(f"  {html_tables} HTML tables")
     print(f"  {len(LOST_EQUATION.findall(md))} lost equations")

@@ -41,8 +41,8 @@ def _convert(source, tmp, extra):
          "--image-export-mode", "referenced", "--abort-on-error", *extra],
         env={**os.environ, "TMPDIR": tmp},
     )
-    # Located by glob, not by computing a name from the input stem. That stem
-    # rule is docling's, undocumented, and has already changed once.
+    # Located by glob, not by computing a name from the input stem: that stem
+    # rule is docling's, undocumented, and free to change.
     produced = sorted(glob.glob(os.path.join(tmp, "*.md")))
     if r.returncode != 0 or not produced:
         sys.exit(f"docling failed (exit {r.returncode}): source not ingestible")
