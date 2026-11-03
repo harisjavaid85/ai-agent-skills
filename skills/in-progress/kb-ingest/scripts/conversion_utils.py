@@ -4,15 +4,17 @@ entry's `checked:` line reads the same whichever route produced the `.md`.
 The counts are paired on purpose, and the mismatch is the signal: more captions
 than objects means something was lost, more objects than captions means
 something was shredded into extra blocks or a caption detached. Objects pair
-against **distinct** caption numbers; the total prints beside them, so a gap
+against **distinct** caption numbers; the total prints beside them, so a difference
 between the two means a number captioned twice or a line-initial cross-reference.
 
 Agreement is necessary, not sufficient: it counts how many captions exist and
 never which numbers they carry, so a document that lost Tables 7 and 8 still
-reports 8 tables against 8 captions. The `caption gap:` line carries the rest
-and belongs in `damaged:`. It is a floor, since the patterns match on line start
-and a cross-reference beginning one reads as a caption. A printed gap is real;
-an empty line is unproven.
+reports 8 tables against 8 captions. The `caption gap:` line carries the rest,
+as leads for `damaged:`: a prose reference to another work's table prints a gap
+that is no loss, and a cross-reference opening a line reads as a caption, so the
+`caption gap:` line can print a false gap or hide a real one. Confirm each against
+the source; an absent line is unproven. A Roman table number prints as its Arabic
+value, so a gap's `Table 4` may read `TABLE IV` in the source.
 
 HTML tables are counted as a separate unpaired term, supporting no `tbl.N`
 locator to fold into the markdown table count.
@@ -34,10 +36,13 @@ import urllib.parse
 IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]*)\)")
 HEADING = re.compile(r"^#{1,6} ", re.M)
 # The leading class strips markdown decoration, both bullet characters included,
-# since docling emits captions as list items.
-TABLE_CAPTION = re.compile(r"^[-#*>\s]*Table\s+(\d+)", re.M | re.I)
+# since docling emits captions as list items. A table number is Arabic in any case,
+# or Roman (IEEE's `TABLE IV`) after a capitalized `Table` or `TABLE`, so prose such
+# as "the table I built" is no reference. A placeholder `Table X` reads as 10.
+TABLE_NUMBER = r"(?:(?i:table)\s+(\d+)|(?:Table|TABLE)\s+([IVX]+)\b)"
+TABLE_CAPTION = re.compile(r"^[-#*>\s]*" + TABLE_NUMBER, re.M)
 FIGURE_CAPTION = re.compile(r"^[-#*>\s]*(?:Figure|Fig\.)\s*(\d+)", re.M | re.I)
-TABLE_REF = re.compile(r"\bTable\s+(\d+)", re.I)
+TABLE_REF = re.compile(r"\b" + TABLE_NUMBER)
 FIGURE_REF = re.compile(r"\b(?:Figure|Fig\.)\s*(\d+)", re.I)
 HTML_TABLE = re.compile(r"<table", re.I)
 LOST_EQUATION = re.compile(r"formula-not-decoded")
@@ -105,9 +110,21 @@ def link_state(target, base):
     return None if os.path.exists(path) else "missing on disk"
 
 
+def roman(numeral):
+    """An `I`/`V`/`X` numeral's value: a smaller numeral before a larger one subtracts."""
+    values = [{"I": 1, "V": 5, "X": 10}[c] for c in numeral]
+    return sum(-v if v < nxt else v for v, nxt in zip(values, values[1:] + [0]))
+
+
+def numbers(pattern, md):
+    """Every number `pattern` finds in `md`: an Arabic group, else a Roman one."""
+    return [int(m.group(1)) if m.group(1) else roman(m.group(2))
+            for m in pattern.finditer(md)]
+
+
 def captions(found):
     """The caption term, `N captions (M distinct)`. M is what pairs."""
-    return f"{len(found)} captions ({len({int(n) for n in found})} distinct)"
+    return f"{len(found)} captions ({len(set(found))} distinct)"
 
 
 def caption_gaps(md, caption_re, ref_re, label):
@@ -118,8 +135,8 @@ def caption_gaps(md, caption_re, ref_re, label):
     references but nothing captions. The second half runs whatever the caption
     count, or a document that captions nothing and cites Figure 2 reads clean.
     """
-    numbered = {int(n) for n in caption_re.findall(md)}
-    gaps = {int(n) for n in ref_re.findall(md)} - numbered
+    numbered = set(numbers(caption_re, md))
+    gaps = set(numbers(ref_re, md)) - numbered
     if numbered:
         gaps |= set(range(1, max(numbered))) - numbered
     return [f"{label} {n}" for n in sorted(gaps)]
@@ -136,9 +153,9 @@ def report(md, outdir, key):
 
     print(f"{key}.md written")
     print(f"  {len(table_blocks(lines))} tables, "
-          f"{captions(TABLE_CAPTION.findall(md))} · "
+          f"{captions(numbers(TABLE_CAPTION, md))} · "
           f"{len(targets)} images, {len(targets) - len(bad)} resolve, "
-          f"{captions(FIGURE_CAPTION.findall(md))} · "
+          f"{captions(numbers(FIGURE_CAPTION, md))} · "
           f"{len(HEADING.findall(md))} headings")
     # Only when non-zero: most sources have none, and a zero line says nothing.
     if html_tables:

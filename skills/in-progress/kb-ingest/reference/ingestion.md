@@ -67,7 +67,7 @@ One exception is worth a second attempt before reporting the skip: where the sou
 
 ## Sanity-check the conversion
 
-Some defects survive conversion instead of failing it, so a clean exit is not a clean `.md`. After every conversion, check the produced `.md` against the source and record what you find in the entry's `citing`, per the [citation contract](../../kb-builder/reference/citation.md), which governs which field each finding belongs in. Detection only: never edit the `.md`. The converter's counts seed that entry. Investigate every mismatch they show, **and every line printed beneath them**: agreement across the counts is not a clean reading on its own, and a `caption gap:` line names a loss they agree straight through.
+Some defects survive conversion instead of failing it, so a clean exit is not a clean `.md`. After every conversion, check the produced `.md` against the source and record what you find in the entry's `citing`, per the [citation contract](../../kb-builder/reference/citation.md), which governs which field each finding belongs in. Detection only: never edit the `.md`. The converter's counts seed that entry. Investigate every mismatch they show, **and every line printed beneath them**: agreement across the counts is not a clean reading on its own, and a `caption gap:` line names a possible loss they agree straight through.
 
 Where to look in a docling conversion, and what each place catches, all of it observed in converted sources:
 
