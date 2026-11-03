@@ -1,14 +1,12 @@
 # Distillation contract
 
-What a note may **say**: folding a source's insights into `knowledge/`, re-grounding open markers, and the topic map's shape. Shared by `kb-integrate` (writing notes), `kb-verify` (auditing them), and `kb-expert` (reading the index).
-
-How a claim connects to its source, which covers citations, grounding markers, the registry schema, and the never-fabricate rule, is a separate question, governed by [citation.md](./citation.md).
+What a note may **say**: folding a source's insights into `knowledge/`, repairing open markers, and the topic map's shape. How a claim connects to its source is [citation.md](./citation.md)'s question.
 
 1. **Integrate, don't summarize.** Fold each source's durable, load-bearing insights into existing notes: add a `[key: locator]`, deepen an explanation, or reconcile/supersede a prior claim. Never write a per-paper summary.
 2. **Terse but self-sufficient.** Each insight stands alone: a reader at the KB's audience level understands it without opening the citation. Terse: no filler, no re-teaching what the audience already knows, but not cryptic references.
-3. **Insight-first & audience-calibrated.** Lead with the takeaway. Calibrate depth to the KB's audience/expertise knob (declared in the KB's `AGENTS.md`): cite-don't-reteach what the reader knows, explain fully what they're learning.
-4. **Prune, don't append duplicates.** Correct or supersede stale claims in place, in every note that restates or relies on them. Across notes, the topic note that owns a subject gives its full account: the derivation, the complete detail, the evidence. Another note links it with `[[note]]` and keeps what its own sentences need to stand alone under rule 2: the numbers its argument uses, the mechanism in a clause, a defining quote, each with its citation. The defect is a second full account, not a repeated number. Before cutting, read the sentence with the cut applied: if it no longer stands without opening the link, keep it.
-5. **Scope every claim to what its source supports.** The KB records what its sources say, never what they omit: write the bound into the claim rather than the omission that implies it. Worked through under *Scoping a claim* below.
+3. **Insight-first & audience-calibrated.** Lead with the takeaway, covered by a citation whose sources state it or from which it directly follows, per [citation.md](./citation.md)'s *What a citation must hold*. Calibrate depth to the KB's audience/expertise knob (declared in the KB's `AGENTS.md`): cite-don't-reteach what the reader knows, explain fully what they're learning.
+4. **Prune, don't append duplicates.** Correct or supersede stale claims in place, in every note that restates or relies on them, in any form: a value in other units, rounded, or folded into a derived figure; a mechanism or finding in other words; and any conclusion drawn from it. Across notes, the topic note that owns a subject gives its full account: the derivation, the complete detail, the evidence. Another note links it with `[[note]]` and keeps what its own sentences need to stand alone under rule 2: the numbers it uses, the mechanism in a clause, a defining quote, each with its source citation. The defect is a second full account, not a repeated number. Before cutting, read the sentence with the cut applied: if it no longer stands without opening the link, keep it.
+5. **Scope every claim to what its source supports.** The KB records what its sources say, never what they omit: write the bound into the claim rather than the omission that implies it. Where accurately cited claims disagree, a scope (version, workload, setup, definition) that settles it is written into each claim, and a superseding source settles it under rule 4; where neither does, a **contradiction**, keep both, each scoped, for the reader to judge; never merge them into one claim that hides it. Worked through under *Scoping a claim* below.
 
 ## Scoping a claim
 
@@ -26,11 +24,11 @@ The values are reported to transfer across batch size, model width, depth, and
 token count, for the configurations the blog names [meta2025-llama4-blog: §"Pre-training"].
 ```
 
-Two things go wrong in the first version. The marker is false, because the claim about the blog is grounded and nothing there is unverified. And the sentence should not exist at all, because the KB records what sources say and not what they omit. The fix is neither a better marker nor a citation on the second sentence: it is one scoped claim, cited, with the bound written in.
+The first version's second sentence records an omission. The fix is neither a better marker nor a citation: it is one scoped claim, cited, with the bound written in.
 
 **A bound on the subject is not an absence.** "The method does not address batch sizes above 4096" is a claim about the method, and takes a citation like any other. Rule 5 reaches only sentences about a **source**, so judge by what a sentence is about, never by its shape.
 
-**A source's own limits are content.** The rule bans the KB inventing an absence, not a source stating one. Where a source **itself** says what it does not do ("we do not evaluate multilingual benchmarks", "the mechanism is left to future work"), that is something it says: take it as a scope qualifier with an ordinary citation when rule 1's durable-and-load-bearing test passes, and drop it like any other unused detail when that test fails.
+**A source's own limits are content.** The rule bans the KB inventing an absence, not a source stating one. Where a source **itself** says what it does not do ("we do not evaluate multilingual benchmarks", "the mechanism is left to future work"), that is something it says: take it as a scope qualifier with an ordinary citation when rule 1's durable-and-load-bearing test passes.
 
 ## Where knowledge lives
 
@@ -39,6 +37,7 @@ Start coarse; subdivide under pressure.
 - **Default:** one file per topic, `knowledge/<topic>.md`, with concepts as `##` sections that accrete across sources.
 - **Subdivide** to `knowledge/<topic>/<concept>.md` or sibling notes only when a topic file outgrows a single read or sprouts several heavy concepts, and only as a named `kb-integrate split <note>`.
 - After writing, update `knowledge/index.md` (the topic map, navigation only), creating it if absent, per *The index* below.
+- **Keep each note's filename unique** across `knowledge/`, folders included.
 - **Cross-link** notes as `[[note-name]]`, the target's filename without `.md` or its folder, resolved inside `knowledge/`. `[[…]]` navigates within the KB; `[key: locator]` points out to a source.
 
 ## The index
@@ -81,23 +80,26 @@ Conclusion-first, minimal structure. A living note, not a filled-in form:
 ```
 # <Topic>
 
-<One to three sentences of orientation, pitched at the KB's audience.>
+<One to three sentences of orientation, pitched at the KB's audience, each factual one cited> [key: §"Intro"].
 
 ## <Concept>
-<Conclusion first.> <Supporting detail> [key: p.7]. <Reconciliation with a prior claim> [other-key: §"Results"].
-<Claim about the subject that no source grounds> [UNVERIFIED].
+<Takeaway first.> <Supporting fact> [key: p.7]. <Reconciliation with a prior claim> [other-key: §"Results"].
+<Claim no citation covers> [UNVERIFIED].
 
 ## See also
 - [[related-topic]]
 ```
 
-## Re-grounding
+## Repair
 
-Integrating always ends in a re-ground: sweep the KB's open `[UNVERIFIED]` and `[DRIFTED]` markers, **including any this pass just wrote**, and re-attempt each.
+Run only by `kb-integrate repair`, on the open markers in its scope. It changes citations and markers, never claims.
 
-First judge whether the marker belongs, against [citation.md](./citation.md)'s marker invariant. A false marker is not an open marker: rewrite that sentence per rule 5, or delete it, and never carry it forward.
-
-Then re-attempt the ones that do belong, per [citation.md](./citation.md)'s *Damaged content* rule:
-
-- **`[UNVERIFIED]`.** Ground the claim against the sources now present. Clear the marker when a citation lands, leave it standing when none does.
-- **`[DRIFTED]`.** Relocate its locator **within the same source**, and clear the marker when it lands.
+1. **Read `citing` first.** For each key involved, read its `citing` entry before any place it cites, and cite damaged content from the kept original, per [citation.md](./citation.md)'s *Damaged content* rule.
+2. **Wrong markers.** Remove a marker [citation.md](./citation.md)'s *Markers* does not put where it stands. A marker alone in a table cell records a missing value and stays.
+3. **`[UNVERIFIED]`.** Cite a place in an `integrated` source, never a `candidate`, that states the text or from which it directly follows: repeat a nearby citation where it holds, or cite a new place. Clear the marker only when the text is held, per [citation.md](./citation.md)'s *What a citation must hold*.
+4. **`[DRIFTED]`.** Cite a place in an `integrated` source that holds what the covering citations miss, beside them, or delete an irrelevant citation per step 6. Clear the marker only when the remaining citations together hold every part of the sentence and none of them is irrelevant.
+5. **Never clear over contrary evidence.** Where any covering source contradicts the text, the marker stays, whatever agreeing citation is added beside it. Report the conflict for an edit the user directs.
+6. **Delete or move a citation** while the text it covers stays only when it is irrelevant, per [citation.md](./citation.md)'s *Markers*. Changing a citation's locator, or moving it so earlier text loses its coverage, is a deletion. Removing or moving a claim with its citations is a correction the user directs, or a `split`.
+7. **Keep coverage and marker kinds**, per [citation.md](./citation.md)'s *Edits move coverage* and *Kind follows coverage*.
+8. **Never change a claim** to clear a marker. Rewording, rescoping, adding, and deleting claims, a missing fact or table value included, are edits the user directs.
+9. **`dropped`.** Where a repair cites a part a key's `dropped` lists, rewrite that `dropped` per the `dropped` row of [citation.md](./citation.md)'s registry schema.

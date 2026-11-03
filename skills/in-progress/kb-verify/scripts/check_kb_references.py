@@ -3,14 +3,21 @@
 
 Resolves `[key]` and each entry's required fields against sources/index.md,
 each entry's `files` against sources/<key>/ on disk, each source body's image
-links against sources/<key>/, and `[[note]]` links and index listing against
-knowledge/. Checks each locator's form against the citation contract's grammar
-(`malformed locator`), a pointer locator against its line in
-sources/<key>/<key>.md (`unresolved pointer`), a `§` locator against the
+links against sources/<key>/, `[[note]]` links and index listing against
+knowledge/, and each in-page `(#anchor)` link against its note's headings.
+Checks each locator's form against the citation contract's grammar
+(`malformed locator`), a pointer locator against its line, or the lines under
+it, in sources/<key>/<key>.md (`unresolved pointer`), a `§` locator against the
 headings of that `.md` (`unresolved section`, `ambiguous section`), and a quote
-against its lines (`unresolved quote`, `ambiguous quote`), and reports any other
-form citing a structured source (`non-pointer locator`). Also reports an
-entry or a note name declared twice, and checks the index's shape per the
+against its lines (`unresolved quote`, `ambiguous quote`), and reports a
+citation whose form its source does not take (`wrong-form locator`): a source is
+structured when its entry's `citing` declares `locators: pointer ✓`, takes
+pointers only, and is the only source a pointer cites. A declared structured
+source that lists no data original in `files`, or whose `.md` is not pointer
+lines, is a defect. A bracket holds one locator: a list of registered keys
+(`[a, b]`) is a `malformed locator`, and a finding on a bracket holding a second
+locator after `,` or `;` ends "give each locator its own brackets". Also reports
+an entry or a note name declared twice, and checks the index's shape per the
 distillation contract: one `- [[note]]: <scope>` entry per note, its scope
 within the word cap, and each cross-cutting line spanning three notes with
 every aspect naming one. A KB with no knowledge/ yet is a KB holding only
@@ -45,14 +52,27 @@ MARKER = re.compile(r"\[(UNVERIFIED|DRIFTED)\]")
 # Link text holds no `[`, so a link never opens at a stray `[` or a citation's
 # own and swallows the citation: one holding a link reaches the grammar check.
 MDLINK = re.compile(r"\[[^\[\]]*\]\([^)]*\)")
+ANCHOR = re.compile(r"\[[^\[\]]*\]\(#([^)\s]*)\)")
 CITE = re.compile(r"\[([A-Za-z0-9][A-Za-z0-9._-]*)(:\s*[^\]]*)?\]")
+KEY = r"[A-Za-z0-9][A-Za-z0-9._-]*"
+# `[a, b]`, `[a; b]`, or `[a, b: p.1]`, which CITE never matches: a citation
+# only when every key is registered, so `[128, 128]` and `[cfg, TODO]` stay prose.
+KEY_LIST = re.compile(rf"\[({KEY}(?:\s*[,;]\s*{KEY})+)(\s*:[^\]]*)?\]")
+LIST_SEP = re.compile(r"\s*[,;]\s*")
+# A second locator inside one citation's locator, read outside quoted spans,
+# whose text may hold one: a locator form of its own (`; p.4`, `, §"…"`,
+# `, "…"`, `, /…`), read first since a key may look like `p.4`, or a key
+# (`, b:`, `; b:`, a trailing `, b`).
+SECOND_LOCATOR = re.compile(
+    rf'[,;]\s*(?:(?:pp?|fig|tbl|eq)\.\d|§?"|/|({KEY})\s*(?::|$))')
+OWN_BRACKETS = "give each locator its own brackets"
 # The locator grammar in kb-builder's reference/citation.md. All but the last
 # form, the pointer, copy _LOCATOR in kb-web's backend/kb_web/citations.py, with
 # two differences until kb-web catches up: kb-web still accepts the dropped
 # `@mm:ss` timestamp, and here the quote also excludes `[`, `]`, and a backtick,
 # and the section name `]`, which kb-web cannot parse inside a citation.
 LOCATOR = re.compile(r': (?:p\.\d+|pp\.\d+-\d+|(?:fig|tbl|eq)\.\d+|§"[^"\]\n]+"'
-                     r'|"[^"\[\]`\n]+"|/[^\]\n]+)')
+                     r'|"[^"\[\]`\n]+"|/[^\]\n]*)')
 HEADING = re.compile(r"^#{1,6}(?:\s+(.*))?$")
 SELF_LINK = re.compile(r"\[([^\]]*)\]\(#[^)]*\)")
 BOLD = re.compile(r"\*\*(.+?)\*\*")
@@ -69,6 +89,10 @@ DIR_COUNT = re.compile(r"`([^`]+/)`\s*\((\d+)\s+files?\)")
 MD_IMAGE = re.compile(r"!\[[^\]]*\]\(([^)]*)\)")
 HTML_IMAGE = re.compile(r"<img[^>]+src=[\"']([^\"']+)[\"']", re.I)
 DATE_STAMP = re.compile(r"\d{4}-\d{2}-\d{2}:")
+# citing's `locators:` sub-bullet, up to the next sub-bullet once lines are joined.
+LOCATORS = re.compile(r"(?:^|\s)-\s+locators:(.*?)(?=\s-\s+(?:checked|damaged|quirks)\b|$)", re.I)
+POINTER_MARK = re.compile(r"\bpointer\s*✓")
+DATA_ORIGINAL = (".json", ".yaml", ".yml", ".toml")
 STATUSES = ("candidate", "integrated", "declined")
 REMOTE = ("http://", "https://", "//", "data:", "mailto:")
 DROPPED_WORDS = 100
@@ -94,10 +118,12 @@ def unfenced(lines):
 def scan(path):
     """Return a list of (lineno, kind, value, locator), one per finding in a note.
 
-    Three kinds are references, resolved against a target: wiki, cite (has a
-    locator), and bare (key alone). The fourth, marker, is not resolved against
-    anything: it is counted and located, and kb-verify judges each site. Only a
-    cite carries a locator, from its colon on; every other kind carries None.
+    Four kinds are references, resolved against a target: wiki, anchor (an
+    in-page `(#…)` link), cite (has a locator), and bare (key alone). The fourth, marker, is not resolved against
+    anything: it is counted and located, and kb-verify judges each site. The
+    fifth, list, is a bracket of keys (`[a, b]`), its value the keys as written.
+    A cite carries a locator, from its colon on, as does a list ending in one;
+    every other kind carries None.
 
     Fenced and inline code are skipped, so a note quoting the distillation
     contract's worked pair, or showing a citation as an example, never reads as
@@ -114,6 +140,8 @@ def scan(path):
             line = WIKI.sub(blank, line)
             for m in MARKER.finditer(line):
                 found.append((n, "marker", m.group(1), None))
+            for m in ANCHOR.finditer(line):
+                found.append((n, "anchor", m.group(1), None))
             line = MDLINK.sub(blank, MARKER.sub(blank, line))
             for m in CITE.finditer(line):
                 # A key is at least two characters and carries a letter, so a
@@ -123,6 +151,9 @@ def scan(path):
                     continue
                 locator = raw[m.start(2):m.end(2)] if m.group(2) else None
                 found.append((n, "cite" if locator else "bare", m.group(1), locator))
+            for m in KEY_LIST.finditer(line):
+                locator = raw[m.start(2):m.end(2)] if m.group(2) else None
+                found.append((n, "list", m.group(1), locator))
     return found
 
 
@@ -134,11 +165,13 @@ def blank(m):
 def resolves(lines, pointer):
     """Whether a pointer locator resolves against a structured source's lines.
 
-    It resolves when a line opens with it. One segment below an array leaf, it
-    resolves when the parent's line holds an array and the last segment is an
-    index into it.
+    It resolves when a line opens with it, or, naming a map, when a line opens
+    with it plus `/` (`/` alone names the whole file). One segment below an
+    array leaf, it resolves when the parent's line holds an array and the last
+    segment is an index into it.
     """
-    if any(line.startswith(f"{pointer}: ") for line in lines):
+    prefix = "/" if pointer == "/" else f"{pointer}/"
+    if any(line.startswith((f"{pointer}: ", prefix)) for line in lines):
         return True
     parent, _, index = pointer.rpartition("/")
     if not parent or not ARRAY_INDEX.fullmatch(index):
@@ -188,6 +221,22 @@ def heading_text(raw):
     return " ".join(text.split())
 
 
+def heading_anchors(path):
+    """The anchors a renderer gives a note's headings outside fenced code:
+    heading_text lowercased, each character but a letter, digit, `_`, `-` or
+    space dropped, spaces turned to `-`, and a repeat suffixed `-1`, `-2`, …"""
+    out, seen = set(), defaultdict(int)
+    with open(path, encoding="utf-8") as fh:
+        for _, line in unfenced(fh):
+            m = HEADING.match(line.rstrip("\n"))
+            if not m:
+                continue
+            slug = re.sub(r"[^\w\- ]", "", heading_text(m.group(1)).lower()).replace(" ", "-")
+            out.add(f"{slug}-{seen[slug]}" if seen[slug] else slug)
+            seen[slug] += 1
+    return out
+
+
 def section_problem(lines, name, md):
     """Why a `§` locator fails, or None when it resolves.
 
@@ -211,9 +260,9 @@ def section_problem(lines, name, md):
     return None
 
 
-def structured(lines):
-    """Whether a source's lines are a structured source's normalized `.md`: one
-    fenced block holding only `<pointer>: <value>` lines, and nothing outside it."""
+def pointer_shaped(lines):
+    """Whether a source's lines are one fenced block holding only
+    `<pointer>: <value>` lines, and nothing outside it."""
     body = (line for line in lines if line.strip())
     if not next(body, "").startswith("```"):
         return False
@@ -222,17 +271,22 @@ def structured(lines):
             and all(line.startswith("/") and ": " in line for line in rest[:-1]))
 
 
-def locator_problem(root, key, locator, cache):
+def locator_problem(root, key, locator, cache, structured):
     """Why a well-formed locator fails against sources/<key>/<key>.md, or None.
 
-    A pointer, quote, or `§` resolves in that `.md`. `p.`, `fig.`, `tbl.`, and
-    `eq.` name the original and pass, unless the `.md` is a structured source's.
+    A structured source takes pointers only, and a pointer cites only a
+    structured source. A pointer, quote,
+    or `§` resolves in that `.md`; `p.`, `fig.`, `tbl.`, and `eq.` name the
+    original and pass.
     """
     md, lines = f"sources/{key}/{key}.md", source_lines(root, key, cache)
-    if locator.startswith(": /"):
+    pointer = locator.startswith(": /")
+    if pointer and not structured:
+        return f"wrong-form locator: [{key}] is not a structured source, which takes no pointer"
+    if structured and not pointer:
+        return f"wrong-form locator: [{key}] is a structured source, which takes pointers only"
+    if pointer:
         return pointer_problem(lines, locator[2:], md)
-    if structured(lines):
-        return f"non-pointer locator: {md} is a structured source, which takes pointers only"
     if locator.startswith(': "'):
         return quote_problem(lines, locator[3:-1], md)
     if locator.startswith(': §"'):
@@ -449,6 +503,12 @@ class SourceEntry:
     fields: dict = field(default_factory=dict)
     stamps: int = 0
 
+    @property
+    def structured(self):
+        """Whether citing's `locators:` declares the source structured."""
+        m = LOCATORS.search(self.fields.get("citing", ""))
+        return bool(m and POINTER_MARK.search(m.group(1)))
+
 
 def read_registry(sindex, hygiene):
     """Parse sources/index.md into {key: SourceEntry}.
@@ -558,12 +618,56 @@ def check_entry(root, key, entry, cite_count):
         defects.extend(found)
         hygiene.extend(untidy)
 
+    if status != "declined" and entry.structured and not any(
+            t.lower().endswith(DATA_ORIGINAL) and "/" not in t
+            for t in BACKTICKED.findall(fields.get("files", ""))):
+        defects.append(f"sources/index.md  [{key}] declares pointer ✓ but files lists no "
+                       "data original (.json, .yaml, .yml, .toml)")
+    md = os.path.join(sdir, f"{key}.md")
+    if status != "declined" and entry.structured and os.path.isfile(md):
+        with open(md, encoding="utf-8") as fh:
+            if not pointer_shaped(fh.read().split("\n")):
+                defects.append(f"sources/{key}/{key}.md  [{key}] declares pointer ✓ but its "
+                               ".md is not one fenced block of pointer lines")
+
     # A decline deleted the source's files, so there is no body to open.
     if status != "declined":
         found, unstored = check_source_images(root, key)
         defects.extend(found)
         judgment.extend(unstored)
     return defects, judgment, hygiene
+
+
+def blank_quoted(locator):
+    """The locator with the text inside each pair of quotes blanked to spaces,
+    the quotes kept; a quote left open blanks the rest."""
+    out, inside = [], False
+    for c in locator:
+        if c == '"':
+            inside = not inside
+            out.append(c)
+        else:
+            out.append(" " if inside else c)
+    return "".join(out)
+
+
+def second_locators(locator, entries):
+    """The locator up to a second one after `,` or `;`, None when it holds none,
+    and the registered keys the bracket names after it. A key counts only when
+    registered, so `; see below` is no second locator.
+
+    Quoted text is blanked first, and a quote left open swallows the rest of
+    the bracket.
+    """
+    bare = blank_quoted(locator)
+    first, keys = None, []
+    for m in SECOND_LOCATOR.finditer(bare):
+        if m.group(1) is None or m.group(1) in entries:
+            if first is None:
+                first = locator[:m.start()].rstrip()
+            if m.group(1):
+                keys.append(m.group(1))
+    return first, keys
 
 
 def main(root):
@@ -585,35 +689,66 @@ def main(root):
     bodies = {}
     for name in sorted(notes):
         for path in notes[name]:
-            rel = os.path.relpath(path, root)
+            rel, anchors = os.path.relpath(path, root), None
             for line, kind, value, locator in scan(path):
                 where = f"{rel}:{line}"
                 if kind == "wiki":
                     if value not in notes:
                         defects.append(f"{where}  dangling link [[{value}]]")
+                elif kind == "anchor":
+                    if anchors is None:
+                        anchors = heading_anchors(path)
+                    if urllib.parse.unquote(value) not in anchors:
+                        defects.append(f"{where}  dangling link (#{value}): no heading "
+                                       "of this note has that anchor")
                 elif kind == "marker":
                     counts[value] += 1
                     marker_sites.append(f"{where}  [{value}]")
+                elif kind == "list":
+                    keys = LIST_SEP.split(value)
+                    if all(k in entries for k in keys):
+                        if locator:
+                            keys += second_locators(locator, entries)[1]
+                        for k in set(keys):
+                            cited.add(k)
+                            cite_count[k] += 1
+                        defects.append(f"{where}  malformed locator "
+                                       f"[{value}{locator or ''}]: {OWN_BRACKETS}")
                 else:
                     cited.add(value)
                     cite_count[value] += 1
+                    first, others = (second_locators(locator, entries) if locator
+                                     else (None, []))
+                    hint = f": {OWN_BRACKETS}" if first is not None else ""
+                    found = []
                     if value not in entries:
-                        defects.append(f"{where}  unresolved key [{value}]")
-                        continue
-                    declined = entries[value].status == "declined"
-                    if declined:
-                        defects.append(
-                            f"{where}  cites declined key [{value}]: a decline deletes the "
-                            "source, so the locator cannot be verified")
-                    if kind == "bare":
-                        judgment.append(f"{where}  bare [{value}]: thesis-level only")
-                    elif not LOCATOR.fullmatch(locator):
-                        defects.append(f"{where}  malformed locator [{value}{locator}]: "
-                                       "write one of the citation contract's forms")
-                    elif not declined:
-                        problem = locator_problem(root, value, locator, bodies)
-                        if problem:
-                            defects.append(f"{where}  {problem} [{value}{locator}]")
+                        found.append(f"unresolved key [{value}]{hint}")
+                    else:
+                        declined = entries[value].status == "declined"
+                        grammatical = kind == "bare" or LOCATOR.fullmatch(locator)
+                        if declined:
+                            found.append(f"cites declined key [{value}]: a decline deletes the "
+                                         "source, so the locator cannot be verified"
+                                         + (hint if grammatical else ""))
+                        if kind == "bare":
+                            judgment.append(f"{where}  bare [{value}]: thesis-level only")
+                        elif not grammatical:
+                            fix = ": write one of the citation contract's forms"
+                            if first is not None:
+                                fix = hint if LOCATOR.fullmatch(first) else f"{fix}; {OWN_BRACKETS}"
+                            found.append(f"malformed locator [{value}{locator}]{fix}")
+                        elif not declined:
+                            problem = locator_problem(root, value, locator, bodies,
+                                                      entries[value].structured)
+                            if problem:
+                                found.append(f"{problem} [{value}{locator}]{hint}")
+                    defects.extend(f"{where}  {f}" for f in found)
+                    # A bracket that earns a finding counts each key it names, so
+                    # the rewrite it prescribes leaves no false orphan behind.
+                    if found:
+                        for k in set(others) - {value}:
+                            cited.add(k)
+                            cite_count[k] += 1
 
     if notes:
         for name in sorted(notes):

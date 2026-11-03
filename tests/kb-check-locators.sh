@@ -19,13 +19,14 @@ pass() {
 }
 
 # Builds a KB holding a paper source `paper` and a structured source `cfg`,
-# with the note body read from stdin.
+# which keeps `cfg.json` and declares `pointer ✓`, with the note body read from stdin.
 new_kb() {
   local kb="$TMP_ROOT/$1"
   mkdir -p "$kb/knowledge" "$kb/sources/paper" "$kb/sources/cfg"
   cat >"$kb/knowledge/note.md"
   printf -- '- [[note]]: the fixture note\n' >"$kb/knowledge/index.md"
   printf '# Paper\n' >"$kb/sources/paper/paper.md"
+  printf '{}\n' >"$kb/sources/cfg/cfg.json"
   cat >"$kb/sources/cfg/cfg.md" <<'EOF'
 ```
 /num_key_value_heads: 128
@@ -43,9 +44,10 @@ EOF
 
 ## cfg
 
-- **files:** `cfg.md`
+- **files:** `cfg.md`, `cfg.json`
 - **status:** integrated
 - **citing:** Fixture.
+  - locators: pointer ✓
 - **dropped:** 2026-10-23: nothing
 EOF
   printf '%s\n' "$kb"
@@ -82,6 +84,12 @@ assert_region() {
   local region
   region="$(awk -v pat="$3" '/^[A-Z][A-Z ]+ \([0-9]+\)$/ { r = $0; sub(/ \(.*/, "", r) } $0 ~ pat { print r; exit }' "$TMP_ROOT/output")"
   [ "$region" = "$2" ] || fail "$1: expected under $2, found under '${region:-nothing}':"$'\n'"$(cat "$TMP_ROOT/output")"
+}
+
+# Asserts the summary line counts $2 keys cited.
+assert_counted() {
+  grep -q ", $2 keys\? cited$" "$TMP_ROOT/output" ||
+    fail "$1: expected $2 keys cited:"$'\n'"$(cat "$TMP_ROOT/output")"
 }
 
 # Builds a KB whose note is $2, runs the source writer $4 on it if given,
@@ -239,14 +247,16 @@ Unescaped [paper: §"The max_tokens API"], copied raw [paper: §"The max\_tokens
   pass "resolves sections to one heading, decoration and escapes aside; reports unresolved, fenced, ambiguous, and empty ones"
 }
 
+# Adds an array leaf holding a U+2028 line separator inside cfg's fence.
 separator_source() {
-  printf '/tags: ["a\342\200\250b", "c"]\n' >>"$1/sources/cfg/cfg.md"
+  sed -i "\$i /tags: [\"a$(printf '\342\200\250')b\", \"c\"]" "$1/sources/cfg/cfg.md"
 }
 
 test_pointers() {
   local unresolved="knowledge/note.md:1  unresolved pointer: no line of sources/cfg/cfg.md opens with it"
   clean_case "resolving pointers" \
     'Heads [cfg: /num_key_value_heads], nested [cfg: /text_config/dtype], class [cfg: /architectures/0].'
+  assert_absent "resolving pointers" "is not one fenced block of pointer lines"
   defect_case "unresolved pointer" 'Heads [cfg: /num_heads].' "$unresolved \[cfg: /num_heads\]"
   defect_case "prefix pointer" 'Heads [cfg: /num_key_value].' "$unresolved \[cfg: /num_key_value\]"
   defect_case "out-of-range index" 'Class [cfg: /architectures/1].' "$unresolved \[cfg: /architectures/1\]"
@@ -255,7 +265,16 @@ test_pointers() {
     "$unresolved \[cfg: /num_key_value_heads/0\]"
   defect_case "unresolved pointer on a [DRIFTED] claim" 'Heads [cfg: /num_heads] [DRIFTED].' \
     "$unresolved \[cfg: /num_heads\]"
-  pass "resolves leaf and element pointers; reports unresolved and out-of-range ones"
+  clean_case "whole-file and map pointers" 'Keys [cfg: /], block [cfg: /text_config].'
+  defect_case "trailing slash on a map" 'Block [cfg: /text_config/].' "$unresolved \[cfg: /text_config/\]"
+  defect_case "part of a key name as a map" 'Block [cfg: /text].' "$unresolved \[cfg: /text\]"
+  clean_case "empty-key child" 'Empty [cfg: /text_config/].' empty_key_source
+  pass "resolves leaf, element, map, and whole-file pointers; reports unresolved and out-of-range ones"
+}
+
+# Gives `cfg` a child of /text_config under the empty key.
+empty_key_source() {
+  sed -i 's#^/text_config/dtype: "bfloat16"$#&\n/text_config/: 1#' "$1/sources/cfg/cfg.md"
 }
 
 # A paper whose body is one fenced block of paths, then prose.
@@ -268,16 +287,179 @@ paths_paper() {
   printf '```\n/usr/lib/a.so\n```\n' >"$1/sources/paper/paper.md"
 }
 
-test_structured_takes_pointers_only() {
+# A paper that also keeps a `.json`, declaring no pointer mark.
+paper_with_json() {
+  printf '{}\n' >"$1/sources/paper/paper.json"
+  sed -i 's/^- \*\*files:\*\* `paper.md`$/- **files:** `paper.md`, `paper.json`/' "$1/sources/index.md"
+  printf '/a: 1\n' >"$1/sources/paper/paper.md"
+}
+
+# cfg declaring pointer ✓ while keeping no data original.
+cfg_without_original() {
+  rm "$1/sources/cfg/cfg.json"
+  sed -i 's/^- \*\*files:\*\* `cfg.md`, `cfg.json`$/- **files:** `cfg.md`/' "$1/sources/index.md"
+}
+
+# cfg declaring pointer ✓ over a prose `.md`.
+cfg_prose_body() {
+  printf '# Config\n\nProse.\n' >"$1/sources/cfg/cfg.md"
+}
+
+# cfg declaring pointer ✓ with no files field at all.
+cfg_without_files() {
+  sed -i '/^- \*\*files:\*\* `cfg.md`, `cfg.json`$/d' "$1/sources/index.md"
+}
+
+# cfg naming `config.json` only inside a URL, keeping no data original.
+cfg_original_only_in_url() {
+  cfg_without_original "$1"
+  sed -i 's|^- \*\*files:\*\* `cfg.md`$|- **files:** `cfg.md` (`https://hf.co/x/config.json`)|' "$1/sources/index.md"
+}
+
+# cfg keeping a `.yaml` original instead of a `.json`.
+cfg_yaml_original() {
+  mv "$1/sources/cfg/cfg.json" "$1/sources/cfg/cfg.yaml"
+  sed -i 's/`cfg.json`/`cfg.yaml`/' "$1/sources/index.md"
+}
+
+# cfg's locators line wrapped, `pointer ✓` on its continuation line.
+cfg_wrapped_locators() {
+  sed -i 's/^  - locators: pointer ✓$/  - locators:\n    pointer ✓\n  - checked: 3 leaves/' "$1/sources/index.md"
+}
+
+# cfg's locators sub-bullet written `Locators:`.
+cfg_capitalized_locators() {
+  sed -i 's/^  - locators: pointer ✓$/  - Locators: pointer ✓/' "$1/sources/index.md"
+}
+
+# Declines `cfg`, dropping its files field and leaving its folder.
+decline_cfg() {
+  sed -i 's/^- \*\*files:\*\* `cfg.md`, `cfg.json`$//; /^## cfg$/,$ s/^- \*\*status:\*\* integrated$/- **status:** declined (out of scope, 2026-10-28)/' "$1/sources/index.md"
+}
+
+# cfg marking pointer ✗: not declared structured.
+cfg_pointer_unchecked() {
+  sed -i 's/^  - locators: pointer ✓$/  - locators: pointer ✗/' "$1/sources/index.md"
+}
+
+# cfg whose `pointer ✓` sits in damaged:, not locators:.
+cfg_pointer_in_damaged() {
+  sed -i 's/^  - locators: pointer ✓$/  - locators: p ✓\n  - damaged (1): throughout: pointer ✓ lines garbled/' "$1/sources/index.md"
+}
+
+test_locator_form_follows_the_registry() {
   local citation
   for citation in '[cfg: p.3]' '[cfg: tbl.2]' '[cfg: §"dtype"]' '[cfg: "bfloat16"]'; do
     defect_case "$citation" "A claim $citation." \
-      "knowledge/note.md:1  non-pointer locator: sources/cfg/cfg.md is a structured source"
+      "knowledge/note.md:1  wrong-form locator: \[cfg\] is a structured source"
   done
+  defect_case "pointer into a paper" 'Value [paper: /a].' \
+    "knowledge/note.md:1  wrong-form locator: \[paper\] is not a structured source" paper_with_json
+  clean_case "page into a paper keeping a .json" 'Page [paper: p.3].' paper_with_json
   clean_case "page into a paper" 'Page [paper: p.3].'
   clean_case "page into a paper opening with a fence of paths" 'Page [paper: p.3].' fenced_paper
   clean_case "page into a paper that is a fence of paths" 'Page [paper: p.3].' paths_paper
-  pass "reports any locator but a pointer into a structured source"
+  defect_case "declared structured source with no data original" 'Heads [cfg: /num_key_value_heads].' "cfg. declares pointer ✓ but files lists no data original" cfg_without_original
+  assert_region "declared structured source with no data original" DEFECTS "cfg. declares pointer ✓ but files lists no data original"
+  defect_case "declared structured source with no files field" 'Heads [cfg: /num_key_value_heads].' "cfg. declares pointer ✓ but files lists no data original" cfg_without_files
+  assert_region "declared structured source with no files field" DEFECTS "cfg. declares pointer ✓ but files lists no data original"
+  defect_case "data original named only in a URL" 'Heads [cfg: /num_key_value_heads].' "cfg. declares pointer ✓ but files lists no data original" cfg_original_only_in_url
+  assert_region "data original named only in a URL" DEFECTS "cfg. declares pointer ✓ but files lists no data original"
+  clean_case "YAML data original" 'Heads [cfg: /num_key_value_heads].' cfg_yaml_original
+  assert_absent "YAML data original" "no data original"
+  defect_case "declared structured source with a prose .md" 'Thesis [paper].' "cfg. declares pointer ✓ but its .md is not one fenced block of pointer lines" cfg_prose_body
+  assert_region "declared structured source with a prose .md" DEFECTS "cfg. declares pointer ✓ but its .md is not one fenced block of pointer lines"
+  defect_case "locators wrapped onto a second line" 'Page [cfg: p.3].' \
+    "wrong-form locator: \[cfg\] is a structured source" cfg_wrapped_locators
+  defect_case "locators field capitalized" 'Page [cfg: p.3].' \
+    "wrong-form locator: \\[cfg\\] is a structured source" cfg_capitalized_locators
+  defect_case "pointer into a pointer-shaped source not declared structured" 'Heads [cfg: /num_key_value_heads].' \
+    "wrong-form locator: \\[cfg\\] is not a structured source" cfg_pointer_unchecked
+  defect_case "declined structured source" 'Heads [cfg: /num_key_value_heads].' "cites declined key \\[cfg\\]" decline_cfg
+  assert_absent "declined structured source" "wrong-form locator"
+  assert_absent "declined structured source" "declares pointer ✓"
+  for writer in cfg_pointer_unchecked cfg_pointer_in_damaged; do
+    clean_case "no pointer ✓ in locators: $writer" 'Page [cfg: p.3].' "$writer"
+  done
+  pass "takes the form a source's registry entry declares: pointers into a structured source, and into no other"
+}
+
+# A paper line holding `, cfg:` inside quotable text.
+comma_line_paper() {
+  printf '# Paper\nalpha, cfg: beta\n' >"$1/sources/paper/paper.md"
+}
+
+# A cfg leaf whose name holds `, paper`.
+comma_leaf_cfg() {
+  sed -i '$i /a, paper: 1' "$1/sources/cfg/cfg.md"
+}
+
+test_one_locator_per_bracket() {
+  local own="give each locator its own brackets"
+  defect_case "key list" 'A claim [cfg, paper].' "knowledge/note.md:1  malformed locator \[cfg, paper\]: $own"
+  assert_counted "key list" 2
+  defect_case "key list with ;" 'A claim [paper; cfg].' "knowledge/note.md:1  malformed locator \[paper; cfg\]: $own"
+  defect_case "key list ending in a locator" 'A claim [paper, cfg: /num_key_value_heads].' \
+    "knowledge/note.md:1  malformed locator \[paper, cfg: /num_key_value_heads\]: $own"
+  assert_counted "key list ending in a locator" 2
+  local prose
+  for prose in '[128, 128]' '[TODO, notes]' '[cfg, TODO]'; do
+    clean_case "bracketed prose $prose" "Shape $prose here [paper]."
+  done
+  defect_case "two sources in one locator" 'A claim [paper: p.1; cfg: /a].' \
+    "knowledge/note.md:1  malformed locator \[paper: p.1; cfg: /a\]: $own"
+  assert_counted "two sources in one locator" 2
+  defect_case "pointer first, then ;" 'A claim [cfg: /num_key_value_heads; paper: p.1].' \
+    "unresolved pointer: .* \[cfg: /num_key_value_heads; paper: p.1\]: $own"
+  defect_case "pointer first, then ," 'A claim [cfg: /num_key_value_heads, paper].' \
+    "unresolved pointer: .* \[cfg: /num_key_value_heads, paper\]: $own"
+  defect_case "; before a word that is no key" 'A claim [paper: p.1; see below].' \
+    "malformed locator \[paper: p.1; see below\]: write one of"
+  assert_absent "; before a word that is no key" "$own"
+  defect_case "a key after a comma inside a quote" 'A claim [paper: "nothing, cfg: here"].' \
+    "unresolved quote"
+  assert_absent "a key after a comma inside a quote" "$own"
+  defect_case "a key after a comma inside a section name" 'A claim [paper: §"Setup, cfg: notes"].' \
+    "unresolved section"
+  assert_absent "a key after a comma inside a section name" "$own"
+  clean_case "a key list as link text" 'See [paper, cfg](https://example.org) [paper].'
+  defect_case "a declined key named second" 'A claim [paper: p.1; cfg: p.2].' \
+    "malformed locator \[paper: p.1; cfg: p.2\]: $own" decline_cfg
+  assert_absent "a declined key named second" "cites declined key"
+  defect_case "one source, a second locator form" 'A claim [paper: p.1; p.4].' \
+    "malformed locator \[paper: p.1; p.4\]: $own"
+  defect_case "a second locator on the wrong-form path" 'A claim [paper: /a; cfg: /b].' \
+    "wrong-form locator: .* \[paper: /a; cfg: /b\]: $own"
+  defect_case "a key after a closed quote" 'A claim [paper: "x", cfg].' \
+    "malformed locator \[paper: \"x\", cfg\]: $own"
+  clean_case "a resolving quote holding , cfg:" 'A claim [paper: "alpha, cfg: beta"].' comma_line_paper
+  assert_absent "a resolving quote holding , cfg:" "$own"
+  assert_region "a resolving quote holding , cfg:" HYGIENE "orphan key .cfg."
+  clean_case "a resolving pointer holding , paper" 'A claim [cfg: /a, paper].' comma_leaf_cfg
+  assert_region "a resolving pointer holding , paper" HYGIENE "orphan key .paper."
+  defect_case "a key list whose locator names another key" 'A claim [cfg, cfg: /a; paper: p.2].' \
+    "malformed locator \[cfg, cfg: /a; paper: p.2\]: $own"
+  assert_absent "a key list whose locator names another key" "orphan key .paper."
+  defect_case "a declined key, then a second locator" 'A claim [cfg: /a, paper].' \
+    "cites declined key .cfg.: .*: $own" decline_cfg
+  assert_absent "a declined key, then a second locator" "orphan key .paper."
+  defect_case "a malformed first locator, then a second" 'A claim [paper: Table 2, "alpha"].' \
+    "malformed locator .*: write one of the citation contract's forms; $own"
+  defect_case "a key inside a quote after the first locator" 'A claim [paper: p.1; "alpha, cfg: beta"].' \
+    "malformed locator .*: $own"
+  assert_region "a key inside a quote after the first locator" HYGIENE "orphan key .cfg."
+  defect_case "a quote left open" 'A claim [paper: "hello, cfg: world].' "malformed locator .*: write one of"
+  assert_absent "a quote left open" "$own"
+  defect_case "a trailing key after a page" 'A claim [paper: p.1, cfg].' \
+    "malformed locator \[paper: p.1, cfg\]: $own"
+  defect_case "one source, two locators" 'A claim [paper: p.1; paper: p.4].' \
+    "malformed locator \[paper: p.1; paper: p.4\]: $own"
+  defect_case "an unregistered key, then a source" 'A claim [typo: p.1; paper: p.2].' \
+    "unresolved key \[typo\]: $own"
+  assert_absent "an unregistered key, then a source" "orphan key \[paper\]"
+  clean_case "a citation group" 'Both state it [paper: p.1] [cfg: /num_key_value_heads].'
+  assert_counted "a citation group" 2
+  pass "reports a bracket holding several locators, and leaves bracketed prose and a citation group alone"
 }
 
 replace_body_with_pdf() {
@@ -349,14 +531,27 @@ test_registry_and_index() {
   pass "ends an index entry at a fence; counts each dated line of dropped"
 }
 
+test_anchors() {
+  clean_case "in-page anchors resolve" "$(printf '%s\n' \
+    '# Note' '## Disk: the `next` tier' 'Body [paper], see [below](#disk-the-next-tier).' \
+    '## Repeat' '## Repeat' 'Second [one](#repeat-1).')"
+  defect_case "anchor to a renamed heading" "$(printf '%s\n' \
+    '# Note' '## New name' 'Body [paper], see [below](#old-name).')" 'dangling link (#old-name)'
+  defect_case "anchor to a heading only inside fenced code" "$(printf '%s\n' \
+    '# Note' '```' '## Fenced' '```' 'Body [paper], see [below](#fenced).')" 'dangling link (#fenced)'
+  pass "resolves in-page anchors against the note's own headings"
+}
+
 case_n=0
 test_grammar_forms_pass
 test_malformed_locators
 test_pointers
-test_structured_takes_pointers_only
+test_locator_form_follows_the_registry
+test_one_locator_per_bracket
 test_quotes
 test_sections
 test_regions
 test_registry_and_index
+test_anchors
 
 echo "1..$pass_count"

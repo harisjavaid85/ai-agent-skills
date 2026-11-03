@@ -13,7 +13,7 @@ Resolve which KB to operate on per [registry.md](../kb-builder/reference/registr
 
 ## 2. Normalize and register each argument
 
-An argument is either a **source** (URL, path, pasted text) or an **already-registered key**, since a caller re-running over what it ingested earlier holds keys rather than URLs. Resolve each against `sources/index.md` first, by key or by `origin`. [ingestion.md](./reference/ingestion.md)'s *Idempotency* rule governs the three cases:
+An argument is either a **source** (URL, path, pasted text) or an **already-registered key**. Resolve each against `sources/index.md` first, by key or by `origin`. [ingestion.md](./reference/ingestion.md)'s *Idempotency* rule governs the three cases:
 
 - **Unknown.** Convert and register it.
 - **Known**, status `candidate` or `integrated`. Refresh its metadata only; nothing is re-converted.

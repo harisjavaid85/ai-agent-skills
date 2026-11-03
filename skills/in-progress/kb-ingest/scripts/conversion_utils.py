@@ -38,7 +38,7 @@ HEADING = re.compile(r"^#{1,6} ", re.M)
 # The leading class strips markdown decoration, both bullet characters included,
 # since docling emits captions as list items. A table number is Arabic in any case,
 # or Roman (IEEE's `TABLE IV`) after a capitalized `Table` or `TABLE`, so prose such
-# as "the table I built" is no reference. A placeholder `Table X` reads as 10.
+# as "the table I built" is no reference.
 TABLE_NUMBER = r"(?:(?i:table)\s+(\d+)|(?:Table|TABLE)\s+([IVX]+)\b)"
 TABLE_CAPTION = re.compile(r"^[-#*>\s]*" + TABLE_NUMBER, re.M)
 FIGURE_CAPTION = re.compile(r"^[-#*>\s]*(?:Figure|Fig\.)\s*(\d+)", re.M | re.I)

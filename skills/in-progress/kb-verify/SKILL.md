@@ -1,11 +1,11 @@
 ---
 name: kb-verify
-description: "Audit a named file-based knowledge base for reference integrity, marking drifted claims inline and recording the pass. Use when the user asks to verify or fact-check a specific KB, or after integrating new sources into one."
+description: "Audit a named file-based knowledge base for grounding and reference integrity, marking gaps inline and recording the pass. Use when the user asks to verify or fact-check a specific KB, or after integrating new sources into one."
 ---
 
 # KB Verify
 
-Audit a KB's references: citations against its sources, `[[note]]` links against its own notes. Marks drift inline and otherwise only reports; never alters or deletes a claim. Fixing is `kb-integrate`'s job and the human's.
+Audit a KB's grounding: text against the citations covering it, citations against the places they name, `[[note]]` links against notes. Marks grounding gaps inline and otherwise only reports; never alters or deletes a claim.
 
 ## 1. Resolve the KB
 
@@ -13,74 +13,78 @@ Resolve which KB to operate on per [registry.md](../kb-builder/reference/registr
 
 ## 2. Resolve every reference
 
-Run [check_kb_references.py](./scripts/check_kb_references.py) against the KB root:
+Run [check_kb_references.py](./scripts/check_kb_references.py) against the KB root, KB-wide whatever step 3's scope:
 
 ```bash
 python3 <kb-verify>/scripts/check_kb_references.py "<kb-root>"
 ```
 
-It resolves what is mechanical: citations (each key, each locator's form, a section's heading, a pointer's line, a quote's line, and that a structured source is cited by pointer only) and the registry against `sources/` per the [citation contract](../kb-builder/reference/citation.md), and `[[note]]` links and the index against `knowledge/` per the [distillation contract](../kb-builder/reference/distillation.md).
+It resolves what is mechanical: citations and the registry against `sources/` per the [citation contract](../kb-builder/reference/citation.md), and `[[note]]` links and the index against `knowledge/` per the [distillation contract](../kb-builder/reference/distillation.md). A bare `[key]`, and an image link resolving to nothing with no such file stored under the key, go to `FOR JUDGMENT` for step 4.
 
-Two things it can spot but not settle go to `FOR JUDGMENT`: a bare `[key]`, and an image link resolving to nothing with no such file stored anywhere under the key. Step 4 resolves both.
+It prints a summary line, then whichever of `DEFECTS`, `FOR JUDGMENT`, and `HYGIENE` is non-empty, then an `OPEN MARKERS` tally with the site of every marker. It exits non-zero on a `DEFECTS` entry alone. Done when its output is in hand.
 
-It prints a summary line, then whichever of `DEFECTS`, `FOR JUDGMENT`, and `HYGIENE` is non-empty, then always an `OPEN MARKERS` tally and the site of every marker it counted, then `all references resolve` when the three regions were empty. It exits non-zero on a `DEFECTS` entry alone.
+## 3. Audit the text, mark grounding gaps
 
-This runs KB-wide whatever step 3's scope, being cheap. It finds; you judge in step 4. Done when the check has run and its output is in hand.
+**Scope.** Given nothing, read every note. Given `uncommitted`, or `since <snapshot>` (passed only by `kb-builder`), list the changed sections with [kb_changes.py](./scripts/kb_changes.py):
 
-## 3. Check locators, mark drift
+```bash
+python3 <kb-verify>/scripts/kb_changes.py sections "<kb-root>" <snapshot | uncommitted>
+```
 
-**Scope.** Given keys, check only the claims citing those keys. Given none, check the whole KB. Keep which, for step 5.
+Read each `section` and `new-note` it lists, and, for each `citation-removed` or `citation-moved` line, the text that citation covered. Report each `deleted` note. Keep the scope for step 5.
 
-Read each key's `citing` first: `locators:` records which locator forms that conversion reaches, and `damaged:` what arrived mangled. Skip a claim citing a `declined` or unregistered key: step 2 already reports it.
+Read each cited key's `citing` first: `locators:` records which locator forms that conversion reaches, and `damaged:` and `quirks:` how to read its `.md`. Skip text whose covering citations name a key step 2 reported as `declined` or as an `unresolved key`.
 
-For each cited claim in scope, confirm the locator still supports the claim, reading the artifact its form names: `§"…"`, `"quote"`, and a pointer resolve in `sources/<key>/<key>.md`, `p.` in the kept original, and `fig.`/`tbl.`/`eq.` in whichever holds it (the kept original, for damaged content), following the `.md`'s image link for a figure. Where the locator does not support the claim, or breaks the [citation contract](../kb-builder/reference/citation.md)'s *Damaged content* rule, mark the claim `[DRIFTED]` in place if it is a subject claim, per the contract's marker invariant. A claim about a source takes no marker: it is a defect, per step 4.
+In scope, work out what each citation covers, per the [citation contract](../kb-builder/reference/citation.md)'s *Coverage*. Check each piece of factual text against all the citations reaching it, per *What a citation must hold*, and each citation for relevance, per *Markers*. Read each place a citation names, whatever step 2 said of its form: `§"…"`, `"quote"`, and a pointer in `sources/<key>/<key>.md`, `p.` in the kept original, and `fig.`/`tbl.`/`eq.` in whichever holds it, following the `.md`'s image link for a figure. Never search the sources for a receipt for uncovered text.
 
-An unresolved locator supports nothing. One step 2 rejects for its form alone (malformed, ambiguous, or the wrong form for its source) is still read like any other: where a place it names supports the claim, the claim stays unmarked and the defect stands.
+**Mark `[UNVERIFIED]` and `[DRIFTED]` in place** where that contract's *Markers* puts them, never beside a marker already in the sentence, item, or cell: where that marker's kind is wrong, set it per *Markers*. Note everything else the read finds for step 4.
 
-Done when every cited claim in scope is confirmed, marked `[DRIFTED]`, reported as a defect, or skipped.
+Done when all factual text in scope is confirmed, marked, noted for step 4, or skipped.
 
-## 4. Judge what the check surfaced
+## 4. Judge what the read and the check surfaced
 
-Step 2's output becomes findings only once classed, and the class decides which of step 5's two verdicts a finding bears on. Every line it printed routes as follows:
+Class every line step 2 printed, and every finding step 3 noted:
 
 | What the check prints | You judge | Class |
 | --- | --- | --- |
 | `DEFECTS` | nothing, the check settled it | defect. For a dangling link, the fix is to repoint it or create the note; for a duplicate note name, to rename one |
-| `FOR JUDGMENT`, bare `[key]` | is the claim thesis-level? | thesis-level: fine. Anything specific (number, result, quoted wording, figure): **defect**, and the fix is a locator |
+| `FOR JUDGMENT`, bare `[key]` | is the text it covers, per the [citation contract](../kb-builder/reference/citation.md)'s *Coverage*, thesis-level? | thesis-level: fine. A specific claim, per that contract's *Citations are receipts*: **defect**, and the fix is a locator |
 | `FOR JUDGMENT`, unstored image link | does the entry's `citing` record that these figures were never fetched? | recorded: fine. Unrecorded: **defect**, and the fix is to fetch the figures with `curl` or record the omission |
-| `OPEN MARKERS`, each site | subject claim or source claim, per the [citation contract](../kb-builder/reference/citation.md)'s marker invariant | subject: **open marker**; source: a false marker, which is a **defect** |
-| `HYGIENE` | nothing, report it as it stands | hygiene. An index entry over the word cap marks an oversized note: the user trims the entry or runs `kb-integrate split <note>` |
+| `OPEN MARKERS`, each site in step 3's scope | does it belong, per the [citation contract](../kb-builder/reference/citation.md)'s *Markers*? | belongs: **open marker**; otherwise **hygiene**, and the fix removes it |
+| `HYGIENE` | nothing, report it as it stands | hygiene. For an oversized note, per the distillation contract's *The index*, the user trims its entry or runs `kb-integrate split <note>` |
 
-**A broken locator can be both.** A `DEFECTS` line about a citation stays a defect until the citation is fixed, even where step 3 marked its claim `[DRIFTED]` as an open marker.
+**The open-marker count** you report is the check's tally minus the markers this pass found do not belong.
 
-**Open markers are not defects.** They are what makes a KB **not current**, which is the golden rule working. But **the count you report is the check's tally minus the false markers**, which are defects instead. The check counts and locates markers without judging them, so its tally is a raw count and never the verdict.
+**Defect or hygiene.** A defect is anything a reader following a note's claims, citations, or links hits as wrong or broken; hygiene is everything else (form, bookkeeping, caps). Hygiene never takes an inline mark.
 
-**Defect or hygiene.** The check sorts its settled lines by one rule: a defect is anything a reader following a note's claims, citations, or links hits as wrong or broken; hygiene is everything else (form, bookkeeping, caps), and can wait. Hygiene never takes an inline mark.
+**Defects only step 3's read finds:**
 
-**Four defects only step 3's read finds.** The check's output never names them:
+- **A sentence recording what a source omits**, judged against the [distillation contract](../kb-builder/reference/distillation.md)'s rule 5 and its two carve-outs.
+- **A fact given its full account in two notes**, judged against that contract's rule 4.
+- **A restatement out of step with its owner.** Where text in scope restates a claim another note owns, or draws a conclusion from one, open that note and compare; a bare `[[link]]` is no reason to. Settle a disagreement against the sources, never against the owner's word.
+- **A coverage defect**, per the citation contract's *What a citation must hold*.
+- **A heading stating more than its section's cited text**, per that contract's *Coverage*.
+- **A synthesis hiding a contradiction**, per distillation rule 5. The fix restores both claims, each scoped.
 
-- **A sentence recording what a source omits.** Judge it against the [distillation contract](../kb-builder/reference/distillation.md)'s rule 5, which carves out the two cases that only look like one.
-- **A fact given its full account in two notes.** The check reports a note *name* declared twice, never a fact written twice. Judge it against that contract's rule 4. The fix for a re-derivation cuts it back to what the non-owner's sentence needs, never to a bare link.
-- **A claim about a source its citation does not support**, or that breaks the *Damaged content* rule. The check may report the locator, never that the claim is about a source, which takes no marker. The fix repoints the citation, or rewrites the claim to what the source says.
-- **A restatement out of step with its owner.** Where a claim in scope restates a claim another note owns, or draws a conclusion from one, open that note and compare. A bare `[[link]]` is no reason to. A disagreement is a defect: settle it against the sources, never against the owner's word.
+**Disagreeing claims.** Where accurately cited claims disagree, judge them against distillation rule 5: a settling scope a claim does not state, or a superseded claim left standing, is a defect, fixed per rules 5 and 4; a **contradiction** is neither defect nor marker: list it for the reader.
 
-**Prescribe every fix; apply none.** Rewriting a claim, rescoping one, and re-grounding a marker are all fixes, and step 3's `[DRIFTED]` mark is the only write this skill makes to a note. The prescriptions are for the user: a later `kb-integrate` finds work by reading the notes' markers, never by reading this report.
+**Prescribe every fix; apply none.** Step 3's marks are this skill's only writes to a note. `kb-integrate repair` repairs markers and removes the ones that do not belong; every other fix waits for an edit the user directs.
 
-Done when every line the check printed, every marker site, and anything step 3's read turned up is classed as defect, open marker, or hygiene.
+Done when every line the check printed, every marker site in scope, and every finding step 3 noted is classed as defect, open marker, hygiene, or contradiction.
 
 ## 5. Re-check, log, and report
 
-**Re-run the step 2 check where step 3 marked anything.** Its marks landed in the notes, so the re-run both tallies them and catches what they broke: a marker in the wrong place, or prose that now parses as a citation. Class any new finding per step 4; it belongs to this pass. Where step 3 marked nothing, the re-run can only reprint step 2: skip it, and say so in the report.
+**Re-run the step 2 check where step 3 marked anything**, and class each new finding per step 4: it belongs to this pass. Where step 3 marked nothing, skip the re-run and say so.
 
 Then record the pass in `verification-log.md`, creating the file if absent. It holds exactly two lines, rewritten in place rather than appended to:
 
 ```
-last-verified: <YYYY-MM-DD> (<scope>)
-last-full-sweep: <YYYY-MM-DD>
+last-verified: <YYYY-MM-DD> (<scope>) at <commit>
+last-full-sweep: <YYYY-MM-DD> at <commit>
 ```
 
-`<scope>` names what step 3 checked: `whole KB`, or the keys. Every pass rewrites the first line. **Only an unscoped pass rewrites the second**, and a scoped pass leaves it exactly as it found it, writing `last-full-sweep: never` when it is the pass creating the file. Otherwise a file called `last-verified` answers with a fresh date earned by one key, and nothing records when the KB was last swept whole.
+`<scope>` is `whole KB`, `uncommitted`, or `since <snapshot>` with the snapshot ID shortened to 7 characters. `<commit>` is the short `HEAD` the pass started from: the pass read that commit plus any uncommitted changes then on disk. Every pass rewrites the first line. **Only a whole-KB pass rewrites the second**; any other pass leaves it exactly as it found it, writing `last-full-sweep: never` when it is the pass creating the file.
 
-Finally, report the findings led by the open-marker count: each defect and open marker with its fix, each claim step 3 marked `[DRIFTED]`, and each hygiene item with the repair it needs, such as the index entry to add.
+Finally, report the findings led by the open-marker count, and for a pass that read only changed sections, how many open markers sit in them: each defect and open marker with its fix, each place step 3 marked, each hygiene item with the repair it needs, such as the index entry to add, each contradiction, and each deleted note.
 
-Close with two independent verdicts: **current** (no open markers, so nothing in the KB is ungrounded) and **clean** (no defects and no hygiene). A KB is often one without the other; name whichever is missing and why. Name step 3's scope alongside them: a scoped pass checked locators, and could meet the four defects only step 3's read finds, in those keys' claims alone. Done when the re-check's findings are classed, the pass is recorded, and the report is given.
+Close with two independent verdicts: **current** (no open markers KB-wide) and **clean** (no defects and no hygiene, whether found by step 2's KB-wide check or in what step 3 read); name whichever is missing and why. Name step 3's scope alongside them: a whole-KB pass read every note; any other pass read only its changed sections. Done when the re-check's findings are classed, the pass is recorded, and the report is given.
