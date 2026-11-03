@@ -14,14 +14,14 @@ What a note may **say**: folding a source's insights into `knowledge/`, repairin
 
 ```
 The values are reported to transfer across batch size, model width, depth, and
-token count [meta2025-llama4-blog: §"Pre-training"]. No mechanism is given [UNVERIFIED].
+token count [acme2025-pretraining-blog: §"Pre-training"]. No mechanism is given [UNVERIFIED].
 ```
 
 **Right.** Same information, as a scoped positive claim:
 
 ```
 The values are reported to transfer across batch size, model width, depth, and
-token count, for the configurations the blog names [meta2025-llama4-blog: §"Pre-training"].
+token count, for the configurations the blog names [acme2025-pretraining-blog: §"Pre-training"].
 ```
 
 The first version's second sentence records an omission. The fix is neither a better marker nor a citation: it is one scoped claim, cited, with the bound written in.

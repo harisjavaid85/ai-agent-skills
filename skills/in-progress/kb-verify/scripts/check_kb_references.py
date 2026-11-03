@@ -66,11 +66,8 @@ LIST_SEP = re.compile(r"\s*[,;]\s*")
 SECOND_LOCATOR = re.compile(
     rf'[,;]\s*(?:(?:pp?|fig|tbl|eq)\.\d|§?"|/|({KEY})\s*(?::|$))')
 OWN_BRACKETS = "give each locator its own brackets"
-# The locator grammar in kb-builder's reference/citation.md. All but the last
-# form, the pointer, copy _LOCATOR in kb-web's backend/kb_web/citations.py, with
-# two differences until kb-web catches up: kb-web still accepts the dropped
-# `@mm:ss` timestamp, and here the quote also excludes `[`, `]`, and a backtick,
-# and the section name `]`, which kb-web cannot parse inside a citation.
+# The locator grammar in kb-builder's reference/citation.md, one alternative per
+# form. A section name also excludes `]`, which would close the citation early.
 LOCATOR = re.compile(r': (?:p\.\d+|pp\.\d+-\d+|(?:fig|tbl|eq)\.\d+|§"[^"\]\n]+"'
                      r'|"[^"\[\]`\n]+"|/[^\]\n]*)')
 HEADING = re.compile(r"^#{1,6}(?:\s+(.*))?$")

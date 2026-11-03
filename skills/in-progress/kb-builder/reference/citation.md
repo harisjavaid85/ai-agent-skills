@@ -96,7 +96,7 @@ A `declined` entry must be cited nowhere at all: its files are deleted, so a sur
 
 ## Stable keys
 
-- One bib-style key per source (e.g. `[wang2024-qsparse]`), assigned at ingest.
+- One bib-style key per source (e.g. `[doe2024-sparsity]`), assigned at ingest.
 - Reused across every note. Append new keys; **never renumber**.
 
 ## `sources/index.md`, the KB-wide citation registry
@@ -112,7 +112,7 @@ One entry per key:
 | authors | source authors |
 | retrieved | date the source was fetched |
 | type | paper, post, note, ... |
-| status | **required.** `candidate` (registered, not yet folded in), `integrated` (folded into `knowledge/`), or `declined` (reviewed and rejected). A decline carries the user's reason and the date in parentheses: `declined (superseded by austin2025-scaling, 2026-08-13)` |
+| status | **required.** `candidate` (registered, not yet folded in), `integrated` (folded into `knowledge/`), or `declined` (reviewed and rejected). A decline carries the user's reason and the date in parentheses: `declined (superseded by roe2025-scaling, 2026-08-13)` |
 | citing | **required.** Written by `kb-ingest`, once per conversion, and holding conversion fidelity only. Answers one question: *"what do I need to know before writing from this source?"* A lead line naming what was converted, then `locators:`, `checked:`, `damaged:`, and `quirks:` as indented sub-bullets. Shape and rules below |
 | dropped | **required** on an `integrated` entry. **One dated value, source-wide**, recording what integration has not taken from this source: `<YYYY-MM-DD>: <item>; <why>. <item>; <why>.`, one sentence per item, dated by the last pass that rewrote it. `<YYYY-MM-DD>: nothing` once every part is taken. Only `kb-integrate` writes it: every pass that names the key rewrites it in place, and so does a repair that cites a part it lists, removing what the pass took and adding what it decided to leave. A part a later pass supersedes still counts as taken. A part is taken when a claim states it, not when a citation's span reaches it: a claim about a whole section, map, or file (`/`) takes what it states, such as the key set, not every part under it. A `candidate` or `declined` entry carries none. **Aim under 100 words**, each reason a short phrase: over that, coarsen the list to the enclosing section or group (`Appendices B-D`, `the remaining API metadata fields`), grouping only parts none of which was taken. **Never omit an item**: every part not taken is listed, individually or within a group. Wrapping it, never break a line just before a date |
 
@@ -145,13 +145,13 @@ Two things stay out of all these fields:
 One `##` heading per key, the remaining fields as bullets in the table's order. The file carries no other headings:
 
 ```
-## wang2024-qsparse
+## doe2024-sparsity
 
-- **files:** `wang2024-qsparse.md`;
-    `wang2024-qsparse.pdf` (https://arxiv.org/pdf/2404.00000v1);
+- **files:** `doe2024-sparsity.md`;
+    `doe2024-sparsity.pdf` (https://arxiv.org/pdf/2404.00000v1);
     `artifacts/` (12 files)
 - **origin:** https://arxiv.org/abs/2404.00000v1
-- **title:** Q-Sparse: All Large Language Models can be Fully Sparsely-Activated
+- **title:** Activation Sparsity for Efficient Inference
 - **authors:** …
 - **retrieved:** 2026-08-07
 - **type:** paper

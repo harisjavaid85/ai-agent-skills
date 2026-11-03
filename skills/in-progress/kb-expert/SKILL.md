@@ -18,7 +18,7 @@ Resolve which KB to operate on per [registry.md](../kb-builder/reference/registr
 Two request shapes enter the KB by different doors:
 
 - A **question** ("how does X work", "why does Y"). Enter via `knowledge/index.md`, the topic map. → step 3.
-- A **source-scoped summary** ("summarize the QSparse paper", "what does source X say"). Enter via `sources/index.md` to resolve the source to its key. → step 4.
+- A **source-scoped summary** ("summarize the sparsity paper", "what does source X say"). Enter via `sources/index.md` to resolve the source to its key. → step 4.
 
 A request for *what the KB took from* a source ("what did we take from X") is a question scoped to that `[key]`: answer it via step 3 from the notes that cite the key. The entry's `dropped` names what integration **deliberately** did not take from the source. It cannot show what a pass simply missed, nor what a later pass superseded, so give it as that record and never as a full account of what the source held. Done when you have chosen the door.
 
