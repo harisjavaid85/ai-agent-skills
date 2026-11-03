@@ -15,10 +15,10 @@ Resolve which KB to operate on per [registry.md](../kb-builder/reference/registr
 
 An invocation takes one of four shapes:
 
-- **`<key>`**, optionally with a **must-take**: insights the user names as ones that must land, as one free-text list for the whole invocation. The rest is judged per distillation rule 1 as usual. Accept. → §3.
-- **`decline <key>: <reason>`.** Reject. → §6.
-- **`split <note>`.** Split an oversized note. → §7.
-- **No key.** A re-ground sweep. It integrates no `candidate`: integrating one always requires naming it, so a later broad command cannot push a source still under review into `knowledge/`. → §4.
+- **`<key>`**, optionally with a **must-take**: insights the user names as ones that must land, as one free-text list for the whole invocation. The rest is judged per distillation rule 1 as usual. Accept. → step 3.
+- **`decline <key>: <reason>`.** Reject. → step 6.
+- **`split <note>`.** Split an oversized note. → step 7.
+- **No key.** A re-ground sweep. It integrates no `candidate`: integrating one always requires naming it, so a later broad command cannot push a source still under review into `knowledge/`. → step 4.
 
 Resolve each named key in `sources/index.md`, or the named note under `knowledge/`, first. A key that is not registered or whose files are missing, or a note that does not exist, stops the run: say so rather than working from nothing. Done when every named key or note resolves and the path is chosen.
 
@@ -26,10 +26,10 @@ Resolve each named key in `sources/index.md`, or the named note under `knowledge
 
 Read each key's `citing` before writing from it: it records how the source was converted, and its `damaged:` field drives the pass below. Never write to `citing`: `kb-ingest` owns it.
 
-**Follow every `damaged:` pointer.** It names the defect and where to find it. Each pointer ends one of three ways, and passing over one silently is not among them: nothing mechanical catches that, and the content the pointer stood in for is simply lost.
+**Follow every damaged entry to its location.** Each names the defect and where to find it. Each ends one of three ways, and passing over one silently is not among them: nothing mechanical catches that, and the content the entry stood in for is simply lost.
 
 - **The kept original settles the claim.** Write it from there, cited to the original.
-- **It does not, or the entry kept none.** Write the claim and mark it `[UNVERIFIED]`, which §4 re-attempts in this same run.
+- **It does not, or no original was kept.** Write the claim and mark it `[UNVERIFIED]`, which step 4 re-attempts in this same run.
 - **The content does not earn a claim** under distillation rule 1. Record it in `dropped` with its reason, so the skip is on the record rather than silent.
 
 Fold each named source's insights into the topic notes under `knowledge/` per the [distillation contract](../kb-builder/reference/distillation.md) (note shape, its rules, scoping a claim) and [citation contract](../kb-builder/reference/citation.md) (citations, markers, registry schema).
@@ -43,11 +43,11 @@ Then, on each key integrated:
 - Set `status: integrated`.
 - **Rewrite** `dropped` in place, per the [citation contract](../kb-builder/reference/citation.md)'s registry schema.
 
-Done when the touched notes carry their new citations, every `damaged:` pointer ended in a citation, a marker, or a `dropped` item, and each key reads `status: integrated` with a `dropped` that states what integration has not taken from the source, and every claim this pass corrected or superseded is corrected in each note that restates or relies on it.
+Done when the touched notes carry their new citations, every damaged entry ended in a citation, a marker, or a `dropped` item, and each key reads `status: integrated` with a `dropped` that states what integration has not taken from the source, and every claim this pass corrected or superseded is corrected in each note that restates or relies on it.
 
 ## 4. Re-ground open markers
 
-Run the re-ground sweep from the [distillation contract](../kb-builder/reference/distillation.md). It is KB-wide, and it includes the markers §3 just wrote, in this same invocation.
+Run the re-ground sweep from the [distillation contract](../kb-builder/reference/distillation.md). It is KB-wide, and it includes the markers step 3 just wrote, in this same invocation.
 
 This is also where a false marker gets rewritten, which `kb-verify` can mark as a defect but never fix.
 
@@ -55,7 +55,7 @@ Where re-grounding a marker cites a part of a source whose `dropped` lists it, r
 
 ## 5. Update the index
 
-Update `knowledge/index.md` per the [distillation contract](../kb-builder/reference/distillation.md)'s *The index*: an index entry for each note this pass created, and each index entry and cross-cutting line whose note this pass changed in scope. Record each note whose index entry runs over the cap as an oversized note for §8.
+Update `knowledge/index.md` per the [distillation contract](../kb-builder/reference/distillation.md)'s *The index*: an index entry for each note this pass created, and each index entry and cross-cutting line whose note this pass changed in scope. Record each note whose index entry runs over the cap as an oversized note for step 8.
 
 Done when every note under `knowledge/` has exactly one index entry, each touched note's index entry names all of its content sections, and every cross-cutting line follows the contract.
 
@@ -87,7 +87,7 @@ On confirmation:
 
 1. Write the new notes, moving each section whole. Citations move with their claims unchanged.
 2. Repoint every `[[old-note]]` link whose concept moved, and remove the old note unless the split keeps its name.
-3. Update the index per §5: the new notes' index entries replace the old one.
+3. Update the index per step 5: the new notes' index entries replace the old one.
 
 Done when every moved section lives in exactly one new note, no `[[link]]` points at a concept that moved away, and the index lists the new notes.
 

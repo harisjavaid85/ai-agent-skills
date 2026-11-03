@@ -15,7 +15,7 @@ What a note may **say** is a separate question, governed by [distillation.md](./
 Inline markers on a claim, cleared only by grounding (a re-ground pass or a new source) or by a human.
 
 - **`[UNVERIFIED]` (never grounded).** Sits on a subject claim the current sources cannot ground: none of them says it, or the one that does arrived too mangled to cite from. `kb-integrate` writes it. Likely fix: a new source, or a cleaner conversion.
-- **`[DRIFTED]` (citation broke).** Sits on a subject claim whose cited locator no longer supports it. `kb-verify` writes it. Likely fix: relocate within the same source.
+- **`[DRIFTED]` (citation broke).** Sits on a subject claim whose cited locator does not support it or breaks the *Damaged content* rule below. `kb-verify` writes it. Likely fix: relocate within the same source, its kept original included.
 
 A KB with open markers that **belong** is not current. That is the golden rule working, not a defect.
 
@@ -38,7 +38,8 @@ A `declined` entry must be cited nowhere at all: `kb-integrate` deletes its file
 A citation lets a reader verify or drill down; it is not needed to understand the claim.
 
 - Form: `[key: locator]`. `[key]` resolves in the KB's `sources/index.md`.
-- A **locator is required for any specific claim** (a number, result, quote, figure); a bare `[key]` is allowed only for a source's central thesis.
+- A **locator is required for any specific claim** (a number, result, quoted wording, figure); a bare `[key]` is allowed only for a source's central thesis.
+- **Damaged content.** Ground and cite anything `citing` lists as damaged from the kept original (`p.`, `fig.`, `tbl.`, `eq.`), never from the normalized `.md`.
 - Scope: a citation covers the run of consecutive sentences before it that rest on the same locator, back to the previous citation or the start of its paragraph, bullet, or table cell. Place it at the end of the run. A claim resting on a different locator ends the run and takes its own citation. A marker sits on the sentence it applies to, not on the run, and relocating one sentence's locator splits it out of the run.
 
 Locator grammar:
@@ -48,9 +49,9 @@ Locator grammar:
 | `[key]` | whole source / thesis-level claim |
 | `[key: p.7]`, `[key: pp.7-9]` | page(s) of the original |
 | `[key: §"Heading text"]` | a section of the normalized `.md` (level-agnostic; matches heading text) |
-| `[key: fig.3]`, `[key: tbl.2]`, `[key: eq.4]` | a figure, table, or equation |
-| `[key: @12:30]` | a timestamp (audio/video source) |
-| `[key: "short exact quote"]` | an exact quote, the most robust locator |
+| `[key: fig.3]`, `[key: tbl.2]`, `[key: eq.4]` | a figure, table, or equation. N is Arabic whatever numerals the caption uses, so a table captioned "Table IV" is `tbl.4` |
+| `[key: "verbatim span"]` | a line of the normalized `.md`: a span copied verbatim (whitespace aside) from one line outside fenced code, found on no other such line, holding no `"`, `[`, `]`, or backtick |
+| `[key: /json/pointer]` | a leaf of a structured source, one whose original parses to a data tree of maps, arrays, and scalars (JSON, YAML, TOML): its line in the normalized `.md`, or an element of an array leaf by index (`/architectures/0`). The only locator a structured source takes; the claim states the value |
 
 ## Stable keys
 
@@ -80,22 +81,22 @@ One entry per key:
 
 **The schema is a lead line, then `locators:`, `checked:`, `damaged:`, and `quirks:`, in that order. Follow it strictly: nothing added, nothing dropped.** Each makes a different **kind** of statement, which is what keeps them from overlapping. Write all of them **terse**: `locators:` and `checked:` are phrases, `damaged:` and `quirks:` the shortest sentences that carry a finding. Every entry is read in full before anything is written from its source, so length here is a tax on every later pass.
 
-**The lead line** names what was converted: the form, its extent, and anything separating this conversion from what `origin` already names, an unpinned URL or a `.md` assembled from several pages. The version itself lives in `origin`, and what a locator reaches lives in `locators:`. **Capped at 25 words.**
+**The lead line** names what was converted: the form, its extent, and anything separating this conversion from what `origin` already names, such as an unpinned URL with the commit it was fetched at (Fetched from unpinned `main` at commit `<sha>`), or a `.md` assembled from several pages. A pinned version lives in `origin`, and what a locator reaches lives in `locators:`. **Capped at 25 words.**
 
-- **`locators:`** capability. One mark per locator form in the grammar above, in that order, `n/a` where the source's type has no such form. The bare `[key]` row takes none, being the absence of a locator. Judged from the source's form and a spot check, not from counts. Qualify a mark that holds only within a bound: `§"…" ✓ (all headings at ##)`.
-- **`checked:`** inspection scope, machine-derived: the counts line `kb-ingest`'s conversion wrapper printed and any `N HTML tables` term beneath it, pasted verbatim, then investigated. Each caption count carries a total and a **distinct** count; the distinct one is what pairs against the objects, and a total far above it means duplicates or line-initial cross-references. A mismatch names where to look, so 13 tables against 9 distinct `Table N` captions is four extra blocks, one table shredded into pieces, and 16 distinct `Figure N` captions against 13 images is three figures whose images never arrived. Headings and HTML tables pair with nothing: headings read across documents, so 76 where comparable papers carry 30 is heading noise. **Agreement is necessary, not sufficient:** a `.md` that lost Tables 7 and 8 still reports 8 tables against 8 captions. The wrapper's `caption gap:` line catches that and seeds `damaged:`, not this field. It is itself a floor: **a printed gap is real; an empty line is unproven.**
-- **`damaged:`** every finding that has a location, written `damaged (N):` with **N the count of distinct findings**. The wrapper's lost-equation count and its `caption gap:` line both seed this field, not `checked:`. **Capped at 30 words per finding**, so its length tracks the damage rather than the source's size. Never drop or merge findings to meet the rate; over it, the entry is over-explaining. `damaged: none` when the check found nothing, with no count.
+- **`locators:`** capability. One mark per locator form the source's type has, in the grammar's order: `p`, `§"…"`, `fig`, `tbl`, `eq`, `quote`, `pointer`, each `✓` or `✗`. A form the type lacks takes no mark, and nor does the bare `[key]` row, being the absence of a locator. Judged from the source's form and a spot check, not from counts. Qualify a mark that holds only within a bound: `§"…" ✓ (all headings at ##)`.
+- **`checked:`** inspection scope, machine-derived: the counts line `kb-ingest`'s converter printed and any `N HTML tables` term beneath it, pasted verbatim, then investigated. A structured source's is its leaf count, which pairs with nothing. Each caption count carries a total and a **distinct** count; the distinct one is what pairs against the objects, and a total far above it means duplicates or line-initial cross-references. A mismatch names where to look, so 13 tables against 9 distinct `Table N` captions is four extra blocks, one table shredded into pieces, and 16 distinct `Figure N` captions against 13 images is three figures whose images never arrived. Headings and HTML tables pair with nothing: headings read across documents, so 76 where comparable papers carry 30 is heading noise. **Agreement is necessary, not sufficient:** a `.md` that lost Tables 7 and 8 still reports 8 tables against 8 captions. The converter's `caption gap:` line catches that and seeds `damaged:`, not this field. It is itself a floor: **a printed gap is real; an empty line is unproven.**
+- **`damaged:`** every finding that has a location, written `damaged (N):` with **N the count of distinct findings**. The converter's lost-equation count and its `caption gap:` line both seed this field, not `checked:`. **Capped at 30 words per finding**, so its length tracks the damage rather than the source's size. Never drop or merge findings to meet the rate; over it, the entry is over-explaining. `damaged: none` when the check found nothing, with no count.
 - **`quirks:`** every finding that has **no** location, because it runs through the whole document. That is why it cannot name a page, and why it is capped at **50 words** flat rather than by rate: a document-wide finding has a bounded number of things to say, so it needs no count. `quirks: none` when there are none.
 
 Three cross-checks tie the four together:
 
 - **Every `✗` in `locators:`, and every mark whose qualifier names something absent or unreachable, has an entry in `damaged:` or `quirks:` saying why.** A qualifier asserting that something does not resolve needs the same backing as an outright `✗`: `tbl ✓ (not 7, 8)` obliges a line saying where Tables 7 and 8 went. One describing what the form reaches, `§"…" ✓ (all headings at ##)`, needs none.
-- **For every `damaged:` entry, point at damage with a form that still works.** Object and pointer are different things: the lost equations sit behind `eq ✗`, so the entry locates them by section, `§ ✓`. With no location at all, `kb-integrate` reads the whole document to find one table; where no working form reaches the damage, say so.
+- **For every `damaged:` entry, point at damage with a form that still works.** Object and location are different things: the lost equations sit behind `eq ✗`, so the entry locates them by section, `§"…" ✓`. With no location at all, `kb-integrate` reads the whole document to find one table; where no working form reaches the damage, say so.
 - **What the `.md` cannot count stays out of `checked:`.** A lost equation leaves no trace of what it replaced, and pages leave no marker to count at all.
 
 Two things stay out of all these fields, both because they are content rather than fidelity:
 
-- **No transcribed values.** A value recovered from a damaged table is a claim: it belongs in `knowledge/`, cited to the kept original, which is what `damaged:`'s pointer sends `kb-integrate` to open.
+- **No transcribed values.** A value recovered from a damaged table is a claim: it belongs in `knowledge/`.
 - **No cross-source commentary.** That one source names another under a different title, or supersedes it, is knowledge about the subject and goes in the note that owns it.
 
 `kb-verify` can see a missing `dropped`, but not a missing `damaged:`, which sits inside `citing`, so this contract is the only thing requiring it. `checked:` is what keeps the **partial** case unambiguous, which is the common one: without it, `damaged: Table 4 collapsed` cannot be told apart from "found Table 4 and stopped looking".
@@ -117,7 +118,7 @@ One `##` heading per key, the remaining fields as bullets in the table's order. 
 - **type:** paper
 - **status:** integrated
 - **citing:** Born-digital 53-page PDF.
-  - locators: p ✓ · §"…" ✓ (all headings at ##) · fig ✓ · tbl ✓ · eq ✗ · @ n/a ·
+  - locators: p ✓ · §"…" ✓ (all headings at ##) · fig ✓ · tbl ✓ · eq ✗ ·
     quote ✓ (not across inline math)
   - checked: 8 tables, 8 captions (8 distinct) · 8 images, 8 resolve, 8 captions (8 distinct) ·
     30 headings
@@ -126,6 +127,16 @@ One `##` heading per key, the remaining fields as bullets in the table's order. 
   - quirks: Inline math flattens, so subscripts run together (`O L 2` for O(L²)).
 - **dropped:** 2026-08-19: §6; related-work survey, no subject claims. Appendix C's ablation
     grid; superseded by the §4 table.
+```
+
+A structured source's `citing`, the same fields:
+
+```
+- **citing:** A 43-key Hugging Face `config.json`, normalized to one pointer line per leaf. Fetched from unpinned `main` at commit `e815299b0bcbac849fa540c768ef21845365c9eb`.
+  - locators: pointer ✓
+  - checked: 54 leaves
+  - damaged: none
+  - quirks: none
 ```
 
 `kb-verify`'s check reads `## <key>` and the `- **<field>:** <value>` bullets under it, a value continuing onto an **indented** line as `files`, `citing`, and a long `dropped` do, with a blank line ending the value. `citing`'s sub-bullets are indented for exactly that reason: unindented, each would read as a new field and the block would fall out of the entry. It parses `status`, `citing`, `dropped`, and `files`, resolving the last against `sources/<key>/` on disk. Written any other way, no key resolves and every citation in the KB reads as a defect.

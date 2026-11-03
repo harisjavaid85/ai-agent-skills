@@ -6,13 +6,13 @@ Each source owns a directory `sources/<key>/` holding its normalized `.md`, its 
 
 ## Convert
 
-`docling` is the only converter, invoked via shell (so it works under any harness). It must be on `PATH` which is a one-time setup. It handles PDF, office, HTML, images, and audio with layout, tables, equations, reading order, and OCR.
+`docling` is the only document converter (converters for other types are below), invoked via shell (so it works under any harness). It must be on `PATH` which is a one-time setup. It handles PDF, office, HTML, images, and audio with layout, tables, equations, reading order, and OCR.
 
 **Convert the form the document was authored in**, when it is published more than one way and the user has not named one. Papers, preprints, and reports: the PDF, which carries the authoritative tables and figures and is the only form giving page numbers for a citation to point at. Web-native articles (blog posts, distill-style pages, hosted demos): the HTML, whose PDF is an export of it.
 
-**Fetch with `curl`, never WebFetch.** The wrappers below take a URL directly; any other fetch runs `curl -fsSL -o <file> "<url>"`. WebFetch returns a summary, not the source. A source `curl` cannot fetch in full is un-fetchable under the fidelity guard.
+**Fetch with `curl`, never WebFetch.** The docling converters below take a URL directly; any other fetch runs `curl -fsSL -o <file> "<url>"`. WebFetch returns a summary, not the source. A source `curl` cannot fetch in full is un-fetchable under the fidelity guard.
 
-One wrapper per converted route, same argument order, same output layout: `<key>.md` directly under `sources/<key>/`, with `artifacts/` beside it when the conversion produced figures. Both place docling's output themselves, so what lands on disk is decided by the wrapper and not by docling. Both run docling under a local-disk `TMPDIR`, because on NFS it exits 1 *after* writing a correct `.md`. Both refuse a conversion that produced almost no text, which docling itself misses.
+One script per converted route, same argument order, same output layout: `<key>.md` directly under `sources/<key>/`, with `artifacts/` beside it when the conversion produced figures. The two docling converters place docling's output themselves, so what lands on disk is decided by the converter and not by docling. Both run docling under a local-disk `TMPDIR`, because on NFS it exits 1 *after* writing a correct `.md`. Both refuse a conversion that produced almost no text, which docling itself misses.
 
 **PDF, office, images.** `<source>` is a local path or a URL:
 
@@ -28,16 +28,23 @@ python3 <kb-ingest>/scripts/docling_convert_html_with_figures.py \
   "<url>" "sources/<key>/" "<key>"
 ```
 
-**Pasted text, plain notes.** No conversion: save the text as `sources/<key>/<key>.md` and register it. No wrapper, no `artifacts/`.
+**Structured sources**, as the [citation contract](../../kb-builder/reference/citation.md) defines them. Only JSON is supported so far. `<original>` is the fetched file, kept under its published name, whose extension picks the parser. It writes one `<JSON Pointer>: <value>` line per leaf:
 
-Trailing arguments to either wrapper pass through to docling.
+```bash
+python3 <kb-ingest>/scripts/normalize_structured.py \
+  "sources/<key>/<original>" "sources/<key>/" "<key>"
+```
+
+**Pasted text, plain notes.** No conversion: save the text as `sources/<key>/<key>.md` and register it. No converter, no `artifacts/`.
+
+Trailing arguments to either docling converter pass through to docling.
 
 - Add `--device cuda` and `--num-threads <n>` when GPUs are present. The gain is modest, so never let it block a conversion.
 - Leave OCR at its default, which already runs on the pages that need it. `--force-ocr` discards a born-digital PDF's text layer and re-recognizes from pixels, corrupting prose.
 
 ## Keep originals
 
-- Keep the original file(s) in `sources/<key>/` for **PDFs, images, and office/binary** formats: a faithful artifact for reading figures and tables and for verification.
+- Keep the original file(s) in `sources/<key>/` for **PDFs, images, office/binary**, and **structured** formats.
 - Keep the figures the conversion produced beside the `.md`, in `artifacts/`. **Every stored image must be reachable from the body that references it.** Where a source ships its own figure directory under another name, rename it to `artifacts/` **and repoint the body's references to match**: storing the images locally already changed the paths, so keeping the old strings is a broken render, not fidelity. Note the repointing in `citing`'s lead line, and no more.
 - **Record where each file came from** in the entry's `files` list, in the shape the [citation contract](../../kb-builder/reference/citation.md) defines, leaving `origin` as the source's citable identity. When the kept original is not the file that was converted (a paper's PDF alongside a converted web build), fetch that original into `sources/<key>/` as well, so a rebuild restores it.
 - **Exclude raw HTML.** A fetched page is normalized to `.md`; the page itself is not kept.
@@ -52,7 +59,7 @@ On a **first** ingest or a reopen, the two paths that convert, fill the entry's 
 
 ## Fidelity guard: the failure path
 
-If docling cannot produce a clean `.md` (unsupported format, scan without OCR, un-fetchable / paywalled / JS-only page, corrupt file, or a giant-page PDF: a web export that is one enormous unrasterizable page), **skip the source and report** "cannot be ingested" with the reason. Name the reason precisely enough to act on. A skip that says "the PDF is a single 102,000-pt page" tells the user to offer the HTML build instead; never go hunting for a substitute source yourself. No secondary converter, no degraded conversion. A missing docling is a setup error, not a reason to degrade.
+If the converter cannot produce a clean `.md` (unsupported format, scan without OCR, un-fetchable / paywalled / JS-only page, corrupt file, a structured original that does not parse or holds no leaves, or a giant-page PDF: a web export that is one enormous unrasterizable page), **skip the source and report** "cannot be ingested" with the reason. Name the reason precisely enough to act on. A skip that says "the PDF is a single 102,000-pt page" tells the user to offer the HTML build instead; never go hunting for a substitute source yourself. No fallback converter, no degraded conversion. A missing docling is a setup error, not a reason to degrade.
 
 One exception is worth a second attempt before reporting the skip: where the source itself publishes a Markdown sibling (the same URL with a `.md` extension, or a documented `llms.txt`-style endpoint), fetch that and register it as the conversion. That is the same document in the form the publisher chose to serve, not a substitute source.
 
@@ -60,9 +67,9 @@ One exception is worth a second attempt before reporting the skip: where the sou
 
 ## Sanity-check the conversion
 
-Some defects survive conversion instead of failing it, so a clean exit is not a clean `.md`. After every conversion, check the produced `.md` against the source and record what you find in the entry's `citing`, per the [citation contract](../../kb-builder/reference/citation.md), which governs which field each finding belongs in. Detection only: never edit the `.md`. The wrapper's counts seed that entry. Investigate every mismatch they show, **and every line printed beneath them**: agreement across the counts is not a clean reading on its own, and a `caption gap:` line names a loss they agree straight through.
+Some defects survive conversion instead of failing it, so a clean exit is not a clean `.md`. After every conversion, check the produced `.md` against the source and record what you find in the entry's `citing`, per the [citation contract](../../kb-builder/reference/citation.md), which governs which field each finding belongs in. Detection only: never edit the `.md`. The converter's counts seed that entry. Investigate every mismatch they show, **and every line printed beneath them**: agreement across the counts is not a clean reading on its own, and a `caption gap:` line names a loss they agree straight through.
 
-Where to look, and what each place catches, all of it observed in converted sources:
+Where to look in a docling conversion, and what each place catches, all of it observed in converted sources:
 
 - **Every table, and the 40 lines after it.** A table spanning a page break arrives shredded: row labels become headings, cell values a flat list, the last column loose paragraphs, so the remnant is no longer a table at all. A row-label column also collapses on its own, values staying in row order against merged or empty labels.
 - **Every figure, its caption, and the sentences either side.** Captions detach from their figure or splice mid-sentence; figure content that exists only inside the image reaches the `.md` as nothing at all.

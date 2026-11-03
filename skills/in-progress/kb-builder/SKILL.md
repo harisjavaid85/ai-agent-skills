@@ -12,7 +12,7 @@ Takes sources (URL, path, pasted text), already-registered keys, or a mix, optio
 
 [reference/](./reference/) holds this family's shared contracts: [registry.md](./reference/registry.md) (which KB to operate on), [distillation.md](./reference/distillation.md) (what a note may say), [citation.md](./reference/citation.md) (how a claim cites its source).
 
-**Steps 2 to 5 run in subagents**, dispatched with the Agent tool: each returns its report to this orchestrator instead of ending the run. Pass each dispatch the KB root, the sources or keys, and a pointer to the contracts, and **nothing else**, except a reopen the user confirmed in step 2, and the user's must-take, verbatim, to step 3 only. What an earlier step learned reaches a later one through the files: an entry's `citing`, and the markers a pass leaves standing in the notes.
+**Steps 2 to 5 run in subagents**, dispatched with the Agent tool: each returns its report to this orchestrator instead of ending the run. Pass each dispatch the KB root, the sources or keys, and a link to the contracts, and **nothing else**, except a reopen the user confirmed in step 2, and the user's must-take, verbatim, to step 3 only. What an earlier step learned reaches a later one through the files: an entry's `citing`, and the markers a pass leaves standing in the notes.
 
 ## 1. Resolve the KB
 
@@ -60,7 +60,7 @@ Give one combined summary of the ingest, integrate, verify, and repair results, 
 
 **Report markers in three parts**: step 4's count after judgment, those step 5 cleared, and those still open. A single final count is attributable to none of them.
 
-Close on what is left and whose move it is. Step 5 made the one repair `kb-integrate` makes unprompted, so everything still standing is the user's, given with the fix `kb-verify` prescribed: an open marker needing a new source or a cleaner conversion, and every finding that leaves no marker for a later pass to find, a mis-scoped claim, a fact given its full account in two notes, a restatement out of step with its owner, a specific claim citing a bare `[key]`, and each hygiene item.
+Close on what is left and whose move it is. Step 5 made the one repair `kb-integrate` makes unprompted, so everything still standing is the user's, given with the fix `kb-verify` prescribed: an open marker needing a new source or a cleaner conversion, and every finding that leaves no marker for a later pass to find, a mis-scoped claim, a fact given its full account in two notes, a restatement out of step with its owner, a specific claim citing a bare `[key]`, every other defect `kb-verify` reported, and each hygiene item.
 
 Then tell the user to commit, per [registry.md](./reference/registry.md): this run wrote, and the KB's diff is the only review those writes get.
 

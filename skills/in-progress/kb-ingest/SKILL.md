@@ -19,7 +19,7 @@ An argument is either a **source** (URL, path, pasted text) or an **already-regi
 - **Known**, status `candidate` or `integrated`. Refresh its metadata only; nothing is re-converted.
 - **Known, status `declined`.** A reopen, which re-converts. **Confirm with the user first**, per that rule. A confirmation passed in with the key counts; where no user can answer, skip it and report it as awaiting confirmation.
 
-Run the pipeline in [ingestion.md](./reference/ingestion.md) on each **new or reopened** source: convert, keep the originals, register the key. Done when every ingestible source has a normalized `.md` and an entry carrying every field the [citation contract](../kb-builder/reference/citation.md)'s registry schema lists, and every source left out is noted with its reason.
+Run the pipeline in [ingestion.md](./reference/ingestion.md) on each **new or reopened** source: convert, keep the originals, register the key. Done when every ingestible source has a normalized `.md` and an entry carrying every field the [citation contract](../kb-builder/reference/citation.md)'s registry schema lists except `dropped`, and every source left out is noted with its reason.
 
 ## 3. Report
 

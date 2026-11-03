@@ -4,12 +4,15 @@
 Resolves `[key]` and each entry's required fields against sources/index.md,
 each entry's `files` against sources/<key>/ on disk, each source body's image
 links against sources/<key>/, and `[[note]]` links and index listing against
-knowledge/. Also reports an entry or a note name declared twice, and checks the
-index's shape per the distillation contract: one `- [[note]]: <scope>` entry per
-note, its scope within the word cap, and each cross-cutting line spanning three
-notes with every aspect naming one. A KB with no knowledge/ yet is a KB
-holding only candidates: the note-side checks are skipped, the registry ones
-still run.
+knowledge/. Checks each locator's form against the citation contract's grammar
+(`malformed locator`), a pointer locator against its line in
+sources/<key>/<key>.md (`unresolved pointer`), and a quote against the lines of
+that `.md` (`unresolved quote`, `ambiguous quote`). Also reports an entry or a
+note name declared twice, and checks the index's shape per the distillation
+contract: one `- [[note]]: <scope>` entry per note, its scope within the word
+cap, and each cross-cutting line spanning three notes with every aspect naming
+one. A KB with no knowledge/ yet is a KB holding only candidates: the note-side
+checks are skipped, the registry ones still run.
 
 Two findings it can spot but not settle go to FOR JUDGMENT: a bare `[key]`,
 legal on a thesis-level claim and a defect on anything more specific, and an
@@ -31,6 +34,7 @@ exits non-zero.
 Usage: check_kb_references.py <kb-root>
 """
 
+import json
 import os
 import re
 import sys
@@ -42,6 +46,14 @@ WIKI = re.compile(r"\[\[([^\]]+)\]\]")
 MARKER = re.compile(r"\[(UNVERIFIED|DRIFTED)\]")
 MDLINK = re.compile(r"\[[^\]]*\]\([^)]*\)")
 CITE = re.compile(r"\[([A-Za-z0-9][A-Za-z0-9._-]*)(:\s*[^\]]*)?\]")
+# The locator grammar in kb-builder's reference/citation.md. All but the last
+# form, the pointer, copy _LOCATOR in kb-web's backend/kb_web/citations.py, with
+# two differences until kb-web catches up: kb-web still accepts the dropped
+# `@mm:ss` timestamp, and the quote here also excludes `[`, `]`, and a backtick,
+# which kb-web cannot parse inside a citation.
+LOCATOR = re.compile(r': (?:p\.\d+|pp\.\d+-\d+|(?:fig|tbl|eq)\.\d+|§"[^"\n]+"'
+                     r'|"[^"\[\]`\n]+"|/[^\]\n]+)')
+ARRAY_INDEX = re.compile(r"0|[1-9]\d*")
 LETTER = re.compile(r"[A-Za-z]")
 KEY_HEADING = re.compile(r"^##\s+(\S+)")
 FIELD_BULLET = re.compile(r"^-\s+\*\*([A-Za-z][A-Za-z ()]*):\*\*\s*(.*)$")
@@ -63,15 +75,17 @@ SEPARATOR = re.compile(r"^\W+")
 
 
 def scan(path):
-    """Return a list of (lineno, kind, value), one per finding in a note.
+    """Return a list of (lineno, kind, value, locator), one per finding in a note.
 
     Three kinds are references, resolved against a target: wiki, cite (has a
     locator), and bare (key alone). The fourth, marker, is not resolved against
-    anything: it is counted and located, and kb-verify judges each site.
+    anything: it is counted and located, and kb-verify judges each site. Only a
+    cite carries a locator, from its colon on; every other kind carries None.
 
     Fenced and inline code are skipped, so a note quoting the distillation
     contract's worked pair, or showing a citation as an example, never reads as
-    a live reference.
+    a live reference. Skipped runs are blanked to the same length, so a
+    locator is read from the raw line and keeps any inline code it quotes.
     """
     found, fenced = [], False
     with open(path, encoding="utf-8") as fh:
@@ -81,22 +95,85 @@ def scan(path):
                 continue
             if fenced:
                 continue
-            line = INLINE.sub(" ", raw)
+            line = INLINE.sub(blank, raw)
             # Wikilinks first: [[x]] would otherwise read as the citation [x].
             for m in WIKI.finditer(line):
-                found.append((n, "wiki", m.group(1).strip()))
-            line = WIKI.sub(" ", line)
+                found.append((n, "wiki", m.group(1).strip(), None))
+            line = WIKI.sub(blank, line)
             for m in MARKER.finditer(line):
-                found.append((n, "marker", m.group(1)))
-            line = MDLINK.sub(" ", MARKER.sub(" ", line))
+                found.append((n, "marker", m.group(1), None))
+            line = MDLINK.sub(blank, MARKER.sub(blank, line))
             for m in CITE.finditer(line):
                 # A key is at least two characters and carries a letter, so a
                 # task-list checkbox and a pasted footnote marker ([x], [1])
                 # read as the structural markdown they are, not as citations.
                 if len(m.group(1)) < 2 or not LETTER.search(m.group(1)):
                     continue
-                found.append((n, "cite" if m.group(2) else "bare", m.group(1)))
+                locator = raw[m.start(2):m.end(2)] if m.group(2) else None
+                found.append((n, "cite" if locator else "bare", m.group(1), locator))
     return found
+
+
+def blank(m):
+    """A match replaced by spaces of its own length, keeping later offsets aligned."""
+    return " " * len(m.group(0))
+
+
+def resolves(lines, pointer):
+    """Whether a pointer locator resolves against a structured source's lines.
+
+    It resolves when a line opens with it. One segment below an array leaf, it
+    resolves when the parent's line holds an array and the last segment is an
+    index into it.
+    """
+    if any(line.startswith(f"{pointer}: ") for line in lines):
+        return True
+    parent, _, index = pointer.rpartition("/")
+    if not parent or not ARRAY_INDEX.fullmatch(index):
+        return False
+    for line in lines:
+        if line.startswith(f"{parent}: "):
+            try:
+                value = json.loads(line[len(parent) + 2:])
+            except ValueError:
+                return False
+            return isinstance(value, list) and int(index) < len(value)
+    return False
+
+
+def quote_problem(lines, span, md):
+    """Why a quote locator fails, or None when it resolves.
+
+    The span sits within exactly one line outside fenced code, matched with
+    whitespace collapsed.
+    """
+    want = " ".join(span.split())
+    if not want:
+        return "malformed locator: an empty quote span"
+    hits, fenced = 0, False
+    for line in lines:
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+        elif not fenced and want in " ".join(line.split()):
+            hits += 1
+    if not hits:
+        return f"unresolved quote: no line of {md} outside fenced code holds it"
+    if hits > 1:
+        return (f"ambiguous quote: {hits} lines of {md} hold it; lengthen the span "
+                "within its line, or cite another form the source has")
+    return None
+
+
+def source_lines(root, key, cache):
+    """The lines of sources/<key>/<key>.md, read once per key; none if it is absent."""
+    if key not in cache:
+        path = os.path.join(root, "sources", key, f"{key}.md")
+        cache[key] = []
+        if os.path.isfile(path):
+            with open(path, encoding="utf-8") as fh:
+                # Not splitlines(): it also breaks at U+2028 inside a JSON value.
+                cache[key] = fh.read().split("\n")
+    return cache[key]
 
 
 def index_items(path):
@@ -341,10 +418,11 @@ def main(root):
     keys, detail, fields, stamps = read_registry(sindex, hygiene)
 
     cited, counts, cite_count, marker_sites = set(), defaultdict(int), defaultdict(int), []
+    bodies = {}
     for name in sorted(notes):
         for path in notes[name]:
             rel = os.path.relpath(path, root)
-            for line, kind, value in scan(path):
+            for line, kind, value, locator in scan(path):
                 where = f"{rel}:{line}"
                 if kind == "wiki":
                     if value not in notes:
@@ -364,6 +442,18 @@ def main(root):
                                 "source, so the locator cannot be verified")
                         if kind == "bare":
                             judgment.append(f"{where}  bare [{value}]: thesis-level only")
+                        elif not LOCATOR.fullmatch(locator):
+                            defects.append(f"{where}  malformed locator [{value}{locator}]: "
+                                           "write one of the citation contract's forms")
+                        elif (locator.startswith(": /") and keys[value] != "declined"
+                              and not resolves(source_lines(root, value, bodies), locator[2:])):
+                            defects.append(f"{where}  unresolved pointer [{value}{locator}]: "
+                                           f"no line of sources/{value}/{value}.md opens with it")
+                        elif locator.startswith(': "') and keys[value] != "declined":
+                            problem = quote_problem(source_lines(root, value, bodies), locator[3:-1],
+                                                    f"sources/{value}/{value}.md")
+                            if problem:
+                                defects.append(f"{where}  {problem} [{value}{locator}]")
 
     if notes:
         for name in sorted(notes):

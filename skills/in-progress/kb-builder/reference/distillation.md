@@ -1,11 +1,11 @@
 # Distillation contract
 
-What a note may **say**: folding a source's insights into `knowledge/`, re-grounding open markers, and the topic map's shape. Shared by `kb-integrate` (writing notes) and `kb-verify` (auditing them).
+What a note may **say**: folding a source's insights into `knowledge/`, re-grounding open markers, and the topic map's shape. Shared by `kb-integrate` (writing notes), `kb-verify` (auditing them), and `kb-expert` (reading the index).
 
 How a claim connects to its source, which covers citations, grounding markers, the registry schema, and the never-fabricate rule, is a separate question, governed by [citation.md](./citation.md).
 
 1. **Integrate, don't summarize.** Fold each source's durable, load-bearing insights into existing notes: add a `[key: locator]`, deepen an explanation, or reconcile/supersede a prior claim. Never write a per-paper summary.
-2. **Terse but self-sufficient.** Each insight stands alone: a reader at the KB's audience level understands it without opening the citation. Terse: no filler, no re-teaching what the audience already knows, but not cryptic pointers.
+2. **Terse but self-sufficient.** Each insight stands alone: a reader at the KB's audience level understands it without opening the citation. Terse: no filler, no re-teaching what the audience already knows, but not cryptic references.
 3. **Insight-first & audience-calibrated.** Lead with the takeaway. Calibrate depth to the KB's audience/expertise knob (declared in the KB's `AGENTS.md`): cite-don't-reteach what the reader knows, explain fully what they're learning.
 4. **Prune, don't append duplicates.** Correct or supersede stale claims in place, in every note that restates or relies on them. Across notes, the topic note that owns a subject gives its full account: the derivation, the complete detail, the evidence. Another note links it with `[[note]]` and keeps what its own sentences need to stand alone under rule 2: the numbers its argument uses, the mechanism in a clause, a defining quote, each with its citation. The defect is a second full account, not a repeated number. Before cutting, read the sentence with the cut applied: if it no longer stands without opening the link, keep it.
 5. **Scope every claim to what its source supports.** The KB records what its sources say, never what they omit: write the bound into the claim rather than the omission that implies it. Worked through under *Scoping a claim* below.
@@ -97,7 +97,7 @@ Integrating always ends in a re-ground: sweep the KB's open `[UNVERIFIED]` and `
 
 First judge whether the marker belongs, against [citation.md](./citation.md)'s marker invariant. A false marker is not an open marker: rewrite that sentence per rule 5, or delete it, and never carry it forward.
 
-Then re-attempt the ones that do belong:
+Then re-attempt the ones that do belong, per [citation.md](./citation.md)'s *Damaged content* rule:
 
 - **`[UNVERIFIED]`.** Ground the claim against the sources now present. Clear the marker when a citation lands, leave it standing when none does.
-- **`[DRIFTED]`.** The source did not change, the pointer did: relocate the locator **within the same source**, and clear the marker when it lands.
+- **`[DRIFTED]`.** Relocate its locator **within the same source**, and clear the marker when it lands.
