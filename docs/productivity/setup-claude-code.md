@@ -25,6 +25,20 @@ The hook is a **speed bump**, not a wall. It blocks the shapes agents commonly w
 
 In `host` mode the skill also asks how much of Claude Code's tool surface you want loaded: `standard` keeps everything and is the default, `lean` strips the tools and bundled features most setups never call, and `leanest` goes one step further. It tells you exactly what each level costs before writing anything; pick a lean level only once you've checked that none of your own skills call a tool it denies.
 
+## The optional statusline
+
+In `host` mode the skill offers a one-line statusline:
+
+```
+you@laptop | ~/../ai-agent-skills (main) | Opus 5.5 (medium) | 84k/200k (42%) | 2h50m/5h (23%)
+```
+
+- **Context** is coloured by absolute size, because a long [context window](https://www.aihero.dev/ai-coding-dictionary/context-window) degrades answers whatever its limit: green under 200k [tokens](https://www.aihero.dev/ai-coding-dictionary/token), yellow up to 500k, red above. It also turns red at 80% full, so a 200k window warns you before auto-compact.
+- **The 5h segment** shows how far you are into your subscription's 5-hour window and how much of its quota you have used, so `2h50m/5h (23%)` means you are on pace. It is hidden on API-key plans.
+- **A narrow terminal or tmux pane** wraps the line at a segment boundary rather than dropping segments.
+
+To change the segments, labels, or thresholds, edit the settings at the top of the skill's [`scripts/statusline.sh`](https://github.com/harisjavaid85/ai-agent-skills/blob/main/skills/productivity/setup-claude-code/scripts/statusline.sh) and re-run the skill: a re-run overwrites `~/.claude/statusline.sh`.
+
 ## Common questions
 
 **Why don't curl, wget and WebFetch prompt any more?**
@@ -42,6 +56,10 @@ The hook blocks curl or wget when the call:
 
 The secret check reads names, not values, so `$AUTH_URL` next to curl is blocked too. Authenticated GitHub calls belong in `gh api`; other authenticated calls are yours to run. The same hook blocks package installs from a URL or git repo, global installs, and custom package registries.
 
+**Why is the 5h segment missing from my statusline?**
+
+Claude Code only sends rate limits to subscription plans, and only after the session's first response. On an API key the segment never appears, and on a fresh session it shows up after your first message.
+
 **Can I re-allow something for one repo?**
 
 Not if the global settings deny it or ask for it. Rules are checked deny first, then ask, then allow, across every settings file, so an `allow` in a repo's `.claude/settings.json` never beats a global `deny` or `ask`. Only what the global baseline leaves alone can be decided per repo.
@@ -52,6 +70,7 @@ Not if the global settings deny it or ask for it. Rules are checked deny first, 
 - When the agent hits a blocked command, it reports it and stops, instead of retrying the same thing through another tool, unless the block named a safe form and it uses exactly that.
 - `~/.claude/GUARDRAILS.md` lists every rule you see enforced, in both layers.
 - Re-running the skill after an update leaves your hand-added settings in place.
+- The statusline shows the session's effort level next to the model, and the context turns yellow once a session passes 200k tokens.
 
 ## Where it fits
 
