@@ -1,8 +1,8 @@
 ## What it does
 
-`resolving-merge-conflicts` works through an in-progress git merge or rebase, hunk by hunk, then runs the project's own checks and finishes the operation with a commit.
+`resolving-merge-conflicts` works through an in-progress git merge or rebase, hunk by hunk, finishes the operation with a commit, checks the result with the project's own checks, and reports how it resolved each conflict and why.
 
-It refuses to treat a conflict as a text problem. Before touching a hunk it traces each side back to its **[primary source](https://www.aihero.dev/ai-coding-dictionary/primary-source)** (the commit message, the PR, the original issue), so it is choosing between two intents rather than between two blocks of text, and it preserves both wherever they are compatible. Where they genuinely are not, it picks the side matching the merge's stated goal and names the trade-off. It invents no new behaviour to paper over a clash, and `--abort` is not an option it has: the merge is always carried to a finished commit.
+It refuses to treat a conflict as a text problem. Before touching a hunk it traces each side back to its **[primary sources](https://www.aihero.dev/ai-coding-dictionary/primary-source)** (the commits, their PRs, the issues those PRs close, and the parent spec, each read with its comments), so it is choosing between two **intents** rather than between two blocks of text, and it preserves both wherever they are compatible. Where they genuinely are not, the latest statement that decides the point wins; where nothing decides it, it keeps the base side and hands the call to you. It invents no new behaviour to paper over a clash, and `--abort` is not an option it has: the merge is always carried to a finished commit.
 
 ## When to reach for it
 
@@ -20,9 +20,28 @@ Reach for it when git has already stopped on conflicts it could not resolve itse
 
 The failure mode this exists to kill is resolving by flag: `--ours`, `--theirs`, or hand-deleting whichever block looks less important, so the markers go away and the build compiles. That resolution can be syntactically perfect and still silently drop a change somebody made on purpose.
 
-You cannot preserve an intent you have not read. So the work starts in the history (commits, PRs, [tickets](https://www.aihero.dev/ai-coding-dictionary/ticket)) and only then moves to the diff. Another step in the loop exists for the same reason: the skill finds the repo's own [automated checks](https://www.aihero.dev/ai-coding-dictionary/automated-check) and runs them before committing, because a merge is the easiest place in git to produce code that satisfies both branches and passes neither's tests.
+You cannot preserve an intent you have not read. So the work starts in the history (commits, PRs, [tickets](https://www.aihero.dev/ai-coding-dictionary/ticket)) and only then moves to the diff. Another step in the loop exists for the same reason: the skill finds the repo's own [automated checks](https://www.aihero.dev/ai-coding-dictionary/automated-check) and runs them on the finished result, fixing what broke in a commit on top, because a merge is the easiest place in git to produce code that satisfies both branches and passes neither's tests.
+
+An issue counts as its body amended by its comments and by its PR's human comments, in order, with a later human comment winning: the design change you post on a ticket after testing outranks the ticket's original body. PR descriptions, commit messages, and comments an agent posted to report on its own work are read as context and never decide anything.
+
+## The resolution report
+
+Every non-trivial conflict gets one line, sorted by how much it needs you:
+
+| Group | What happened | What you do |
+| --- | --- | --- |
+| Needs your decision | the intents clash and no statement on either side decides it, so the base side was kept | approve it, or apply the override the line names |
+| Chosen by a governing statement | the intents clash and a later statement settled it, linked and quoted | check the statement was read right |
+| Combined | both intents survive, adapted to fit | skim |
+| Trivial | independent additions, or a regenerated lockfile | counted, not listed |
+
+Each line names the file and line, what was kept over what, and why, so overriding a call never means re-reading the whole merge. The same lines are written into the message of the commit that carries the resolution, so the reasoning survives in `git log`, and a resolution you ran yourself is still asked about when the branch is later landed through [merge](https://github.com/harisjavaid85/ai-agent-skills/blob/main/skills/in-progress/merge/SKILL.md). When nothing decides a clash, keeping the base side changes nothing already reviewed and landed, and the line names the one edit that restores the head's side. A merge run through [merge](https://github.com/harisjavaid85/ai-agent-skills/blob/main/skills/in-progress/merge/SKILL.md) pauses before landing for exactly these lines.
 
 ## Common questions
+
+**I changed the design in a comment after testing. Will the resolution follow it?**
+
+Yes, when the comment decides the disputed point. A human comment on the ticket, or on the PR that closes it, amends the ticket the way a later comment always does, and between the two sides the more recent deciding statement wins. PR descriptions and commit messages only describe the change, so they inform the intent and never decide it. A comment that only touches the same area decides nothing either, and a clash nothing decides lands under **Needs your decision** rather than being guessed.
 
 **Claude Code already resolves conflicts pretty well on its own. Why does this need a skill?**
 
@@ -41,11 +60,12 @@ Aborting throws away the resolution work and returns you to the same conflict, u
 ## It's working if
 
 - The agent quotes commit messages, PRs or issues at you while resolving, not just diff hunks.
-- Every hunk ends up with both sides' behaviour, or with an explicit note naming what was dropped and why.
+- Every conflict ends up with both sides' behaviour, or with one report line naming what was dropped, why, and the statement that decided it.
+- Clashes nothing decides sit at the top of the report, each with an override you could apply in one edit.
 - Nothing appears in the result that was on neither branch.
-- Typecheck, tests and format were located and run green *before* the commit, not after you noticed something broken.
-- You end on a clean tree with the operation completed, including every remaining commit in a multi-commit rebase.
+- Typecheck, tests and format were located and run green on the finished merge, with any fix in its own commit, or the report names the failing check and whether the base already fails it.
+- You end with everything it changed committed and the operation completed, including every remaining commit in a multi-commit rebase.
 
 ## Where it fits
 
-A reach-for-it-anytime standalone with no dependencies on any other skill: it starts when git stalls and ends when the tree is clean and committed. Its only real neighbour is [diagnosing-bugs](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/diagnosing-bugs.md), which takes over at the point where a merge resolved cleanly but the merged code misbehaves: a diagnosis problem, not a conflict one. It sits off the main idea-to-ship flow entirely, so [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) is the map for what runs before and after it.
+A reach-for-it-anytime standalone with no dependencies on any other skill: it starts when git stalls and ends when everything it changed is committed. It reads GitHub but writes only to the local repository, which is why the in-progress [merge](https://github.com/harisjavaid85/ai-agent-skills/blob/main/skills/in-progress/merge/SKILL.md) skill can call it mid-run and own the push and the PR comment itself. Its only real neighbour is [diagnosing-bugs](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/diagnosing-bugs.md), which takes over at the point where a merge resolved cleanly but the merged code misbehaves: a diagnosis problem, not a conflict one. It sits off the main idea-to-ship flow entirely, so [ask-author](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/ask-author.md) is the map for what runs before and after it.
