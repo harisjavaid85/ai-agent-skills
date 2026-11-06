@@ -1,7 +1,7 @@
 ---
 name: setup-claude-code
-description: Bootstrap a global Claude Code configuration with permissions, command guardrails, and optional interface settings. Use when the user wants to configure Claude Code on a host, sandbox, or new machine.
-argument-hint: host | sandbox | guardrails
+description: Bootstrap a global Claude Code configuration with permissions, command guardrails, and optional interface settings. Use when the user wants to configure Claude Code on a host or new machine.
+argument-hint: host | guardrails
 disable-model-invocation: true
 ---
 
@@ -18,21 +18,20 @@ Safe to re-run. Managed entries are tracked under a top-level `_setupClaudeCode`
 
 ## Modes
 
-The skill takes one argument (`host` | `sandbox` | `guardrails`). If no argument is given, ask the user.
+The skill takes one argument (`host` | `guardrails`). If no argument is given, ask the user.
 
 | Mode         | What it installs                                                                 |
 | ------------ | -------------------------------------------------------------------------------- |
 | `host`       | Hook + strict permissions for a long-lived dev machine                           |
-| `sandbox`    | Hook + relaxed permissions for a disposable Docker container running Claude Code |
 | `guardrails` | Hook only, no permissions or other settings changes                             |
 
-Non-interactive bootstrap example (Dockerfile): `RUN claude -p "/setup-claude-code sandbox"`.
+Non-interactive bootstrap example: `claude -p "/setup-claude-code host"`.
 
 ## Workflow
 
 ### 1. Resolve mode
 
-If the user passed `host`, `sandbox`, or `guardrails` as the argument, use it directly. Otherwise ask which mode.
+If the user passed `host` or `guardrails` as the argument, use it directly. Otherwise ask which mode.
 
 ### 2. Read existing state
 
@@ -47,20 +46,20 @@ Start from existing `settings.json`. Apply changes per mode:
 
 - Ensure `hooks.PreToolUse` contains an entry with `matcher: "Bash"` and `command: "~/.claude/hooks/block-dangerous-bash.sh"`. Match by `command` string; don't duplicate.
 
-**`host` and `sandbox` modes only:**
+**`host` mode only:**
 
 - Set `additionalDirectories`, deny/ask/allow lists, and other permissions per [REFERENCE.md](REFERENCE.md).
 
-### 4. Ask about opt-ins (host/sandbox only, interactive only)
+### 4. Ask about opt-ins (host only, interactive only)
 
 - **Default mode**: `plan` (requires approval before acting, safest) / `auto` (handles permissions automatically, middle ground) / `bypassPermissions` (skips all permission checks) / `skip` (don't set it)?
 - **Model**: `opus` / `sonnet` / `haiku` / `skip` (don't set it)?
 - **Statusline**: install `scripts/statusline.sh` → `~/.claude/statusline.sh` and set `statusLine.type = "command"`, `statusLine.command = "~/.claude/statusline.sh"`? (`yes` / `skip`)
-- **Tool surface**: `standard` (default) / `lean` / `leanest`? Read the levels out of [REFERENCE.md](REFERENCE.md#tool-surface-hostsandbox) and present what each one costs. Before recommending a lean level, grep the user's installed skills for the tools it denies, because a skill that calls a denied tool fails at the point of use.
+- **Tool surface**: `standard` (default) / `lean` / `leanest`? Read the levels out of [REFERENCE.md](REFERENCE.md#tool-surface-host) and present what each one costs. Before recommending a lean level, grep the user's installed skills for the tools it denies, because a skill that calls a denied tool fails at the point of use.
 
 If the user chooses `skip` for any opt-in, do not write that key to `settings.json` at all. `standard` is the same: write no tool-surface keys.
 
-Skip all opt-ins in non-interactive (scripted) invocations, e.g. `RUN claude -p "/setup-claude-code sandbox"` in a Dockerfile.
+Skip all opt-ins in non-interactive (scripted) invocations, e.g. `claude -p "/setup-claude-code host"`.
 
 ### 5. Show diff and confirm
 
@@ -102,4 +101,4 @@ Print a one-line summary: profile, hook path, settings backup path.
 
 ## Design notes
 
-See [ADR-0003](../../../.agents/adr/0003-setup-claude-code-guardrails-design.md) for the hook-vs-static boundary and host-vs-sandbox profile rationale.
+See [ADR-0003](../../../.agents/adr/0003-setup-claude-code-guardrails-design.md) for the hook-vs-static boundary and the profile rationale.

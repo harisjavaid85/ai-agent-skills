@@ -37,7 +37,7 @@ Bash(gh pr close:*)
 Bash(gh api graphql:*)
 ```
 
-`Bash(gh api graphql:*)` blocks all `gh api graphql` calls, because GraphQL reads and writes share the same HTTP verb and the read/write distinction lives in the query body, which the hook can't inspect. REST `gh api <path>` is allowed; the hook blocks `gh api -X POST/PUT/PATCH/DELETE` and `-XPOST` / `--method=POST` forms.
+`Bash(gh api graphql:*)` blocks all `gh api graphql` calls, because GraphQL reads and writes share the same HTTP verb and the read/write distinction lives in the query body, which the hook can't inspect. REST `gh api <path>` reads are allowed; the hook blocks REST writes, except editing a single issue or PR comment in place.
 
 `gh auth` is not denied: the hook blocks the mutating subcommands (`login`/`logout`/`refresh`/`switch`/`setup-git`) so `gh auth status` and `gh auth token` work without prompts.
 
@@ -72,61 +72,11 @@ Bash(gh label:*)
 
 `gh pr review:*` is allowed at the harness layer for ergonomics; the hook still blocks `--approve`/`-a` in any flag position.
 
-## Profile: `sandbox`
-
-### `permissions.additionalDirectories`
-
-```
-~/.claude/skills
-```
-
-Same rationale as `host`.
-
-### `permissions.deny`
-
-```
-Read(~/.ssh/**)
-Read(~/.aws/**)
-Read(~/.aws/credentials)
-Read(~/.gnupg/**)
-Read(**/id_rsa)
-Read(**/id_ed25519)
-Read(**/.netrc)
-Read(~/.bash_history)
-Read(~/.zsh_history)
-Read(~/.psql_history)
-Bash(gh repo delete:*)
-Bash(gh release delete:*)
-Bash(gh issue delete:*)
-Bash(gh pr close:*)
-Bash(gh api:*)
-```
-
-### `permissions.ask`
-
-```
-Bash(npm publish:*)
-Bash(docker push:*)
-Bash(kubectl delete:*)
-```
-
-### `permissions.allow`
-
-```
-Bash(gh pr create:*)
-Bash(gh pr comment:*)
-Bash(gh pr review:*)
-Bash(gh pr edit:*)
-Bash(gh issue create:*)
-Bash(gh issue comment:*)
-Bash(gh label:*)
-```
-
 ## Profile: `guardrails`
 
 Adds the PreToolUse hook entry to `settings.json` only. No deny/ask or other entries written.
 
-## Tool surface (`host`/`sandbox`)
+## Tool surface (`host`)
 
 Three levels. `standard` is the default and writes nothing.
 
@@ -194,10 +144,11 @@ Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regene
 
 ## Hook-enforced (~/.claude/hooks/block-dangerous-bash.sh)
 
-- rm -rf: targets must stay inside cwd (allowed relative paths only; blocked /…, ~…, .., ., \*)
+- rm -rf: targets must stay inside cwd or /tmp
 - find . -delete
 - git push to main/master (other branches allowed)
-- git push --force / -f (any branch)
+- git push --force / -f / --force-with-lease (any branch)
+- git push --delete without a lease on each branch's expected commit
 - git reset --hard, git clean -f, git branch -D, git checkout .
 - git --no-verify (any git command), git commit -n
 - ...
@@ -212,7 +163,7 @@ Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regene
 | `permissions.deny` / `permissions.ask` / `permissions.allow` | Replace previously-managed entries (tracked in `_setupClaudeCode.managedDeny`/`managedAsk`/`managedAllow`); preserve user-added entries |
 | `hooks.PreToolUse[]`                                         | Append if no entry matches the command string                                                                                           |
 | Tool-surface entries in `permissions.deny`                   | Replace previously-managed entries (tracked in `_setupClaudeCode.managedToolSurfaceDeny`); drop them all at `standard`                   |
-| The `disable*` keys in [Tool surface](#tool-surface-hostsandbox)   | Write only at the level that includes the key; remove keys a previous run wrote when the level drops                                     |
+| The `disable*` keys in [Tool surface](#tool-surface-host)   | Write only at the level that includes the key; remove keys a previous run wrote when the level drops                                     |
 | `statusLine`                                                 | Write only if user chose `yes` (opt-in); skip if user chose `skip`                                                                      |
 | `model`                                                      | Write only if user chose a value (opt-in); skip if user chose `skip`                                                                    |
 | `_setupClaudeCode`                                           | Overwrite with current run's state                                                                                                      |

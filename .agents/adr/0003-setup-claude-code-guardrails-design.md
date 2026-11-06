@@ -16,6 +16,8 @@ Both are constrained by one Claude Code semantic: **`deny` always beats `allow` 
 
 ## Sub-decision 2: Deployment profile: host vs sandbox
 
+**Status:** Superseded in part (2026-11-05). The `sandbox` profile was removed because it was never used; `host` and `guardrails` remain. The record below is kept as written.
+
 **Decision:** The skill ships two named profiles selected by argument (`/setup-claude-code host` or `/setup-claude-code sandbox`, plus a `guardrails`-only mode). The `sandbox` profile is for running Claude Code inside an automated Docker sandbox; the `host` profile is for a developer machine. When no argument is given, Claude asks the user interactively.
 
 **Trade-off:** Sandbox calibrates for autonomy, dropping the `.env*` / app-config reads that would block legitimate test setup inside a disposable container. Host calibrates for safety on a long-lived machine where the file system is the safety boundary, not the container.
