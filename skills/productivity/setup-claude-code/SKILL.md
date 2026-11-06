@@ -89,16 +89,13 @@ Then run `apply.sh` via Bash tool. If blocked, ask the user to run it manually:
 
 ### 7. Verify
 
-Once the user confirms apply.sh ran, test the hook:
+Once apply.sh has run:
 
-```bash
-! echo '{"tool_input":{"command":"rm -rf /"}}' | ~/.claude/hooks/block-dangerous-bash.sh
-```
+1. Confirm the installed hook is the skill's copy: `cmp <skill-base-dir>/scripts/block-dangerous-bash.sh ~/.claude/hooks/block-dangerous-bash.sh` should exit 0.
+2. Ask the user to run the block check themselves and confirm it printed a BLOCKED message and `exit=2`. Never run it through the Bash tool: the installed hook reads the command's text, finds the dangerous pattern in the test payload, and blocks the check itself.
 
-Should exit 2 and print a BLOCKED message.
+   ```bash
+   ! echo '{"tool_input":{"command":"rm -rf /"}}' | ~/.claude/hooks/block-dangerous-bash.sh; echo "exit=$?"
+   ```
 
-Print a one-line summary: profile, hook path, settings backup path.
-
-## Design notes
-
-See [ADR-0003](../../../.agents/adr/0003-setup-claude-code-guardrails-design.md) for the hook-vs-static boundary and the profile rationale.
+Print a one-line summary: profile, hook path, settings backup path, and whether the user confirmed the block check.

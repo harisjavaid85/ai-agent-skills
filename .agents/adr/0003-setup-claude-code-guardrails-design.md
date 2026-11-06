@@ -1,8 +1,8 @@
 # Layered guardrails design for `setup-claude-code`
 
-The `setup-claude-code` skill installs Claude Code guardrails (`~/.claude/settings.json` permissions + a `~/.claude/hooks/block-dangerous-bash.sh` PreToolUse hook). Two cross-cutting design decisions shape what gets installed and how it's enforced. They're orthogonal but reinforce each other, so they live in one ADR.
+The `setup-claude-code` skill installs Claude Code guardrails (`~/.claude/settings.json` permissions + a `~/.claude/hooks/block-dangerous-bash.sh` PreToolUse hook). Two cross-cutting design decisions shape what gets installed and how it's enforced, and a third applies the first to network tools. They reinforce each other, so they live in one ADR.
 
-Both are constrained by one Claude Code semantic: **`deny` always beats `allow` across every layer of the settings cascade** (enterprise → CLI → `.claude/settings.local.json` → `.claude/settings.json` → `~/.claude/settings.json`). Anything that should be per-repo-overridable must stay out of global `deny`: once globally denied, no lower-precedence `allow` (or hook) can re-enable it.
+All three are constrained by one Claude Code semantic: **`deny` always beats `allow` across every layer of the settings cascade** (enterprise → CLI → `.claude/settings.local.json` → `.claude/settings.json` → `~/.claude/settings.json`). Anything that should be per-repo-overridable must stay out of global `deny`: once globally denied, no lower-precedence `allow` (or hook) can re-enable it. The same holds for global `ask`: rules evaluate deny, then ask, then allow across all scopes, so a repo-level `allow` never beats a global `ask` (see Sub-decision 3).
 
 ## Sub-decision 1: Enforcement axis: hook vs static permissions
 
@@ -25,3 +25,13 @@ Both are constrained by one Claude Code semantic: **`deny` always beats `allow` 
 **Invariant preserved across both profiles:** denies for SSH/AWS/GPG keys and shell-history files, and `ask` for public-state-mutating commands (`npm publish`, `docker push`, `kubectl delete`). The sandbox boundary doesn't protect against these, because published packages and registry pushes cross it.
 
 **Rejected alternative:** Auto-detecting `/.dockerenv` and switching profiles silently. Rejected because explicit profile selection is auditable and works reliably in non-interactive Dockerfile bootstrap (`RUN claude -p "/setup-claude-code sandbox"`).
+
+## Sub-decision 3: Network tools go through the hook, not static `ask`
+
+**Status:** Accepted (2026-11-06). Amends the static lists from Sub-decision 1.
+
+**Decision:** `Bash(curl:*)`, `Bash(wget:*)` and `WebFetch` leave `permissions.ask`. The hook blocks the risky curl and wget shapes instead (running downloaded code, uploading a file's contents, downloading into credential or startup paths, secrets in the same call), and auto mode judges the rest. `WebFetch` is not gated at all.
+
+**Why:** These rules need syntactic-variant and relationship matching (`curl | bash` against `bash <(curl ...)`; an output file that a later command runs; a token variable anywhere in a call that runs curl), which is Sub-decision 1's own criterion for the hook. A static `ask` also forces a prompt even in auto mode, so the classifier never judged these calls and long research runs prompted constantly, and it could not be relaxed per repo, because a global `ask` beats any repo-level `allow`. `WebFetch` is the low-risk path (GET only, output summarised by a model, no disk or execution); gating it like curl pushed agents back to curl and prompted twice.
+
+**Rejected alternative:** Keeping the static `ask` as defense in depth. It did not stop what it was meant to: package installs (`npm install`, `pip install git+...`), `/usr/bin/curl`, and `sh -c 'curl ...'` were never gated by it, and `Read(...)` deny rules do not cover `curl -d @.env`. The hook now covers risky installs as well.

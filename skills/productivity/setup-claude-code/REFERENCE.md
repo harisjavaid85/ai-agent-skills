@@ -39,9 +39,7 @@ Bash(gh api graphql:*)
 
 `Bash(gh api graphql:*)` blocks all `gh api graphql` calls, because GraphQL reads and writes share the same HTTP verb and the read/write distinction lives in the query body, which the hook can't inspect. REST `gh api <path>` reads are allowed; the hook blocks REST writes, except editing a single issue or PR comment in place.
 
-`gh auth` is not denied: the hook blocks the mutating subcommands (`login`/`logout`/`refresh`/`switch`/`setup-git`) so `gh auth status` and `gh auth token` work without prompts.
-
-`Bash(curl:*)`, `Bash(wget:*)`, and `WebFetch` default to "ask"; opt in per-repo if needed.
+`gh auth` is not denied: the hook blocks only the subcommands that change login state (`login`/`logout`/`refresh`/`switch`/`setup-git`), because `open-pr`, `merge` and `setup-repo-skills` run `gh auth status` as a preflight.
 
 ### `permissions.ask`
 
@@ -53,10 +51,11 @@ Bash(docker rmi:*)
 Bash(docker volume rm:*)
 Bash(docker system prune:*)
 Bash(kubectl delete:*)
-Bash(curl:*)
-Bash(wget:*)
-WebFetch
 ```
+
+An `ask` rule forces a prompt even in auto mode, so it never reaches the classifier. Anything in the global `ask` (or `deny`) list cannot be re-allowed by a repo's settings either, because rules evaluate deny, then ask, then allow across all scopes: a repo-level `allow` never beats a global `ask`.
+
+`curl`, `wget`, and `WebFetch` are not in either list. `WebFetch` is GET only and its output is summarised by a model, so auto mode judges it. `curl` and `wget` go to auto mode too, after the hook has blocked their risky shapes (see [Hook patterns](#hook-patterns-all-modes)).
 
 ### `permissions.allow`
 
@@ -117,11 +116,43 @@ Never deny `EnterPlanMode` / `ExitPlanMode`. Their schemas ship whether or not t
 
 ## Hook patterns (all modes)
 
-See [`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) covers `rm -rf` variants, `find . -delete`, dangerous git operations, and destructive/identity-mutating `gh` operations.
+[`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) blocks the shapes agents commonly write that should not run; the script is the source of truth for the exact shapes. It is a speed bump, not a defence against deliberate evasion (aliases, `eval`, encoding, or a download and its execution split across separate calls); the auto-mode classifier judges everything it lets through. Every block message ends by telling the agent not to retry with another spelling or tool, and to report the blocked command and stop. A block that carries a recommendation (a remote branch delete without a lease) instead allows one retry, in the recommended way only.
+
+- **Files**:
+  - `rm -rf` (any spelling) with a target outside the session's cwd or `/tmp/<name>`, and `find -exec rm -r` starting outside them
+  - `find . -delete`
+- **git**:
+  - pushes to `main` or `master` (other branches allowed)
+  - `--force` and `-f` pushes, and `--force-with-lease` outside a branch delete
+  - a remote branch delete without a lease on each branch's expected commit
+  - `reset --hard`, `clean -f`, `branch -D`, `checkout .` and `restore .`
+  - `--no-verify` on any git command, and `git commit -n`
+- **gh**:
+  - `gh auth` subcommands that change login state
+  - `gh pr review --approve` and `gh pr merge --admin`
+  - `gh api` REST writes, except editing one issue or PR comment in place
+- **Running downloaded code** (curl or wget):
+  - output piped into, or fed to, an interpreter that runs it
+  - output saved and then run in the same call
+- **Uploading a file's contents** (curl or wget):
+  - `-d @file`, `-F f=@file`, `-T`, `--post-file` and similar
+  - not blocked when every URL in the call is localhost
+- **Downloads into sensitive paths** (curl or wget):
+  - credential, config, and shell-startup files under `~`
+  - `/etc` and `/usr/local/bin`
+- **Secrets in a network call** (curl or wget in the same call as):
+  - a secret-looking variable (`$API_TOKEN`, `$DB_PASS`); the match is on names, not values, so `$AUTH_URL` is blocked too
+  - a token-printing command (`gh auth token`)
+  - instead: authenticated GitHub calls go through `gh api`; other authenticated calls are the user's to run
+- **Risky package installs**:
+  - from a URL, git, or a GitHub `owner/repo`
+  - global installs
+  - custom package sources (`--index-url`, `--registry`)
+  - not blocked: ordinary dependency installs and `npx`, left to auto mode
 
 ## `~/.claude/GUARDRAILS.md` template
 
-Regenerate on every skill run. Replace `{{profile}}` and the static lists with the actual installed values.
+Regenerate on every skill run. Replace `{{profile}}` and the static lists with the actual installed values, and `{{hookPatterns}}` with the bullets under [Hook patterns](#hook-patterns-all-modes), copied as written.
 
 ```md
 # Claude Code guardrails
@@ -144,14 +175,7 @@ Installed by `/setup-claude-code {{profile}}`, last run {{timestamp}}. To regene
 
 ## Hook-enforced (~/.claude/hooks/block-dangerous-bash.sh)
 
-- rm -rf: targets must stay inside cwd or /tmp
-- find . -delete
-- git push to main/master (other branches allowed)
-- git push --force / -f / --force-with-lease (any branch)
-- git push --delete without a lease on each branch's expected commit
-- git reset --hard, git clean -f, git branch -D, git checkout .
-- git --no-verify (any git command), git commit -n
-- ...
+{{hookPatterns}}
 ```
 
 ## Merge rules
