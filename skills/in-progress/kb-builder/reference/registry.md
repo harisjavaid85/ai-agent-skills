@@ -2,7 +2,7 @@
 
 Every `kb-*` skill resolves which knowledge base to operate on the same way, from a registry.
 
-- **Registry file:** `~/.claude/kb/registry.json`
+- **Registry file:** `$XDG_CONFIG_HOME/kb-skills/registry.json`, or `~/.config/kb-skills/registry.json` when `XDG_CONFIG_HOME` is unset. The path is outside any harness directory, so every harness resolves the same KBs.
 - **Schema:**
   ```json
   { "default": "<name>", "kbs": { "<name>": "<absolute-path-to-KB-repo-root>" } }
