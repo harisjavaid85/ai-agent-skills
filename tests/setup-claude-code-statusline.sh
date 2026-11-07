@@ -29,7 +29,7 @@ pass() {
 render_raw() {
   local cwd="$1" edit="${2:-.}" now
   now=$(date +%s)
-  jq -n --arg cwd "$cwd" --argjson reset "$((now + 7770))" '{
+  jq -n --arg cwd "$cwd" --argjson reset "$((now + 7830))" '{
     cwd: $cwd,
     workspace: {current_dir: $cwd},
     model: {display_name: "Opus 5.5"},
@@ -56,11 +56,11 @@ actual:   $actual"
 }
 
 assert_line "full line inside a repo" \
-  "$USER_HOST | ~/../myrepo (main) | Opus 5.5 (medium) | 84k/200k (42%) | 2h50m/5h (23%)" \
+  "$USER_HOST | ~/../myrepo (main) | Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻2h10m" \
   "$(render "$FAKE_HOME/work/myrepo")"
 
 # Path: only the repo (or current) folder name, with ~/.. or /.. when folders are elided.
-LINE_END="Opus 5.5 (medium) | 84k/200k (42%) | 2h50m/5h (23%)"
+LINE_END="Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻2h10m"
 assert_line "deep inside a repo shows the repo name" \
   "$USER_HOST | ~/../myrepo (main) | $LINE_END" \
   "$(render "$FAKE_HOME/work/myrepo/skills/deep/er")"
@@ -102,45 +102,48 @@ LINE_START="$USER_HOST | ~/../myrepo (main)"
 
 # Model and effort.
 assert_line "no effort shows the model alone" \
-  "$LINE_START | Opus 5.5 | 84k/200k (42%) | 2h50m/5h (23%)" \
+  "$LINE_START | Opus 5.5 | 84k/200k (42%) | 77% ↻2h10m" \
   "$(render "$FAKE_HOME/work/myrepo" 'del(.effort)')"
 
 # Context formatting and fallbacks.
 assert_line "1M window with millions" \
-  "$LINE_START | Opus 5.5 (medium) | 1.2M/1M (100%) | 2h50m/5h (23%)" \
+  "$LINE_START | Opus 5.5 (medium) | 1.2M/1M (100%) | 77% ↻2h10m" \
   "$(render "$FAKE_HOME/work/myrepo" '.context_window = {context_window_size: 1000000, used_percentage: 100, current_usage: {input_tokens: 1250000}}')"
 assert_line "null current_usage derives tokens from the percentage" \
-  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 2h50m/5h (23%)" \
+  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻2h10m" \
   "$(render "$FAKE_HOME/work/myrepo" '.context_window.current_usage = null')"
 assert_line "derived tokens use the unrounded percentage" \
-  "$LINE_START | Opus 5.5 (medium) | 85k/200k (43%) | 2h50m/5h (23%)" \
+  "$LINE_START | Opus 5.5 (medium) | 85k/200k (43%) | 77% ↻2h10m" \
   "$(render "$FAKE_HOME/work/myrepo" '.context_window.current_usage = null | .context_window.used_percentage = 42.6')"
 assert_line "a zero window size hides the context" \
-  "$LINE_START | Opus 5.5 (medium) | 2h50m/5h (23%)" \
+  "$LINE_START | Opus 5.5 (medium) | 77% ↻2h10m" \
   "$(render "$FAKE_HOME/work/myrepo" '.context_window.context_window_size = 0 | .context_window.used_percentage = null')"
 assert_line "null percentage is computed from tokens" \
-  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 2h50m/5h (23%)" \
+  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻2h10m" \
   "$(render "$FAKE_HOME/work/myrepo" '.context_window.used_percentage = null')"
 assert_line "no usage data hides the context" \
-  "$LINE_START | Opus 5.5 (medium) | 2h50m/5h (23%)" \
+  "$LINE_START | Opus 5.5 (medium) | 77% ↻2h10m" \
   "$(render "$FAKE_HOME/work/myrepo" '.context_window.used_percentage = null | .context_window.current_usage = null')"
 
-# 5h limit.
-assert_line "no rate limits hides the 5h segment" \
+# 5h quota.
+assert_line "no rate limits hides the 5h quota segment" \
   "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%)" \
   "$(render "$FAKE_HOME/work/myrepo" 'del(.rate_limits)')"
-assert_line "no reset time shows the window without elapsed time" \
-  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 5h (23%)" \
+assert_line "no reset time shows the quota left alone" \
+  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 77% left" \
   "$(render "$FAKE_HOME/work/myrepo" 'del(.rate_limits.five_hour.resets_at)')"
 assert_line "ISO reset time under an hour" \
-  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 4h15m/5h (23%)" \
+  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻44m" \
   "$(render "$FAKE_HOME/work/myrepo" '.rate_limits.five_hour.resets_at = (now + 2670 | todate | sub("Z$"; ".000Z"))')"
 assert_line "ISO reset time with a UTC offset" \
-  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 4h15m/5h (23%)" \
+  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻44m" \
   "$(render "$FAKE_HOME/work/myrepo" '.rate_limits.five_hour.resets_at = (now + 2670 + 7200 | todate | sub("Z$"; "+02:00"))')"
-assert_line "past reset time shows the full window" \
-  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 5h/5h (23%)" \
+assert_line "past reset time shows no time left" \
+  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻0m" \
   "$(render "$FAKE_HOME/work/myrepo" '.rate_limits.five_hour.resets_at = 1000')"
+assert_line "quota over 100% used shows none left" \
+  "$LINE_START | Opus 5.5 (medium) | 84k/200k (42%) | 0% ↻2h10m" \
+  "$(render "$FAKE_HOME/work/myrepo" '.rate_limits.five_hour.used_percentage = 104')"
 
 # Colors.
 GREEN=$'\033[38;2;149;255;164m'
@@ -161,18 +164,18 @@ assert_color "context under 200k is green" "$GREEN" "150k/200k" "$(ctx_filter 20
 assert_color "context at 80% full is red" "$RED" "170k/200k" "$(ctx_filter 200000 85 170000)"
 assert_color "context from 200k to 500k is yellow" "$YELLOW" "300k/1M" "$(ctx_filter 1000000 30 300000)"
 assert_color "context above 500k is red" "$RED" "600k/1M" "$(ctx_filter 1000000 60 600000)"
-assert_color "5h at 23% used is green" "$GREEN" "2h50m/5h (23%)" '.'
-assert_color "5h at 65% used is yellow" "$YELLOW" "2h50m/5h (65%)" '.rate_limits.five_hour.used_percentage = 65'
-assert_color "5h at 90% used is red" "$RED" "2h50m/5h (90%)" '.rate_limits.five_hour.used_percentage = 90'
+assert_color "5h quota at 23% used is green" "$GREEN" "77% ↻2h10m" '.'
+assert_color "5h quota at 65% used is yellow" "$YELLOW" "35% ↻2h10m" '.rate_limits.five_hour.used_percentage = 65'
+assert_color "5h quota at 90% used is red" "$RED" "10% ↻2h10m" '.rate_limits.five_hour.used_percentage = 90'
 
 # Wrapping: never drops segments, breaks at a boundary only when COLUMNS is too narrow.
 wrapped=$(COLUMNS=60 render "$FAKE_HOME/work/myrepo")
 [ "$(printf '%s\n' "$wrapped" | wc -l)" -ge 2 ] || fail "COLUMNS=60 should wrap: $wrapped"
 assert_line "wrapped lines carry every segment in order" \
-  "$USER_HOST | ~/../myrepo (main) | Opus 5.5 (medium) | 84k/200k (42%) | 2h50m/5h (23%)" \
+  "$USER_HOST | ~/../myrepo (main) | Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻2h10m" \
   "$(printf '%s\n' "$wrapped" | awk 'NR > 1 { printf " | " } { printf "%s", $0 }')"
 while IFS= read -r l; do
-  [ "${#l}" -le 56 ] || fail "wrapped line reaches the right margin: $l"
+  [ "${#l}" -le 58 ] || fail "wrapped line reaches the right margin: $l"
   [[ "$l" != " | "* ]] || fail "wrapped line starts with a separator: $l"
 done <<< "$wrapped"
 pass "wrapped lines stay clear of the right margin"

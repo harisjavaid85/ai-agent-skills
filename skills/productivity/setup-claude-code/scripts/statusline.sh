@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 # Installed by setup-claude-code. Overwritten on each skill re-run; edit the source in
 # the skill's scripts/ folder, not the installed copy at ~/.claude/statusline.sh.
-# Claude Code status line: user@host | path (branch) | model (effort) | context used | 5h window used
+# Claude Code status line: user@host | path (branch) | model (effort) | context used | 5h quota left
 
 # Segments in display order: reorder or remove entries to change the line.
-SEGMENTS=(user_host repo model context limit_5h)
+SEGMENTS=(user_host repo model context quota_5h)
 
 # Context is yellow from CTX_YELLOW_TOKENS, red above CTX_RED_TOKENS or at CTX_RED_PCT full.
 CTX_YELLOW_TOKENS=200000
 CTX_RED_TOKENS=500000
 CTX_RED_PCT=80
-# The 5h limit is yellow from LIMIT_YELLOW_PCT used, red from LIMIT_RED_PCT used.
-LIMIT_YELLOW_PCT=50
-LIMIT_RED_PCT=80
-LIMIT_WINDOW_SECS=18000
+# The 5h quota is yellow from QUOTA_YELLOW_PCT used, red from QUOTA_RED_PCT used.
+QUOTA_YELLOW_PCT=50
+QUOTA_RED_PCT=80
 # Columns Claude Code keeps for itself at the right edge; lines wrap before reaching them.
-WIDTH_MARGIN=4
+WIDTH_MARGIN=2
 
 RESET=$'\033[0m'
 DIM=$'\033[2m'
@@ -35,7 +34,7 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 # One jq call extracts every field, joined by the unit separator so empty fields survive `read`.
-IFS=$'\x1f' read -r cwd model effort ctx_used ctx_size ctx_pct limit_pct limit_secs < <(
+IFS=$'\x1f' read -r cwd model effort ctx_used ctx_size ctx_pct quota_pct quota_secs < <(
   jq -r '
     def iso_or_epoch: if type == "number" then (if . > 1e12 then . / 1000 else . end)
       elif type == "string" then (try (sub("\\.[0-9]+"; "")
@@ -159,22 +158,24 @@ seg_context() {
   printf '%s' "${color}$(fmt_tokens "$used")/$(fmt_tokens "$ctx_size") (${pct}%)${RESET}"
 }
 
-# Time into the 5h window and quota used: 2h50m/5h (23%). Without a reset time: 5h (23%).
-seg_limit_5h() {
-  local color=$C_OK elapsed text="5h"
-  [ -z "$limit_pct" ] && return 0
-  if (( limit_pct >= LIMIT_RED_PCT )); then
+# Quota left in the 5h window, then the time until it resets: 77% ↻2h10m. Without a reset
+# time: 77% left.
+seg_quota_5h() {
+  local color=$C_OK left text
+  [ -z "$quota_pct" ] && return 0
+  if (( quota_pct >= QUOTA_RED_PCT )); then
     color=$C_HIGH
-  elif (( limit_pct >= LIMIT_YELLOW_PCT )); then
+  elif (( quota_pct >= QUOTA_YELLOW_PCT )); then
     color=$C_WARN
   fi
-  if [ -n "$limit_secs" ]; then
-    elapsed=$(( LIMIT_WINDOW_SECS - limit_secs ))
-    (( elapsed < 0 )) && elapsed=0
-    (( elapsed > LIMIT_WINDOW_SECS )) && elapsed=$LIMIT_WINDOW_SECS
-    text="$(fmt_duration "$elapsed")/5h"
+  left=$(( 100 - quota_pct ))
+  (( left < 0 )) && left=0
+  text="${left}% left"
+  if [ -n "$quota_secs" ]; then
+    (( quota_secs < 0 )) && quota_secs=0
+    text="${left}% ↻$(fmt_duration "$quota_secs")"
   fi
-  printf '%s' "${color}${text} (${limit_pct}%)${RESET}"
+  printf '%s' "${color}${text}${RESET}"
 }
 
 # Join segments with SEP, starting a new line at a segment boundary when the next one

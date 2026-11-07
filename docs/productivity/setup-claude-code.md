@@ -30,11 +30,11 @@ In `host` mode the skill also asks how much of Claude Code's tool surface you wa
 In `host` mode the skill offers a one-line statusline:
 
 ```
-you@laptop | ~/../ai-agent-skills (main) | Opus 5.5 (medium) | 84k/200k (42%) | 2h50m/5h (23%)
+you@laptop | ~/../ai-agent-skills (main) | Opus 5.5 (medium) | 84k/200k (42%) | 77% ↻2h10m
 ```
 
 - **Context** is coloured by absolute size, because a long [context window](https://www.aihero.dev/ai-coding-dictionary/context-window) degrades answers whatever its limit: green under 200k [tokens](https://www.aihero.dev/ai-coding-dictionary/token), yellow up to 500k, red above. It also turns red at 80% full, so a 200k window warns you before auto-compact.
-- **The 5h segment** shows how far you are into your subscription's 5-hour window and how much of its quota you have used, so `2h50m/5h (23%)` means you are on pace. It is hidden on API-key plans.
+- **The 5h quota segment** shows how much of your subscription's 5-hour quota is left and how long until it resets, so `77% ↻2h10m` means 77% left with a reset in 2h10m. Without a reset time it reads `77% left`. It is hidden on API-key plans, and the `↻` needs a UTF-8 terminal.
 - **A narrow terminal or tmux pane** wraps the line at a segment boundary rather than dropping segments.
 
 To change the segments, labels, or thresholds, edit the settings at the top of the skill's [`scripts/statusline.sh`](https://github.com/harisjavaid85/ai-agent-skills/blob/main/skills/productivity/setup-claude-code/scripts/statusline.sh) and re-run the skill: a re-run overwrites `~/.claude/statusline.sh`.
@@ -71,7 +71,7 @@ A recursive `rm`, and a `find` that deletes, must stay in the workspace: strictl
 
 The fix is one retry with a literal path, such as `rm -rf /tmp/build-cache`.
 
-**Why is the 5h segment missing from my statusline?**
+**Why is the 5h quota segment missing from my statusline?**
 
 Claude Code only sends rate limits to subscription plans, and only after the session's first response. On an API key the segment never appears, and on a fresh session it shows up after your first message.
 
