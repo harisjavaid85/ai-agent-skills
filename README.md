@@ -247,7 +247,7 @@ General workflow tools, not code-specific.
 
 **Model-invoked**
 
-- **[cross-check-with-codex](./skills/productivity/cross-check-with-codex/SKILL.md)**: Cross-check an artifact with Codex through an independent review loop and local audit record.
+- **[cross-check](./skills/productivity/cross-check/SKILL.md)**: Cross-check an artifact with an independent reviewer agent (Codex or Claude, at a chosen model and effort) through a review loop and local audit record.
 - **[grilling](./skills/productivity/grilling/SKILL.md)**: Interview the user relentlessly about a plan, decision, or idea until every branch of the design tree is resolved. The reusable interview primitive behind `grill-me`, `grill-with-context`, `triage`, `wayfinder` and `improve-codebase-architecture`.
 - **[write-a-skill](./skills/productivity/write-a-skill/SKILL.md)**: Convert settled requirements into a well-structured skill (steps, reference, progressive disclosure). Grill first if scope is fuzzy.
 - **[writing-for-agents](./skills/productivity/writing-for-agents/SKILL.md)**: Writing documents for agents: skills, AGENTS.md/CLAUDE.md, and any doc an agent reaches by a pointer.

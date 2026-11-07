@@ -1,12 +1,12 @@
-# Codex Revision Review Instructions
+# Revision Review Instructions
 
-Verify the revision against the original request, settled constraints, and complete review instructions already present in this resumed thread.
+Verify the revision against the original request, settled constraints, and complete review instructions already present in this resumed session.
 
 - Reassess unresolved findings using their existing IDs.
-- Verify accepted fixes and Claude's rejection rationale.
+- Verify accepted fixes and the Requester's rejection rationale.
 - Identify regressions introduced by the revision.
 - Mark corrected findings `RESOLVED`.
-- Mark findings `WITHDRAWN` when Claude's rejection rationale is accepted.
+- Mark findings `WITHDRAWN` when the Requester's rejection rationale is accepted.
 - Keep `NEEDS_REVISION` when a finding remains valid.
 - Use `NEEDS_USER_DECISION` when resolution requires the user.
 - Do not reopen `WITHDRAWN` findings without new concrete evidence.

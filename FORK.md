@@ -103,7 +103,7 @@ Upstream still ships all four. Only the behaviour differs, so these are the hand
 
 ### Fork-only skills
 
-`commit`, `open-pr`, `cross-check-with-codex`, `setup-claude-code`, `write-a-skill`,
+`commit`, `open-pr`, `cross-check`, `setup-claude-code`, `write-a-skill`,
 `bootstrap-context`, `setup-repo-skills`. Each carries `agents/openai.yaml` metadata.
 `setup-repo-skills`, `setup-claude-code`, and `bootstrap-context` are **user-invoked**
 (`disable-model-invocation: true` plus `allow_implicit_invocation: false`); the rest are

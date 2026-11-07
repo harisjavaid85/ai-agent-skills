@@ -89,7 +89,7 @@ Off the main flow entirely.
 - **`/bootstrap-context`** establishes the repo's `CONTEXT.md` glossary in one batched pass, or audits it for drift later. The counterpart to `/domain-modeling`'s inline mode: batch versus as-you-go.
 - **`/commit`** groups working-tree changes into logical commits with tagged subjects (`[Feature] Add parser`), following the repo's tag vocabulary. It proposes a plan first and commits on approval.
 - **`/open-pr`** pushes the current branch and opens or updates its GitHub PR in a standard format. The public tail of the main flow, after the work is built and committed.
-- **`/cross-check-with-codex`** gets an independent second opinion on a plan, design, or implementation: Codex reviews, Claude reconciles, with a local audit record.
+- **`/cross-check`** gets an independent second opinion on a plan, design, or implementation: the Requester's artifact reviewed by an independent Reviewer of a chosen harness, model, and effort, with a local audit record.
 - **`/setup-claude-code`** configures a machine once: global Claude Code permissions and dangerous-command guardrails. The machine-level counterpart to the repo-level precondition below.
 
 ## Precondition

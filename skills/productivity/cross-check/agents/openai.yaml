@@ -1,0 +1,3 @@
+interface:
+  display_name: "Cross-Check"
+  short_description: "Independent review loop by a chosen harness and model, with audit record"

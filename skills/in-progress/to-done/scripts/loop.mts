@@ -135,7 +135,8 @@ mkdirSync(LOG_DIR, { recursive: true });
  * would hand the last phase a stale read.
  *
  * CROSS_CHECK_REVIEWER_SANDBOX=external: the container, not Codex's own
- * sandbox, keeps the cross-check read-only; see ADR-0006.
+ * sandbox, keeps the /cross-check Codex Reviewer read-only: that sandbox needs a
+ * user namespace a default Docker container denies.
  */
 const phaseSandbox = (codex = resolveCodexCredential()) =>
   docker({

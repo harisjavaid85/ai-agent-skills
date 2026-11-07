@@ -26,7 +26,7 @@ The source remains the authority throughout. Existing patterns and compatibility
 
 After implementation, `implement` runs [code-review](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/code-review.md) once over the complete included working tree. It fixes findings it judges valid, records why it declines any others, and runs the repository's prescribed verification after remediation. The review is intentionally bounded to one pass.
 
-The terminal report ends in `COMPLETE` or `BLOCKED` and leaves issue state, PR state, and Git history untouched. Use [commit](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/commit.md) when you are ready to turn the working tree into history; use [cross-check-with-codex](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/productivity/cross-check-with-codex.md) separately when the implementation warrants an independent second-model review.
+The terminal report ends in `COMPLETE` or `BLOCKED` and leaves issue state, PR state, and Git history untouched. Use [commit](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/engineering/commit.md) when you are ready to turn the working tree into history; use [cross-check](https://github.com/harisjavaid85/ai-agent-skills/blob/main/docs/productivity/cross-check.md) separately when the implementation warrants an independent review by another harness or model.
 
 ## Common questions
 

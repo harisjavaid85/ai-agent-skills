@@ -14,3 +14,5 @@ Since Codex 0.115, Codex's read-only sandbox needs a user namespace that a defau
 
 - Codex does not fail when its sandbox cannot start: it reports the blocked commands and exits successfully, having read nothing. Wherever Codex's own sandbox is relied on, the cross-check must confirm it starts before reviewing.
 - The choice is framed as what isolates the reviewer, not where it runs, so a future non-Codex reviewer can make the same choice with its own controls.
+
+**Update (2026-11-07):** the skill is now `cross-check` and can use a Claude Reviewer. `CROSS_CHECK_REVIEWER_SANDBOX` still selects Codex's isolation; a Claude Reviewer is held read-only by harness-enforced permissions (`dontAsk` mode with no settings files loaded, so no allow rule can pre-approve a write, and the write tools disallowed) and the same snapshot-and-restore check, with no OS sandbox, in either mode. Claude Code's OS sandbox confines only Bash and would hit the same user-namespace limit in Docker, so it was not adopted.
