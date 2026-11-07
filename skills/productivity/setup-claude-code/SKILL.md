@@ -92,7 +92,7 @@ Then run `apply.sh` via Bash tool. If blocked, ask the user to run it manually:
 Once apply.sh has run:
 
 1. Confirm the installed hook is the skill's copy: `cmp <skill-base-dir>/scripts/block-dangerous-bash.sh ~/.claude/hooks/block-dangerous-bash.sh` should exit 0.
-2. Ask the user to run the block check themselves and confirm it printed a BLOCKED message and `exit=2`. Never run it through the Bash tool: the installed hook reads the command's text, finds the dangerous pattern in the test payload, and blocks the check itself.
+2. Ask the user to run the block check themselves and confirm it printed a BLOCKED message and `exit=2`. The check is the user's own confirmation that the hook guarding their sessions is the one just installed, so it stays with them rather than the Bash tool.
 
    ```bash
    ! echo '{"tool_input":{"command":"rm -rf /"}}' | ~/.claude/hooks/block-dangerous-bash.sh; echo "exit=$?"

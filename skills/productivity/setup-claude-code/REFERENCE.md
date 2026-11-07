@@ -116,17 +116,20 @@ Never deny `EnterPlanMode` / `ExitPlanMode`. Their schemas ship whether or not t
 
 ## Hook patterns (all modes)
 
-[`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) blocks the shapes agents commonly write that should not run; the script is the source of truth for the exact shapes. It is a speed bump, not a defence against deliberate evasion (aliases, `eval`, encoding, or a download and its execution split across separate calls); the auto-mode classifier judges everything it lets through. Every block message ends by telling the agent not to retry with another spelling or tool, and to report the blocked command and stop. A block that carries a recommendation (a remote branch delete without a lease) instead allows one retry, in the recommended way only.
+[`scripts/block-dangerous-bash.sh`](scripts/block-dangerous-bash.sh) blocks the shapes agents commonly write that should not run; the script is the source of truth for the exact shapes. It is a speed bump, not a defence against deliberate evasion (aliases, `eval`, encoding, or a download and its execution split across separate calls); the auto-mode classifier judges everything it lets through. The principles every rule follows head the script. A block message says what was blocked and that the user prevented it, and gives no instruction about what to do next. A hint is added only where a safe route to the same goal exists: it names that route (for example, download into a new directory under /tmp instead of a credential directory), or the goal not to reach by other means (sending a credential, uploading a file, installing from an unvetted source).
 
-- **Files**:
-  - `rm -rf` (any spelling) with a target outside the session's cwd or `/tmp/<name>`, and `find -exec rm -r` starting outside them
-  - `find . -delete`
+- **Files**: recursive `rm` and `find` deletes (`-delete`, `-exec rm`) that fall in any of these cases:
+  - outside the working directory and `/tmp/<name>` directories
+  - through a symlink that leads outside them
+  - of the whole working directory
+  - in a `/tmp` directory that is a symlink or not yours
+  - with a target the hook cannot resolve (a variable other than `$HOME`, a command substitution, input from `xargs`)
 - **git**:
   - pushes to `main` or `master` (other branches allowed)
-  - `--force` and `-f` pushes, and `--force-with-lease` outside a branch delete
+  - `--force` and `-f` pushes, a `+<branch>` refspec (a force push), and `--force-with-lease` outside a branch delete
   - a remote branch delete without a lease on each branch's expected commit
   - `reset --hard`, `clean -f`, `branch -D`, `checkout .` and `restore .`
-  - `--no-verify` on any git command, and `git commit -n`
+  - `--no-verify` on any git command, `git commit -n` and `git am -n`, and `git -c core.hooksPath=...`
 - **gh**:
   - `gh auth` subcommands that change login state
   - `gh pr review --approve` and `gh pr merge --admin`
@@ -136,7 +139,7 @@ Never deny `EnterPlanMode` / `ExitPlanMode`. Their schemas ship whether or not t
   - output saved and then run in the same call
 - **Uploading a file's contents** (curl or wget):
   - `-d @file`, `-F f=@file`, `-T`, `--post-file` and similar
-  - not blocked when every URL in the call is localhost
+  - not blocked when every destination URL in that curl or wget command is localhost and nothing reroutes it (a proxy, `--resolve`, `--connect-to`)
 - **Downloads into sensitive paths** (curl or wget):
   - credential, config, and shell-startup files under `~`
   - `/etc` and `/usr/local/bin`

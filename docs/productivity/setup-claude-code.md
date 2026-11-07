@@ -19,7 +19,7 @@ The skill installs two layers, and each rule lives in exactly one of them:
 | **Permissions baseline** in `~/.claude/settings.json` | Flat rules a glob can express: deny and ask lists | Reading `~/.ssh`, `npm publish` |
 | **PreToolUse hook** | Rules that need to recognise many spellings of one command, or how two commands in one call relate | `rm -rf` outside the repo, `curl ... \| bash`, a token variable sent with curl |
 
-The hook is a **speed bump**, not a wall. It blocks the shapes agents commonly write, and its message tells the agent to report the blocked command and stop instead of rewording it. Where the hook names a safe form instead (a branch delete that names the commit it expects), the agent may retry that way and no other. Deliberate evasion gets past it; in auto mode the classifier judges everything the hook lets through. Both layers report to one audit surface, `~/.claude/GUARDRAILS.md`, so you can see exactly what protection is in place.
+The hook is a **speed bump**, not a wall. It blocks the shapes agents commonly write, reading each call the way the shell does, so a dangerous-looking string inside quotes or a commit message is never mistaken for a command. A block message states what was blocked and that you prevented it, and never tells the agent what to do next. Where a safe route to the same goal exists, it names that route (download into a new directory under `/tmp`, push a branch delete with a lease), or the goal not to reach by other means (sending a credential, installing from an unvetted source). The agent skips the blocked step and carries on with the rest of the task. Deliberate evasion gets past it; in auto mode the classifier judges everything the hook lets through. Both layers report to one audit surface, `~/.claude/GUARDRAILS.md`, so you can see exactly what protection is in place.
 
 ## Choosing a tool surface
 
@@ -52,9 +52,24 @@ The hook blocks curl or wget when the call:
 - runs what it downloads (`curl ... | bash`, or saves it and runs it later in the same call);
 - uploads a file's contents (`-d @.env`, `-F f=@key`, `-T`) to anything but localhost;
 - writes into a credential, config, or shell-startup path (`~/.ssh`, `~/.bashrc`);
-- also mentions a secret-looking variable (`$API_TOKEN`, `$DB_PASS`) or runs a token-printing command (`gh auth token`).
+- also expands a secret-looking variable (`$API_TOKEN`, `$DB_PASS`) or runs a token-printing command (`gh auth token`).
 
 The secret check reads names, not values, so `$AUTH_URL` next to curl is blocked too. Authenticated GitHub calls belong in `gh api`; other authenticated calls are yours to run. The same hook blocks package installs from a URL or git repo, global installs, and custom package registries.
+
+**What does the agent do after a block?**
+
+It skips the blocked step and finishes the rest of the task, or takes the safe route the message names. Earlier versions ended every message with "report the blocked command and stop", and agents read that as "end the turn": one block, even a false positive, abandoned all the independent work left in the task. Hints that name a safe route let agents finish the blocked step safely instead, and in probe runs no agent rerouted to the harm.
+
+**Why was my rm blocked?**
+
+A recursive `rm`, and a `find` that deletes, must stay in the workspace: strictly inside the working directory, or in or under a `/tmp/<name>` directory. The hook blocks a delete when:
+
+- its target is outside both, or is the whole working directory (`.`, `*`);
+- the hook cannot tell what the target is: a variable other than `$HOME` (`rm -rf $DIR`), a command substitution, a `cd` it cannot follow, targets that `xargs` reads from its input, or a brace expansion that could reach another directory (`{a,../b}`);
+- a symlink on the way leads outside the workspace, as with an `npm link`ed package (pnpm's links inside `node_modules` stay allowed);
+- the `/tmp/<name>` directory it reaches into is a symlink or someone else's.
+
+The fix is one retry with a literal path, such as `rm -rf /tmp/build-cache`.
 
 **Why is the 5h segment missing from my statusline?**
 
@@ -67,7 +82,7 @@ Not if the global settings deny it or ask for it. Rules are checked deny first, 
 ## It's working if
 
 - Fetching docs or API responses during a long session no longer stops for approval.
-- When the agent hits a blocked command, it reports it and stops, instead of retrying the same thing through another tool, unless the block named a safe form and it uses exactly that.
+- When the agent hits a blocked command, it skips that step and finishes the rest of the task, or takes the safe route the message names.
 - `~/.claude/GUARDRAILS.md` lists every rule you see enforced, in both layers.
 - Re-running the skill after an update leaves your hand-added settings in place.
 - The statusline shows the session's effort level next to the model, and the context turns yellow once a session passes 200k tokens.
