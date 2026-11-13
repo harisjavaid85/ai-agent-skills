@@ -19,16 +19,42 @@ import { publishStuckBranches, saveBailOut, type Save, type SaveCtx } from "./sa
 // Per-repo tuning, before anything reads it. Credentials go through resolveCredentials().
 loadConfig();
 
-// TO_DONE_MODEL sets every phase; TO_DONE_MODEL_<PHASE> overrides one.
-const model = (phase: string, fallback: string): string =>
-  process.env[`TO_DONE_MODEL_${phase}`]?.trim() || process.env.TO_DONE_MODEL?.trim() || fallback;
-
-const MODELS = {
-  planner: model("PLANNER", "claude-sonnet-5"),
-  implementer: model("IMPLEMENTER", "claude-opus-5-5"),
-  prComposer: model("PR_COMPOSER", "claude-sonnet-5"),
-  prReviewer: model("PR_REVIEWER", "claude-opus-5-5"),
+// Up here: the agent table below validates at module scope, past its const's TDZ.
+const fail = (reason: string): never => {
+  console.error(reason);
+  process.exit(2);
 };
+
+// TO_DONE_<KNOB> sets every phase; TO_DONE_<KNOB>_<PHASE> overrides one.
+const setting = (knob: string, phase: string): string | undefined =>
+  process.env[`TO_DONE_${knob}_${phase}`]?.trim() || process.env[`TO_DONE_${knob}`]?.trim() || undefined;
+
+const model = (phase: string, fallback: string): string => setting("MODEL", phase) ?? fallback;
+
+// The levels Claude Code's --effort accepts. A typo fails here at startup, not mid-drain.
+const EFFORTS = ["low", "medium", "high", "xhigh", "max"] as const;
+type Effort = (typeof EFFORTS)[number];
+const isEffort = (value: string): value is Effort => (EFFORTS as readonly string[]).includes(value);
+
+const effort = (phase: string, fallback: Effort): Effort => {
+  const value = setting("EFFORT", phase);
+  if (value === undefined) return fallback;
+  if (isEffort(value)) return value;
+  return fail(
+    `TO_DONE_EFFORT_${phase} or TO_DONE_EFFORT is "${value}"; expected one of: ${EFFORTS.join(", ")}.`,
+  );
+};
+
+// The reviewer is the last gate before a human reads the PR, so it thinks hardest.
+const AGENTS = {
+  planner: { model: model("PLANNER", "claude-sonnet-5-5"), effort: effort("PLANNER", "medium") },
+  implementer: { model: model("IMPLEMENTER", "claude-opus-5-5"), effort: effort("IMPLEMENTER", "medium") },
+  prComposer: { model: model("PR_COMPOSER", "claude-sonnet-5-5"), effort: effort("PR_COMPOSER", "medium") },
+  prReviewer: { model: model("PR_REVIEWER", "claude-opus-5-5"), effort: effort("PR_REVIEWER", "high") },
+};
+
+const agentFor = (phase: keyof typeof AGENTS) =>
+  claudeCode(AGENTS[phase].model, { effort: AGENTS[phase].effort });
 
 const COMPLETION_SIGNAL = "<promise>COMPLETE</promise>";
 
@@ -80,11 +106,6 @@ const EMPTY_FRONTIER: Frontier = { workable: [], remaining: [], excluded: [] };
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-const fail = (reason: string): never => {
-  console.error(reason);
-  process.exit(2);
-};
-
 const USAGE = "Usage: loop.mts <slug> [auto | plan | implement <ticket> | pr | review] [--force]";
 
 // ---------------------------------------------------------------------------
@@ -116,8 +137,8 @@ const LOG_DIR = path.resolve(
 );
 console.error(`Tracker: ${TRACKER}  Branch: ${BRANCH}  Logs: ${LOG_DIR}`);
 console.error(
-  `Models: ${Object.entries(MODELS)
-    .map(([p, m]) => `${p}=${m}`)
+  `Agents: ${Object.entries(AGENTS)
+    .map(([p, a]) => `${p}=${a.model} (${a.effort})`)
     .join("  ")}`,
 );
 console.error(`Auth: ${authUsing.join("  ")}`);
@@ -657,7 +678,7 @@ async function runPlanner(workable: Ticket[]): Promise<Ticket[]> {
         sandbox: phaseSandbox(),
         ...phaseOpts({ branch: BRANCH, deps: false }),
         name: "planner",
-        agent: claudeCode(MODELS.planner),
+        agent: agentFor("planner"),
         promptFile: promptPath("planner.md"),
         promptArgs: {
           SPEC_SLUG: slug,
@@ -701,7 +722,7 @@ async function runImplementer(ticket: number, branch: string) {
       sandbox: phaseSandbox(),
       ...phaseOpts({ branch, base: BRANCH, deps: true }),
       name: `implementer-${ticket}`,
-      agent: claudeCode(MODELS.implementer),
+      agent: agentFor("implementer"),
       promptFile: promptPath("implementer.md"),
       promptArgs: {
         TICKET: String(ticket),
@@ -755,7 +776,7 @@ async function runPrComposer(
       sandbox: phaseSandbox(),
       ...phaseOpts({ branch: BRANCH, deps: false }),
       name: "pr-composer",
-      agent: claudeCode(MODELS.prComposer),
+      agent: agentFor("prComposer"),
       promptFile: promptPath("pr-composer.md"),
       promptArgs: {
         SPEC_SLUG: slug,
@@ -794,7 +815,7 @@ async function runPrReviewer(pr: number): Promise<void> {
       sandbox: phaseSandbox(codex),
       ...phaseOpts({ branch: BRANCH, deps: true }),
       name: "pr-reviewer",
-      agent: claudeCode(MODELS.prReviewer),
+      agent: agentFor("prReviewer"),
       promptFile: promptPath("pr-reviewer.md"),
       promptArgs: {
         SPEC_SLUG: slug,
@@ -1066,6 +1087,7 @@ async function auto(): Promise<void> {
         await withRetry("push", () => git(`push origin ${BRANCH}`));
         dropTicketBranch(branch);
         consecutiveFailures = 0;
+        console.error(`✓ ticket ${ticket.number} closed`);
         continue;
       }
 

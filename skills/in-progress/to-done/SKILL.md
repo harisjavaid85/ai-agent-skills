@@ -48,8 +48,10 @@ Fill in one value per group; the file explains each. Codex is the exception: the
 | `TO_DONE_SETUP` | Shell command run once per container before the agent starts: the repo's dependency install, when a bare checkout is not enough to build and test from. The loop copies a host `node_modules` into each worktree when one exists, so a JavaScript repo usually needs none, until a native addon does not match the image's Node, below |
 | `TO_DONE_MODEL` | Model for every phase |
 | `TO_DONE_MODEL_PLANNER`<br>`TO_DONE_MODEL_IMPLEMENTER`<br>`TO_DONE_MODEL_PR_COMPOSER`<br>`TO_DONE_MODEL_PR_REVIEWER` | Model for one phase; beats `TO_DONE_MODEL` |
+| `TO_DONE_EFFORT` | Effort for every phase: `low`, `medium`, `high`, `xhigh`, or `max` |
+| `TO_DONE_EFFORT_PLANNER`<br>`TO_DONE_EFFORT_IMPLEMENTER`<br>`TO_DONE_EFFORT_PR_COMPOSER`<br>`TO_DONE_EFFORT_PR_REVIEWER` | Effort for one phase; beats `TO_DONE_EFFORT` |
 
-By default Opus implements and reviews, Sonnet plans and composes. The loop prints the resolved set on startup, and every log directory records which models produced that run.
+By default Opus implements and reviews, Sonnet plans and composes. Every phase runs at `medium` effort except the reviewer, which runs at `high` because it is the last gate before a human reads the PR. An effort outside the five levels stops the loop at startup. The loop prints the resolved model and effort per phase on startup, so the console log's `Agents:` line records what produced that run.
 
 Anything in this table can also live in the target repo's `.to-done/config`, as `KEY=value` lines; the host environment wins over the file. `config` is committed, so credentials never go there; they go in the gitignored `secrets` beside it.
 
@@ -110,7 +112,9 @@ It also refuses if the sandbox image is missing, naming `scripts/build-image.sh`
 
 To inspect without launching, `... <slug> plan` prints `workable`, `remaining`, `excluded`, and the same warnings, and writes nothing.
 
-**Complete when:** the loop is running detached, and the user has the console log and the log directory.
+If your harness allows, watch `$console` for milestone lines (`→ ticket`, `✓ ticket`, `did not close`, `PR #`, `Stopped early`, `Handed to`) and the `run.pid` process ending. Give the user a one-line status on each, plus anything they asked you to watch for. Never act on what you see. Re-arm quietly when the watch expires, resuming at the last line read. When the process ends, do §3.
+
+**Complete when:** the loop is running detached, the user has the console log and the log directory, and the run is being watched if your harness allows.
 
 ## 3. Report the outcome
 
@@ -129,6 +133,6 @@ It is assigned to the token owner either way. Repeat any "missing" line the loop
 
 When a run leaves unfinished tickets, the PR's **Stuck work** section names each stuck ticket and its one remote branch `agent/<slug>-wip-<N>`, which holds that ticket's latest attempt. Every attempt's work stays in the local repo as `agent/<slug>-wip-<N>-<k>`. None of it is merged: take what is useful by hand.
 
-Report the exit status, the PR, and, when it stopped early, the reason the loop recorded in the PR body. Leave the PR in draft; promoting it to ready is the user's call.
+Report whether the queue drained, the PR, and, when it stopped early, the reason the loop recorded in the PR body. Take "drained" from the console's `Queue drained.` line, or the PR's labels when there is no console log, not the exit code: nothing holds the exit code of a detached run, and `needs-info` alone cannot tell a run that stopped early from a drained one whose review failed. Leave the PR in draft; promoting it to ready is the user's call.
 
 **Complete when:** the user has the PR link, the terminating reason, and confirmation the handoff landed.
